@@ -208,23 +208,21 @@ function(phenotype.vector, genotype.matrix, covar.vector, pairs.matrix, n.perm =
 	      
 			#add the marker pair names to the results tables and name the columns
 	      	colnames(pairs.matrix) <- c("marker1", "marker2")
+	      	pairs.matrix <- apply(pairs.matrix, 2, as.numeric)
 			final.effects.table <- cbind(pairs.matrix, all.model.effects)
 			final.se.table <- cbind(pairs.matrix, all.model.se)
 			
 			if(!is.null(all.model.effects.perm)){
+				marker.pairs.used.perm <- apply(marker.pairs.used.perm, 2, as.numeric)
 		      	colnames(marker.pairs.used.perm) <- c("marker1", "marker2")
 				final.effects.table.perm <- cbind(marker.pairs.used.perm, all.model.effects.perm)
 				final.se.table.perm <- cbind(marker.pairs.used.perm, all.model.se.perm)	
 				}
 
 			final.cov.table <- all.model.cov
-			# final.cov.table <- cbind(pairs.matrix, all.model.cov)
-			# colnames(final.cov.table) <- c("marker1", "marker2", "var_m1", "cov_m1.m2", "var_m2", "covar_m1.interaction", "covar_m2.interaction", "var_interaction")
 			
 			if(!is.null(all.model.effects.perm)){
-				# final.cov.table.perm <- cbind(marker.pairs.used.perm, all.model.cov.perm)
 				final.cov.table.perm <- all.model.cov.perm
-				# colnames(final.cov.table.perm) <- c("marker1", "marker2", "var_m1", "cov_m1.m2", "var_m2", "covar_m1.interaction", "covar_m2.interaction", "var_interaction")		
 				}
 
 			phenotype.results <- list(final.effects.table, final.se.table, final.cov.table)

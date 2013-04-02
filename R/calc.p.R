@@ -1,5 +1,16 @@
 calc.p <-
-function(data.obj) {
+function(data.obj, pval.correction = c("holm", "fdr", "lfdr")) {
+	
+	require("fdrtool")
+	
+	if(length(grep("h", pval.correction) > 0)){
+		pval.correction <- "holm"
+		}
+		
+	if(pval.correction != "holm" && pval.correction != "fdr" && pval.correction != "lfdr"){
+		stop("pval.correction must be one of the following: 'holm', 'fdr', 'lfdr'")
+		}
+		
 	
 	influences.org <- data.obj$var.to.var.influences
 	influences.perm <- data.obj$var.to.var.influences.perm
@@ -12,6 +23,9 @@ function(data.obj) {
 		stop("error.prop() with perm = TRUE must be run before running calc.p()")
 		}
 		
+
+
+
 	n.gene <- dim(data.obj$geno.for.pairscan)[2] #get the number of genes used in the pair scan
 	n.pairs <- dim(data.obj$pairscan.results[[1]][[1]])[1] #the number of pairs scanned in the pairscan
     
@@ -20,7 +34,7 @@ function(data.obj) {
     colnames(marker.mat) <- c("marker1", "marker2")
 
 
-	#### Use when combining across permutations#####
+	#### Combinine across permutations#####
 	#get the t statistics for all permutations
 	mat12.perm <- abs(as.numeric(influences.perm[,3])) / as.numeric(influences.perm[,4])
 	mat21.perm <- abs(as.numeric(influences.perm[,5])) / as.numeric(influences.perm[,6])
@@ -38,21 +52,30 @@ function(data.obj) {
 	
 	all.emp.p <- t(apply(matrix(1:n.pairs, ncol = 1), 1, function(x) get.emp.p(x)))
 
-	m12 <- cbind(marker.mat[,2],marker.mat[,1],as.numeric(as.matrix(influences.org[,3])),as.numeric(as.matrix(influences.org[,4])),(abs(as.numeric(influences.org[,3])) / as.numeric(influences.org[,4])),all.emp.p[,1])	
-	colnames(m12) <- c("Source","Target","Effect","SE","|Effect|/SE","P_empirical")
-	
-	#adjust the p values
-	p.adjusted <- p.adjust(as.numeric(m12[,"P_empirical"]), method = "holm")
-	m12 <- cbind(m12, p.adjusted)
+	m12 <- matrix(c(marker.mat[,2],marker.mat[,1],as.numeric(as.matrix(influences.org[,3])),as.numeric(as.matrix(influences.org[,4])),(abs(as.numeric(influences.org[,3])) / as.numeric(influences.org[,4])),all.emp.p[,1]), ncol = 6)	
+	colnames(m12) <- c("Source","Target","Effect","SE","|Effect|/SE","P_empirical")	
 
-
-	m21 <- cbind(marker.mat[,1],marker.mat[,2],as.numeric(as.matrix(influences.org[,5])),as.numeric(as.matrix(influences.org[,6])),(abs(as.numeric(influences.org[,5])) / as.numeric(influences.org[,6])),all.emp.p[,2])	
+	m21 <- matrix(c(marker.mat[,1],marker.mat[,2],as.numeric(as.matrix(influences.org[,5])),as.numeric(as.matrix(influences.org[,6])),(abs(as.numeric(influences.org[,5])) / as.numeric(influences.org[,6])),all.emp.p[,2]), ncol = 6)
 	colnames(m21) <- c("Source","Target","Effect","SE","|Effect|/SE","P_empirical")
-	p.adjusted <- p.adjust(as.numeric(m21[,"P_empirical"]), method = "holm")
-	m21 <- cbind(m21, p.adjusted)
+	
 
-
+	#adjust the p values
 	final.table <- rbind(m12, m21)
+	if(pval.correction == "holm"){
+		p.adjusted <- p.adjust(as.numeric(final.table[,"P_empirical"]), method = "holm")
+		final.table <- cbind(final.table, p.adjusted)
+		}else{
+		fdr.out <- fdrtool(as.numeric(final.table[,"P_empirical"]), statistic = "pvalue", plot = FALSE, verbose = FALSE, cutoff.method = "fndr")
+		if(pval.correction == "lfdr"){
+			lfdr <- fdr.out$lfdr
+			final.table <- cbind(final.table, lfdr)
+			}else{
+			qval <- fdr.out$qval
+			final.table <- cbind(final.table, qval)	
+			}
+		}
+
+
 	final.table <- final.table[order(final.table[,"|Effect|/SE"], decreasing = TRUE),]
 
 	data.obj$var.to.var.p.val <- final.table

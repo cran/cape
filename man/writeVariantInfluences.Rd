@@ -9,7 +9,7 @@ This function takes in the final data object and writes the variant influences t
 to a file in the current working directory.
 }
 \usage{
-writeVariantInfluences(data.obj, pval.thresh = 0.05, 
+writeVariantInfluences(data.obj, p.or.q = 0.05, 
 filename = "Variant.Influences.csv", delim = ",")
 }
 %- maybe also 'usage' for other objects documented here.
@@ -17,8 +17,8 @@ filename = "Variant.Influences.csv", delim = ",")
   \item{data.obj}{
 	The object in which all results are stored. See \code{\link{read.population}}.
 }
-  \item{pval.thresh}{
-	A numeric value indicating the maximum adjusted p value that should be considered significant in selecting the significant influences.
+  \item{p.or.q}{
+	A threshold indicating the maximum adjusted p value considered significant. If an fdr method has been used to correct for multiple testing, this value specifies the maximum q value considered significant. Only marker pairs with p or q values below this threshold will be plotted.
 }
   \item{filename}{
 	A character vector specifying the name of the file.

@@ -1,11 +1,16 @@
 set.covar <-
-function(data.obj, pheno, markers, is.covar = TRUE, plot.covar = TRUE){
+function(data.obj, markers, pheno = NULL, is.covar = TRUE, plot.covar = TRUE){
 	
 	
+
 	covar.flags <- data.obj$covar.flags
+	if(is.null(pheno)){
+		pheno <- names(data.obj$singlescan.results)
+		}
+	
 	
 	if(is.character(markers[1])){
-		row.locale <- which(rownames(covar.flags) %in% markers)
+		row.locale <- which(data.obj$marker.names %in% markers)
 		}else{
 		row.locale <- markers
 		}
@@ -46,14 +51,20 @@ function(data.obj, pheno, markers, is.covar = TRUE, plot.covar = TRUE){
 		covar.flags[row.locale, col.locale] <- 0	
 		}
 		
+
+		data.obj$covar.flags <- covar.flags
 	
-
-	data.obj$covar.flags <- covar.flags
-
 	if(plot.covar){
 		plotSinglescan(data.obj, mark.covar = TRUE)
 		}
 
+	pair.covar <- data.obj$covar.for.pairscan
+	
+	if(!is.null(pair.covar)){
+		markers.in.pair <- which(rownames(covar.flags) %in% rownames(pair.covar))
+		new.pairscan.covar <- covar.flags[markers.in.pair,]
+		data.obj$covar.for.pairscan <- new.pairscan.covar
+		}
 
 	return(data.obj)
 

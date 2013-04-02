@@ -27,7 +27,7 @@ specific.markers = NULL)
 	}
 }
 \details{
-The markers that were selected for independence can be visualized with the function \code{\link{plotSelectedMarkers}}.
+The markers that were selected for independence can be visualized with the function \code{\link{plotSinglescan}} with either show.selected.markers or show.rejected.markers set to TRUE.
 }
 \value{
 This function returns the data object with two new elements:
@@ -44,12 +44,12 @@ Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carte
 }
 
 \seealso{
-\code{\link{singlescan}}, \code{\link{get.linearly.independent}}, \code{\link{plotSelectedMarkers}}
+\code{\link{singlescan}}, \code{\link{get.linearly.independent}}, \code{\link{plotSinglescan}}
 }
 \examples{
 # not run
 # obesity.cross <- select.markers.for.pairscan(obesity.cross, use.pairs.threshold = FALSE)
-# plotSelectedMarkers(obesity.cross)
+# plotSinglescan(obesity.cross, show.rejected.markers = TRUE)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

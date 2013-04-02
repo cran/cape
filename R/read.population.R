@@ -21,7 +21,7 @@ function(filename = NULL, pheno.col = NULL, delim = ",", na.strings = "-") {
 
 	if(length(char.pheno) > 0){
 		message("All phenotypes must be numeric.\nMake sure NA strings are the same for phenotypes and genotypes.")
-		cat("The following phenotoype columns have character values:", colnames(cross.data)[char.pheno], sep = "\n")
+		cat("The following phenotype columns have character values:", colnames(cross.data)[char.pheno], sep = "\n")
 		return(NULL)
 		}
 
@@ -63,7 +63,7 @@ function(filename = NULL, pheno.col = NULL, delim = ",", na.strings = "-") {
     
     genotype.class <- class(cross.data[,beginGeno])
     if(genotype.class != "character"){
-	    all.genotypes <- sort(unique(as.numeric(na.omit(as.matrix(geno))))) #get a vector of all genotypes used
+	    all.genotypes <- sort(unique(na.omit(as.numeric(as.matrix(geno))))) #get a vector of all genotypes used
 	    }else{
 		    all.genotypes <- sort(unique(na.omit(as.vector(as.matrix(geno)))))
 		    if(length(all.genotypes) > 3){
@@ -162,8 +162,11 @@ function(filename = NULL, pheno.col = NULL, delim = ",", na.strings = "-") {
  		}
 
 	#construct the data object
-	final.data <- list(pheno, geno, chr, marker.loc)
-	names(final.data) <- c("pheno", "geno", "chromosome", "marker.location")
+	marker.names <- colnames(geno)
+	colnames(geno) <- 1:dim(geno)[2]
+
+	final.data <- list(pheno, geno, chr, marker.names, marker.loc)
+	names(final.data) <- c("pheno", "geno", "chromosome", "marker.names", "marker.location")
 	     
 	cat("Read in the following data:\n")
 	cat("\t-", dim(pheno)[1], "individuals -\n")
@@ -171,7 +174,7 @@ function(filename = NULL, pheno.col = NULL, delim = ",", na.strings = "-") {
 	cat("\t-", dim(pheno)[2], "phenotypes -\n")
 
 
-    final.data
+    return(final.data)
     
     
 }

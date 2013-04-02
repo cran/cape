@@ -8,7 +8,9 @@ Calculate a genome-wide significance threshold for the single-variant scan
 This function uses permtuation testing to calculate a genome-wide significance threshold for the single-variant scan. Two user-defined thresholds are calculated: the lower threshold (higher alpha) can be used to determine which variants will be used in the pairwise scan. The higher threshold (lower alpha) is used to determine which variants are used as covariates in the pairwise scan. In each permutation, the phenotype or eigentrait is shuffled and all markers are retested with the permuted phenotype. The regression coefficients are collected from each permutation and the extreme value distribution is used to determine thresholds for the user-defined alpha values.
 }
 \usage{
-genome.wide.threshold.1D(data.obj, n.perm = 1000, alpha.for.pairs = 0.05, alpha.for.covar = 0.01, scan.what = c("eigentraits", "raw.traits"), verbose = FALSE)
+genome.wide.threshold.1D(data.obj, n.perm = 1000, alpha.for.pairs = 0.05, 
+alpha.for.covar = 0.01, scan.what = c("eigentraits", "raw.traits"), 
+verbose = FALSE)
 }
 %- maybe also usage for other objects documented here.
 \arguments{

@@ -10,7 +10,15 @@ function(data.obj, n.perm = NULL, covar = NULL, scan.what = c("eigentraits", "ra
 		stop("The number of permutations must be at least 2.")
 		}
 		
+	
+	if(alpha.for.pairs <= alpha.for.covar){
+		stop("alpha.for.covar must be lower than alpha.for.pairs")
+		}
 		
+		
+	data.obj$alpha.for.pairs <- alpha.for.pairs
+	data.obj$alpha.for.covar <- alpha.for.covar
+	
 	#If the user does not specify a scan.what, 
 	#default to eigentraits, basically, if eigen,
 	#et, or ET are anywhere in the string, use the
@@ -36,6 +44,7 @@ function(data.obj, n.perm = NULL, covar = NULL, scan.what = c("eigentraits", "ra
 		gene <- gene[,-x.locale]
 		data.obj$chromosome <- data.obj$chromosome[-x.locale]
 		data.obj$marker.location <- data.obj$marker.location[-x.locale]
+		data.obj$marker.names <- data.obj$marker.names[-x.locale]
 		}
 		
 	y.locale <- grep("Y", data.obj$chromosome, ignore.case = TRUE)
@@ -44,6 +53,7 @@ function(data.obj, n.perm = NULL, covar = NULL, scan.what = c("eigentraits", "ra
 		gene <- gene[,-y.locale]
 		data.obj$chromosome <- data.obj$chromosome[-y.locale]
 		data.obj$marker.location <- data.obj$marker.location[-y.locale]
+		data.obj$marker.names <- data.obj$marker.names[-y.locale]
 		}
 	
 	data.obj$geno <- gene
@@ -81,7 +91,7 @@ function(data.obj, n.perm = NULL, covar = NULL, scan.what = c("eigentraits", "ra
 			stop("Phenotypic covariates should be created before running singlescan(). See create.covar() for help.")
 			}
 		
-		covar.loc <- get.col.num(gene, covar, warn = FALSE)
+		covar.loc <- which(data.obj$marker.names %in% covar)
 		
 		if(length(covar.loc) == 0){
 			stop("I couldn't find the specified covariates. Please check the spelling, and make sure that covariates have been moved to the genotype matrix before this step.")
@@ -150,8 +160,12 @@ function(data.obj, n.perm = NULL, covar = NULL, scan.what = c("eigentraits", "ra
 			}else{
 			data.obj <- get.covar(data.obj, covar.thresh = Inf)	
 			}
-		data.obj$covar.thresh <- covar.threshold
 		
+		if(!is.null(covar)){
+			data.obj <- set.covar(data.obj, markers = covar, plot.covar = FALSE)
+			}
+			
+		data.obj$covar.thresh <- covar.threshold
 		
 		return(data.obj)
 	

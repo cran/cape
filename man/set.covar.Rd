@@ -8,19 +8,19 @@ Manually set which markers will be used as covariates.
 This function takes in a vector of markers and flags them for use as covariates in the pairwise scan if \code{is.covar} is \code{TRUE}. If \code{is.covar} is \code{FALSE}, the specified markers flagged such that they are not used as covariates in the pairwise scan. This function can be useful if multiple markers in an LD block exceed the pairscan threshold and cannot be selected automatically. Using all markers in one block as covariates may not be desired as it will prevent any of the markers in the block from having significant direct influences on any of the phenotypes.
 }
 \usage{
-set.covar(data.obj, pheno, markers, is.covar = TRUE, plot.covar = TRUE)
+set.covar(data.obj, markers, pheno = NULL, is.covar = TRUE, plot.covar = TRUE)
 }
 %- maybe also usage for other objects documented here.
 \arguments{
   \item{data.obj}{
 	The object in which all results are stored. See \code{\link{read.population}}.
 	}
-	\item{pheno}{
-		A vector specifying which phenotype(s) should be considered. Markers are set to be used as covariates for each phenotype independently. The vector can specify the phenotypes either numerically or with characters, but the specification must be consistent for all entries.
-		}
 	\item{markers}{
 		A vector specifying which markers are being specified as covariates or not covariates. The vector can specify the phenotypes either numerically or with characters, but the specification must be consistent for all entries.
 	}
+	\item{pheno}{
+		A vector specifying which phenotype(s) should be considered. Markers are set to be used as covariates for each phenotype independently. The vector can specify the phenotypes either numerically or with characters, but the specification must be consistent for all entries. If set to NULL, the marker is assigned to be a covariate for all phenotypes.
+		}
 	\item{is.covar}{
 		A logical value. If TRUE, the specified markers are flagged as covariates. If FALSE, the specified markers are flagged as non-covariates.
 		}

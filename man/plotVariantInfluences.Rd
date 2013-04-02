@@ -8,7 +8,7 @@ Plot variant-to-variant influences
 This function plots the reparameterized influences of variants on each other. The epistatic interactions from the pairwise scan are reparameteriezed to the terms \eqn{m_{12}} and \eqn{m_{21}}, where the subscripts indicate the source and target variants respectively. These terms are interpreted as the effect that the source variant exerts on the target variant when both are present. Negative influences represent suppression while positive influences represent enhancement.
 }
 \usage{
-plotVariantInfluences(data.obj, pval.thresh = 0.05, all.markers = FALSE, 
+plotVariantInfluences(data.obj, p.or.q = 0.05, all.markers = FALSE, 
 standardize = FALSE, not.tested.col = "lightgray")
 }
 %- maybe also 'usage' for other objects documented here.
@@ -16,8 +16,8 @@ standardize = FALSE, not.tested.col = "lightgray")
   \item{data.obj}{
 	The object in which all results are stored. See \code{\link{read.population}}.
 }
-	\item{pval.thresh}{
-		A maximum p value threshold. Only marker pairs with p values below this threshold will be plotted.
+	\item{p.or.q}{
+		A threshold indicating the maximum adjusted p value considered significant. If an fdr method has been used to correct for multiple testing, this value specifies the maximum q value considered significant. Only marker pairs with p or q values below this threshold will be plotted.
 	}
 	\item{all.markers}{
 		A logical value. If TRUE all markers are plotted. If FALSE only markers tested in the pair scan are plotted.

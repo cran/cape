@@ -8,21 +8,29 @@ Calculate the significance of direct influences of variant pairs on phenotypes
 This function recasts the variant-to-eigentrait effects in terms of variant-to-phenotype effects. It multiplies the \eqn{\beta}-coefficient matrices of each variant (i) and each phenotype (j) (\eqn{\beta_{i}^{j}}) by the singular value matrices (\eqn{V \cdot W^{T}}) obtained from the singular value decomposition performed in \code{\link{get.eigentraits}}. \eqn{\beta_{i}^{j} = V \cdot W^{T}}. It also uses the permutation data from the pairwise scan (\code{\link{pairscan}}) to calculate an empirical p value for the influence of each marker pair on each phenotype. The empirical p values are then adjusted for multiple testing using Holm's step-down procedure.
 }
 \usage{
-direct.influence(data.obj, transform.to.phenospace = TRUE, verbose = FALSE)
+direct.influence(data.obj, transform.to.phenospace = TRUE, 
+pval.correction = c("holm", "fdr", "lfdr"), verbose = FALSE, 
+save.permutations = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data.obj}{
 	The object in which all results are stored. See \code{\link{read.population}}.
-}
+	}
 	\item{transform.to.phenospace}{
 		A logical value. If TRUE, the influence of each marker on each eigentrait is transformed to the influence of each marker on each of the original phenotypes. If FALSE, no
 		transformation is made. If the pair scan was done on eigentraits, the influence of each marker on each eigentrait is calculated. If the pair scan was done on raw phenotypes, 
 		the influence of each marker on each phenotype is calculated. The default behavior is to transform variant influences on eigentraits to variant influences on phenotypes.
 	}
+	\item{pval.correction}{
+	One of "holm", "fdr", or "lfdr", indicating whether the p value correction method used should be the Holm step-down procedure, false discovery rate or local false discovery rate respectively.
+	}
 	\item{verbose}{
 		A logical value. If TRUE, the progress of the function is printed to the screen. If FALSE, the default, nothing is printed.
 		}
+	\item{save.permutations}{
+		A logical value indicating whether the data from permutations should be saved. Saving the permutations requires more memory but can be helpful in diagnostics. If save.permutations is TRUE all permutation data are saved in an object called "permutation.data.RData".
+	}
 }
 
 \value{

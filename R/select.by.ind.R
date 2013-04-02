@@ -35,8 +35,13 @@ function(data.obj, geno.or.pheno = "pheno", expr){
 		stop("There are no individuals that match this expression.")
 		}
 	
+	if(length(vals.locale) < dim(data.obj$pheno)[1]){
+		cat(dim(data.obj$pheno)[1] - length(vals.locale), "individuals were removed.\n")
+		}
+	
 	data.obj$pheno <- data.obj$pheno[vals.locale,]
 	data.obj$geno <- data.obj$geno[vals.locale,]
+	
 	
 	return(data.obj)
 	

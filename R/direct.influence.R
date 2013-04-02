@@ -1,6 +1,20 @@
 direct.influence <-
-function(data.obj, transform.to.phenospace = TRUE, verbose = FALSE) {
+function(data.obj, transform.to.phenospace = TRUE, pval.correction = c("holm", "fdr", "lfdr"), verbose = FALSE, save.permutations = FALSE) {
 
+
+	#This object keeps large intermediate data
+	if(save.permutations){
+		intermediate.data <- vector(mode = "list")
+		}
+		
+	if(length(grep("h", pval.correction) > 0)){
+		pval.correction = "holm"
+		}
+
+	if(pval.correction != "holm" && pval.correction != "fdr" && pval.correction != "lfdr"){
+		stop("Method must be one of the following: 'holm', 'fdr', 'lfdr'")
+		}
+		
 
 	data.obj$transform.to.phenospace <- transform.to.phenospace
 
@@ -10,11 +24,16 @@ function(data.obj, transform.to.phenospace = TRUE, verbose = FALSE) {
 	#for each phenotype with columns:
 	#marker1, marker2, marker1.influence.coef, marker2.influence.coef, marker1.se, marker2.se
 	
-	direct.influence <- function(data.obj, perm){
+	dir.inf <- function(data.obj, perm){
 		geno <- data.obj$geno.for.pairscan 
 		n.gene <- dim(geno)[2]
 		if(perm){
 			scan.two.results <- data.obj$pairscan.perm		
+			if(save.permutations){
+				intermediate.data$pairscan.results <- scan.two.results
+				}
+			data.obj$pairscan.perm <- NULL
+			gc()
 			}else{
 			scan.two.results <- data.obj$pairscan.results
 			}
@@ -23,7 +42,6 @@ function(data.obj, transform.to.phenospace = TRUE, verbose = FALSE) {
 		marker.mat <- scan.two.results[[1]][[1]][,1:2] 
 		colnames(marker.mat) <- c("marker1", "marker2")
 		orig.pheno <- data.obj$pheno
-		data.obj$transform.to.phenospace <- transform.to.phenospace
 	
 		
 		#if transform.to.phenospace is FALSE, figure out
@@ -59,6 +77,8 @@ function(data.obj, transform.to.phenospace = TRUE, verbose = FALSE) {
 		stats.mat <- matrix(NA, ncol = 6, nrow = n.pairs)
 		colnames(stats.mat) <- c("marker1", "marker2", "marker1.coef", "marker2.coef", "marker1.se", "marker2.se")
 		stats.list <- vector(mode = "list", length = num.pheno)
+
+
 		names(stats.list) <- pheno.names
 		for(n in 1:num.pheno){
 			stats.list[[n]] <- stats.mat
@@ -68,27 +88,21 @@ function(data.obj, transform.to.phenospace = TRUE, verbose = FALSE) {
 		#This function grabs either the beta matrix or the se matrix
 		#The result element determines which type of matrix will be 
 		#returned: beta, result.element = 1, se, result.element = 2
-		get.beta.mat <- function(scan.two.results, marker.pair.number, result.element){
+		
+		get.beta.prime <- function(scan.two.results, marker.pair.number){
+
 			#the beta matrix is composed of the coefficients from each pairwise
 			#marker model (except for the interaction coefficient)
 			#we use all markers in each row and set the non-covariate entries to 0
 			num.pheno <- length(scan.two.results)
 			beta.mat <- matrix(NA, nrow = (dim(scan.two.results[[1]][[1]])[2]-3), ncol = num.pheno)
 			for(ph in 1:num.pheno){
-				beta.mat[,ph] <- as.numeric(scan.two.results[[ph]][[result.element]][marker.pair.number,3:(dim(scan.two.results[[ph]][[result.element]])[2]-1)])
+				beta.mat[,ph] <- as.numeric(scan.two.results[[ph]][[1]][marker.pair.number,3:(dim(scan.two.results[[ph]][[1]])[2]-1)])
 				}				
 			colnames(beta.mat) <-colnames(ET)
-			rownames(beta.mat) <- colnames(scan.two.results[[ph]][[result.element]])[3:(dim(scan.two.results[[ph]][[result.element]])[2]-1)]
-			return(beta.mat)	
-			}
-		
+			rownames(beta.mat) <- colnames(scan.two.results[[ph]][[1]])[3:(dim(scan.two.results[[ph]][[1]])[2]-1)]
+			
 
-
-
-		#This function calculates a beta prime matrix from each
-		#beta matrix by multiplying by the diagonal singular value 
-		#matrix, and the transpose of the right singular values.	
-		calculate.beta.prime <- function(beta.mat){
 			#calculate the full beta prime matrix
 			#if we are converting to phenotype space
 			if(transform.to.phenospace){
@@ -108,14 +122,24 @@ function(data.obj, transform.to.phenospace = TRUE, verbose = FALSE) {
 				}
 			names(just.marker.beta) <- colnames(trunc.beta.prime)
 			return(just.marker.beta)
+	
 			}
 
 
-
-		#This function calculates a beta se prime matrix from each
-		#beta matrix by multiplying by the beta se, squared diagonal singular value 
-		#matrix, and the square of the transpose of the right singular values.	
-		calculate.se.prime <- function(se.mat){
+		get.se.prime <- function(scan.two.results, marker.pair.number){
+			#also get the se prime matrix
+			num.pheno <- length(scan.two.results)
+			se.mat <- matrix(NA, nrow = (dim(scan.two.results[[1]][[1]])[2]-3), ncol = num.pheno)
+			for(ph in 1:num.pheno){
+				se.mat[,ph] <- as.numeric(scan.two.results[[ph]][[2]][marker.pair.number,3:(dim(scan.two.results[[ph]][[2]])[2]-1)])
+				}				
+			colnames(se.mat) <-colnames(ET)
+			rownames(se.mat) <- colnames(scan.two.results[[ph]][[2]])[3:(dim(scan.two.results[[ph]][[2]])[2]-1)]
+			
+	
+			#Calculate a beta se prime matrix from each
+			#beta matrix by multiplying by the beta se, squared diagonal singular value 
+			#matrix, and the square of the transpose of the right singular values.	
 
 			sqrd.se.mat <- se.mat ^ 2
 			if(transform.to.phenospace){
@@ -135,88 +159,68 @@ function(data.obj, transform.to.phenospace = TRUE, verbose = FALSE) {
 				just.marker.se[[i]] <- se.prime[((dim(se.prime)[1]-1):dim(se.prime)[1]),i]
 				}
 			names(just.marker.se) <- colnames(se.prime)
-		
 			return(just.marker.se)
-		}
-
-
-
-		#=========================================================
-		# Calculation of direct influences
-		# 1. Calculation of beta prime
-		#=========================================================
-
-		#get the beta matrix for each pair of markers
-		beta.matrices <- vector(mode = "list", length = n.pairs)
-		for(p in 1:length(marker.mat[,1])){
-			beta.matrices[[p]] <- get.beta.mat(scan.two.results, p, 1)
-			}
 	
-		#calculate beta prime for each of the beta matrices
-		all.beta.prime <- lapply(beta.matrices, calculate.beta.prime)
+			}
 		
+	
+
+		#get the beta matrix and se matrix for each pair of markers
+		all.beta.prime <- apply(matrix(1:dim(marker.mat)[1], ncol = 1), 1, function(x) get.beta.prime(scan.two.results, x))
+					
 		#add these into the final stats.matrix
 		for(i in 1:length(stats.list)){
 			stats.list[[i]][,1:2] <- marker.mat
 			stats.list[[i]][,3:4] <- t(sapply(all.beta.prime, function(x) x[[i]]))
 			}
-
-	
-		#=========================================================
-		# Calculation of direct influences
-		# 2. Calculation of beta prime's std error using error prop
-		#=========================================================
-
-		#get the beta matrix for each pair of markers
-		se.matrices <- vector(mode = "list", length = n.pairs)
-		for(p in 1:length(marker.mat[,1])){
-			se.matrices[[p]] <- get.beta.mat(scan.two.results, p, 2)
-			}
-	
-		#calculate beta prime for each of the beta matrices
-		all.se.prime <- lapply(se.matrices, calculate.se.prime)
+		all.beta.prime <- NULL
 		
+		#also get the se matrices
+		all.se.prime <- apply(matrix(1:dim(marker.mat)[1], ncol = 1), 1, function(x) get.se.prime(scan.two.results, x))
+					
 		#add these into the final stats.matrix
 		for(i in 1:length(stats.list)){
 			stats.list[[i]][,5:6] <- t(sapply(all.se.prime, function(x) x[[i]]))
 			}
-
-		#=========================================================
-		# Generate final results list object
-		#=========================================================
-
-		if(perm){
-			data.obj$var.to.pheno.influence.perm <- stats.list			
-			}else{
-			data.obj$var.to.pheno.influence <- stats.list				
-				}
-
-			return(data.obj)
+		all.se.prime = NULL
+	
+			
+			return(stats.list)
 			}
 
 
-
-	
-
-	#separate out the markers from each pair
-	#for each marker in each context, give it an 
-	#influence coefficient, influence se, t stat
-	#and |t stat|
-	
-	direct.influence.stat <- function(data.obj, perm){
+		#================================================================
+		# calculate the direct influence of the variants and permutations
+		#================================================================
+			
+		if(verbose){cat("calculating direct influence of variants...\n")}
+		exp.stats <- dir.inf(data.obj, perm = FALSE)
+		if(verbose){cat("calculating direct influence of permutations...\n")}
+		perm.stats <- dir.inf(data.obj, perm = TRUE)
 		
-		if(perm){
-			marker.stats <- data.obj$var.to.pheno.influence.perm	
-			}else{
-			marker.stats <- data.obj$var.to.pheno.influence
+		if(save.permutations){
+			intermediate.data$var.to.pheno.influence <- exp.stats
+			intermediate.data$var.to.pheno.influence.perm <- perm.stats
 			}
+		#================================================================
+		#================================================================	
+
+
+
+	direct.influence.stat <- function(pair.stats, perm){
+			
+
+		#separate out the markers from each pair
+		#for each marker in each context, give it an 
+		#influence coefficient, influence se, t stat
+		#and |t stat|
+
 
 		markers <- colnames(data.obj$geno.for.pairscan)
-		pheno.names <- names(marker.stats)
-		stats.list <- vector(length = length(pheno.names), mode = "list")
-		names(stats.list) <- pheno.names
+		pheno.names <- names(pair.stats)
 		
-		marker.incidence <- apply(matrix(markers, ncol = 1), 1, function(x) length(which(marker.stats[[1]][,1:2] == x)))
+		
+		marker.incidence <- apply(matrix(markers, ncol = 1), 1, function(x) length(which(pair.stats[[1]][,1:2] == x)))
 		#preallocate a matrix that will hold the statistics for each marker
 		#in each pair context. The columns are marker, coef, se, t.stat
 		#|t.stat|, emp.p (6 columns)
@@ -228,10 +232,10 @@ function(data.obj, transform.to.phenospace = TRUE, verbose = FALSE) {
 			colnames(stats.mat) <- c("marker", "coef", "se", "t.stat", "|t.stat|", "emp.p")			
 			}
 		
-		stats.list <- vector(mode = "list", length = length(pheno.names))
-		names(stats.list) <- pheno.names
-		for(i in 1:length(stats.list)){
-			stats.list[[i]] <- stats.mat
+		ind.stats.list <- vector(mode = "list", length = length(pheno.names))
+		names(ind.stats.list) <- pheno.names
+		for(i in 1:length(ind.stats.list)){
+			ind.stats.list[[i]] <- stats.mat
 			}
 		
 		#for each phenotype, go through the marker names and
@@ -243,50 +247,58 @@ function(data.obj, transform.to.phenospace = TRUE, verbose = FALSE) {
 			for(m in markers){
 
 				#find out where the marker was in position 1
-				m1.locale <- which(marker.stats[[ph]][,1] == m)
+				m1.locale <- which(pair.stats[[ph]][,1] == m)
 				
 				if(length(m1.locale) > 0){
-					beta.coef1 <- as.numeric(marker.stats[[ph]][m1.locale, "marker1.coef"])
-					se1 <- as.numeric(marker.stats[[ph]][m1.locale, "marker1.se"])
+					beta.coef1 <- as.numeric(pair.stats[[ph]][m1.locale, "marker1.coef"])
+					se1 <- as.numeric(pair.stats[[ph]][m1.locale, "marker1.se"])
 					t.stat1 <- beta.coef1/se1
-					stat.section1 <- matrix(c(rep(m, length(beta.coef1)), beta.coef1, se1, t.stat1, abs(t.stat1)), ncol = 5)
+					stat.section1 <- matrix(c(rep(as.numeric(m), length(beta.coef1)), beta.coef1, se1, t.stat1, abs(t.stat1)), ncol = 5)
 
-					start.row <- min(which(is.na(stats.list[[ph]][,1])))
-					stats.list[[ph]][start.row:(start.row + dim(stat.section1)[1] - 1),1:dim(stat.section1)[2]] <- stat.section1
+					start.row <- min(which(is.na(ind.stats.list[[ph]][,1])))
+					ind.stats.list[[ph]][start.row:(start.row + dim(stat.section1)[1] - 1),1:dim(stat.section1)[2]] <- stat.section1
 					}
 
 				#find out where the marker was in position 2
-				m2.locale <- which(marker.stats[[ph]][,2] == m)
+				m2.locale <- which(pair.stats[[ph]][,2] == m)
 
 				if(length(m2.locale) > 0){
-					beta.coef2 <- as.numeric(marker.stats[[ph]][m2.locale, "marker2.coef"])
-					se2 <- as.numeric(marker.stats[[ph]][m2.locale, "marker2.se"])
+					beta.coef2 <- as.numeric(pair.stats[[ph]][m2.locale, "marker2.coef"])
+					se2 <- as.numeric(pair.stats[[ph]][m2.locale, "marker2.se"])
 					t.stat2 <- beta.coef2/se2
-					stat.section2 <- matrix(c(rep(m, length(beta.coef2)), beta.coef2, se2, t.stat2, abs(t.stat2)), ncol = 5)
+					stat.section2 <- matrix(c(rep(as.numeric(m), length(beta.coef2)), beta.coef2, se2, t.stat2, abs(t.stat2)), ncol = 5)
 				
-					start.row <- min(which(is.na(stats.list[[ph]][,1])))
-					stats.list[[ph]][start.row:(start.row + dim(stat.section2)[1] - 1),1:dim(stat.section2)[2]] <- stat.section2
+					start.row <- min(which(is.na(ind.stats.list[[ph]][,1])))
+					ind.stats.list[[ph]][start.row:(start.row + dim(stat.section2)[1] - 1),1:dim(stat.section2)[2]] <- stat.section2
 					}
 	
 				}
 
 			}
-		
-		if(perm){
-			data.obj$var.to.pheno.test.stat.perm <- stats.list
-			}else{
-			data.obj$var.to.pheno.test.stat <- stats.list
-			}
 			
-		return(data.obj)
-	}
+			return(ind.stats.list)
 	
+			}
+
+
+		#================================================================
+		# tabulate influences of individual markers		
+		#================================================================
+		if(verbose){cat("calculating individual marker influences...\n")}
+		exp.stats.per.marker <- direct.influence.stat(exp.stats, perm = FALSE)
+		if(verbose){cat("calculating individual marker influences in permutations...\n")}
+		perm.stats.per.marker <- direct.influence.stat(perm.stats, perm = TRUE)
+		
+			if(save.permutations){
+				intermediate.data$var.to.pheno.test.stat.perm <- exp.stats.per.marker
+				intermediate.data$var.to.pheno.test.stat <- perm.stats.per.marker
+				}
+		#================================================================
 	
+	direct.influence.epcal<- function(exp.stats.per.marker, perm.stats.per.marker){
 	
-	direct.influence.epcal<- function(data.obj){
-	
-		stat <- data.obj$var.to.pheno.test.stat
-		perm.test.stat <- data.obj$var.to.pheno.test.stat.perm
+		stat <- exp.stats.per.marker
+		perm.test.stat <- perm.stats.per.marker
 		
 		get.p <- function(val, dist){
 			pval <- length(which(dist >= val))/length(dist)
@@ -299,39 +311,34 @@ function(data.obj, transform.to.phenospace = TRUE, verbose = FALSE) {
 			stat[[ph]][,"emp.p"] <- apply(matrix(as.numeric(stat[[ph]][,"|t.stat|"]), ncol = 1), 1, function(x) get.p(x, comp.dist))
 			}
 		
+		return(stat)
+		}
+
+
+		#================================================================
+		# calculate empirical p values
+		#================================================================
+		if(verbose){cat("calculating p values...\n")}
+		emp.p.table <- direct.influence.epcal(exp.stats.per.marker, perm.stats.per.marker)
 		#replace the direct influence tables with the tables with the added empirical p values
-		data.obj$var.to.pheno.test.stat <- stat
-		return(data.obj)
-		}
-
-
-	
-	direct.influence.ep.adj <- function(data.obj){
-
-		stat <- data.obj$var.to.pheno.test.stat
-		
-		for(ph in 1:length(stat)){
-			emp.pvals <- as.numeric(stat[[ph]][,"emp.p"])
-			adj.p <- p.adjust(emp.pvals)
-			new.table <- cbind(stat[[ph]], adj.p)
-			ordered.table <- new.table[order(as.numeric(new.table[,"|t.stat|"]), decreasing = TRUE),] #order by increasing t statistic
-			data.obj$var.to.pheno.test.stat[[ph]] <- ordered.table
+		if(save.permutations){
+			intermediate.data$var.to.pheno.test.stat <- emp.p.table
 			}
+		#================================================================
+		#================================================================
+		
+		
 
-		return(data.obj)
-		}
+	direct.influence.max <- function(emp.p.table){
 
-
-
-	direct.influence.max <- function(data.obj){
-
-		stat <- data.obj$var.to.pheno.test.stat
+		stat <- emp.p.table
 
 		markers <- unique(stat[[1]][,1])
 		max.stat.list <- vector(length(stat), mode = "list")
 		names(max.stat.list) <- names(stat)
 		
-		#go through each of the phenotypes and find the maximum influence of each marker
+		#go through each of the phenotypes and find the maximum 
+		#influence and median p value of each marker
 		for(ph in 1:length(stat)){
 			max.stat.table <- NULL
 			for(m in markers){
@@ -339,45 +346,42 @@ function(data.obj, transform.to.phenospace = TRUE, verbose = FALSE) {
 				temp.table <- matrix(stat[[ph]][marker.locale,], nrow = length(marker.locale))
 				colnames(temp.table) <- colnames(stat[[ph]])
 				max.stat.locale <- which(as.numeric(temp.table[,"|t.stat|"]) == max(as.numeric(temp.table[,"|t.stat|"])))
-				max.stats <- matrix(temp.table[max.stat.locale,], nrow = length(max.stat.locale))
+				if(pval.correction == "holm"){
+					adj.p <- p.adjust(temp.table[,6], method = "holm")
+					adj.p.name <- "p.adjusted"
+					}
+				if(pval.correction == "fdr"){
+					fdr.out <- suppressWarnings(fdrtool(temp.table[,6], statistic = "pvalue", plot = FALSE, verbose = FALSE, cutoff.method = "pct0"))
+					adj.p <- fdr.out$qval
+					adj.p.name <- "qval"
+					}
+				if(pval.correction == "lfdr"){
+					fdr.out <- suppressWarnings(fdrtool(temp.table[,6], statistic = "pvalue", plot = FALSE, verbose = FALSE, cutoff.method = "pct0"))
+					adj.p <- fdr.out$lfdr
+					adj.p.name <- "lfdr"
+					}				
+				max.stats <- matrix(c(temp.table[max.stat.locale,], min(adj.p)), nrow = length(max.stat.locale))
 				max.stat.table <- rbind(max.stat.table, max.stats[1,]) #if there is more than one max, just take one
-				colnames(max.stat.table) <- colnames(stat[[1]])
-				}		
-			max.stat.list[[ph]] <- max.stat.table
+				colnames(max.stat.table) <- c(colnames(stat[[1]]), adj.p.name)
+				}	
+			ordered.table <- max.stat.table[order(max.stat.table[,5], decreasing = TRUE),]
+			max.stat.list[[ph]] <- ordered.table
 			}
 	
-		data.obj$max.var.to.pheno.influence <- max.stat.list
-		return(data.obj)
+		return(max.stat.list)
 		}
 
-	
-	direct.influence.ep.adj.post.max <- function(data.obj){
 
-		stat <- data.obj$max.var.to.pheno.influence
+	if(save.permutations){
+		saveRDS(intermediate.data, "permutation.data.RData")
+		}	
+
+	if(verbose){cat("calculating maximum influence of each marker...\n")}
+	max.stat.list <- direct.influence.max(emp.p.table)
+	data.obj$max.var.to.pheno.influence <- max.stat.list
+	
+	
 		
-		for(ph in 1:length(stat)){
-			emp.pvals <- as.numeric(stat[[ph]][,"emp.p"])
-			adj.p <- p.adjust(emp.pvals)
-			new.table <- cbind(stat[[ph]], adj.p)
-			ordered.table <- new.table[order(as.numeric(new.table[,"|t.stat|"]), decreasing = TRUE),] #order by increasing t statistic
-			data.obj$max.var.to.pheno.influence[[ph]] <- ordered.table
-			}
-
-		return(data.obj)
-		}
-
-	if(verbose){cat("calculating direct influence of variants...\n")}
-	data.obj <- direct.influence(data.obj, perm = FALSE)
-	if(verbose){cat("calculating direct influence of permutations...\n")}
-	data.obj <- direct.influence(data.obj, perm = TRUE)
-	if(verbose){cat("calculating p values from permutations...\n")}
-	data.obj <- direct.influence.stat(data.obj, perm = FALSE)
-	data.obj <- direct.influence.stat(data.obj, perm = TRUE)
-	data.obj <- direct.influence.epcal(data.obj)
-	if(verbose){cat("adjusting p values with Holm's stepdown procedure...\n")}	
-	# data.obj <- direct.influence.ep.adj(data.obj)	
-	data.obj <- direct.influence.max(data.obj)
-	data.obj <- direct.influence.ep.adj.post.max(data.obj)
 	
 	
 	return(data.obj)

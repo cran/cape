@@ -35,9 +35,9 @@ function(data.obj, use.pairs.threshold = FALSE, specific.markers = NULL){
 		geno <- geno.ind[[1]]
 		rejected.markers <- geno.ind[[2]]
 		if(length(rejected.markers) > 0){
-			pair.covar.flags <- pair.covar.flags[match(colnames(geno), rownames(covar.flags)),]
+			pair.covar.flags <- pair.covar.flags[match(colnames(geno), rownames(pair.covar.flags)),]
 			message("\n", length(rejected.markers), " marker(s) rejected due to linear non-independence.\n For more information see markers.removed.txt")
-			write.table(colnames(data.obj$geno)[sort(rejected.markers)], "markers.removed.txt", sep = "\t", quote = FALSE, col.names = FALSE, row.names = FALSE)
+			write.table((data.obj$marker.names)[sort(rejected.markers)], "markers.removed.txt", sep = "\t", quote = FALSE, col.names = FALSE, row.names = FALSE)
 			}
 					
 	

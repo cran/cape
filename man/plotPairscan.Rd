@@ -7,7 +7,7 @@
 This function plots the results from the pairwise regressions. The matrices are plotted with results coded on a yellow to blue scale. Results from all phenotypes are plotted on the same scale.
 }
 \usage{
-plotPairscan(data.obj, phenotype = "ET1", standardized = FALSE, 
+plotPairscan(data.obj, phenotype = NULL, standardized = FALSE, 
 pdf.label = "Pairscan.Regression.pdf")
 }
 %- maybe also usage for other objects documented here.
@@ -16,7 +16,7 @@ pdf.label = "Pairscan.Regression.pdf")
 	The object in which all results are stored. See \code{\link{read.population}}.
 }
 	\item{phenotype}{
-		A character vector indicating which phenotypes should be plotted. All phenotypes can be plotted by setting phenotype to NULL.
+		A character vector indicating which phenotypes should be plotted. All phenotypes are plotted if phenotype is set to NULL.
 	}
 	\item{standardized}{
 		A logical value. If FALSE, the plotted values are the beta coefficients of the interaction in the pairwise model. If TRUE, the t statistics (\eqn{\beta/\sigma}) are plotted.

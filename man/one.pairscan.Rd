@@ -8,7 +8,8 @@
 	This is an internal function that performs a single pairwise scan. It is used for individual pair scans as well as permutation testing.
 }
 \usage{
-one.pairscan(phenotype.vector, genotype.matrix, covar.vector, pairs.matrix, n.perm = 0, verbose = FALSE)
+one.pairscan(phenotype.vector, genotype.matrix, 
+covar.vector, pairs.matrix, n.perm = 0, verbose = FALSE)
 }
 %- maybe also usage for other objects documented here.
 \arguments{

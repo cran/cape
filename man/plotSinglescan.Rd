@@ -8,7 +8,9 @@ This function plots the results obtained from the single-marker regression perfo
 }
 \usage{
 plotSinglescan(data.obj, chr = NULL, traits = NULL, standardized = TRUE, 
-mark.covar = TRUE, mark.chr = FALSE)
+mark.covar = TRUE, mark.chr = TRUE, plot.type = "h", overlay = FALSE, 
+trait.colors = NULL, show.rejected.markers = FALSE, 
+show.selected.markers = FALSE)
 }
 %- maybe also usage for other objects documented here.
 \arguments{
@@ -30,6 +32,22 @@ mark.covar = TRUE, mark.chr = FALSE)
 	\item{mark.chr}{
 		A lovical value. If TRUE, alternating chromosomes are shaded in gray to aid in visualizing chromosome boundaries.
 		}
+	\item{plot.type}{
+		A character indicating whether the marker effects should be plotted as vertical lines ("h"), points ("p"), lines ("l"), or both lines and points ("b"). 
+	}
+	\item{overlay}{
+		A logical value indicating whether plots of scans should be overlayed on top of each other or plotted in separate panels.
+	}
+		\item{trait.colors}{
+			If overlay is TRUE, this argument specifies different colors for the ovelayed scans. There are four default colors (black, blue, purple, darkgreen). Alternate or additional colors can be specified manally.
+		}
+		\item{show.selected.markers}{
+			A logical value. If \code{\link{select.markers.for.pairscan}} has been run, setting this value to TRUE places indicators above markers that have been selected for the pair scan.
+			}
+		\item{show.rejected.markers}{
+			A logical value. If \code{\link{select.markers.for.pairscan}} has been run, setting this value to TRUE places indicators above markers that have been rejected from being included in the pair scan. show.selected.markers and show.rejected markers cannot be set to TRUE simultaneously.
+			}
+
 }
 \value{
 Nothing is returned from this function. It produces a plot of the effects 
@@ -39,7 +57,7 @@ Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carte
 }
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \seealso{
-\code{\link{singlescan}}
+\code{\link{singlescan}}, \code{\link{select.markers.for.pairscan}}
 }
 \examples{
 # not run 

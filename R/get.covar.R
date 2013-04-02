@@ -1,7 +1,9 @@
 get.covar <-
 function(data.obj, covar.thresh = NULL){
 	
+	
 	oneD <- data.obj$singlescan.results
+	marker.names <- data.obj$marker.names
 
 	if(is.null(covar.thresh)){
 		covar.thresh <- data.obj$covar.thresh
@@ -18,5 +20,14 @@ function(data.obj, covar.thresh = NULL){
 		}	
 
 	data.obj$covar.flags <- covar.flags
+	
+	pair.covar <- data.obj$covar.for.pairscan
+	if(!is.null(pair.covar)){
+		markers.in.pair <- which(rownames(covar.flags) %in% rownames(pair.covar))
+		new.pairscan.covar <- covar.flags[markers.in.pair,]
+		data.obj$covar.for.pairscan <- new.pairscan.covar
+		}
+
+	
 	return(data.obj)
 }

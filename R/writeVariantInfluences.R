@@ -1,5 +1,5 @@
 writeVariantInfluences <-
-function(data.obj, pval.thresh = 0.05, filename = "Variant.Influences.csv", delim = ","){
+function(data.obj, p.or.q = 0.05, filename = "Variant.Influences.csv", delim = ","){
 	
 	var.influences <- data.obj$var.to.var.p.val
 	pheno.results <- data.obj$max.var.to.pheno.influence
@@ -21,10 +21,13 @@ function(data.obj, pval.thresh = 0.05, filename = "Variant.Influences.csv", deli
 		}
 
 
-	sig.var <- which(as.numeric(var.influences[,"p.adjusted"]) <= pval.thresh)
+	var.sig.col <- as.vector(na.omit(match(c("qval", "lfdr", "p.adjusted"), colnames(var.influences))))
+
+	sig.var <- which(as.numeric(var.influences[, var.sig.col]) <= p.or.q)
+	
 	
 	if(length(sig.var) > 0){
-		var.table <- var.influences[sig.var,]
+		var.table <- var.influences[sig.var,,drop=FALSE]
 		}else{
 			var.table <- NULL
 			}
@@ -32,8 +35,9 @@ function(data.obj, pval.thresh = 0.05, filename = "Variant.Influences.csv", deli
 
 	
 	pheno.table <- NULL
+	pheno.sig.col <- as.vector(na.omit(match(c("qval", "lfdr", "p.adjusted"), colnames(pheno.results[[1]]))))
 	for(ph in pheno.names){
-		sig.pheno <- which(as.numeric(pheno.results[[ph]][,"adj.p"]) <= pval.thresh)
+		sig.pheno <- which(as.numeric(pheno.results[[ph]][,pheno.sig.col]) <= p.or.q)
 		if(length(sig.pheno) > 0){
 			pheno.section <- matrix(pheno.results[[ph]][sig.pheno,], nrow = length(sig.pheno))
 			pheno.section  <- cbind(rep(ph, length(sig.pheno)), pheno.section)
@@ -42,14 +46,24 @@ function(data.obj, pval.thresh = 0.05, filename = "Variant.Influences.csv", deli
 			}
 		}
 	
-	
-	#take out the raw t statistic column
-	if(!is.null(pheno.table)){
-		pheno.table <- pheno.table[,-5]
-		colnames(pheno.table) <- colnames(var.table)
+	if(length(pheno.table) > 0){
+		pheno.table <- matrix(pheno.table, ncol = 8)
+		#take out the raw t statistic column
+		if(!is.null(pheno.table)){
+			pheno.table <- pheno.table[,-5,drop=FALSE]
+			colnames(pheno.table) <- colnames(var.table)
+			}
+
+		colnames(pheno.table) <- c("Source", "Target", "Effect", "SE", "|Effect|/SE", "P_empirical", colnames(pheno.results[[1]])[pheno.sig.col])
+		}
+		
+	for(j in 1:2){
+		marker.locale <- match(var.table[,j], colnames(data.obj$geno))
+		var.table[,j] <- data.obj$marker.names[marker.locale]
 		}
 
-	colnames(pheno.table) <- c("Source", "Target", "Effect", "SE", "|Effect|/SE", "P_empirical", "p.adjusted")
+	marker.locale <- match(pheno.table[,1], colnames(data.obj$geno))
+	pheno.table[,1] <- data.obj$marker.names[marker.locale]
 
 	final.table <- rbind(var.table, pheno.table)
 	
