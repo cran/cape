@@ -25,6 +25,7 @@ function(data.obj, scan.what = c("eigentraits", "raw.traits"), n.perm = NULL, mi
 	type.choice <- c(grep("eig", scan.what), grep("ET", scan.what), grep("et", scan.what)) #look for any version of eigen or eigentrait, the user might use.
 	if(length(type.choice) > 0){ #if we find any, use the eigentrait matrix
 		pheno <- data.obj$ET
+		if(is.null(pheno)){stop("There are no eigentraits. Please set scan.what to raw.traits, or run get.eigentraits().")}
 		}else{
 			pheno <- data.obj$pheno #otherwise, use the raw phenotype matrix
 			}
@@ -44,6 +45,10 @@ function(data.obj, scan.what = c("eigentraits", "raw.traits"), n.perm = NULL, mi
 	pared.marker.mat <- get.pairs.for.pairscan(geno, min.per.genotype = min.per.genotype, max.pair.cor = max.pair.cor, verbose = verbose)
 
 	num.pairs <- dim(pared.marker.mat)[1]
+	
+	if(num.pairs == 0){
+		stop("There are no pairs to test. Try lowering min.per.genotype or raising max.pair.cor.")
+		}
 
 	if(!is.null(num.pairs.limit) && num.pairs > num.pairs.limit){
 		cat("\nThe number of pairs (",num.pairs,") exceeds ", num.pairs.limit, ".\n", sep = "")
@@ -56,18 +61,6 @@ function(data.obj, scan.what = c("eigentraits", "raw.traits"), n.perm = NULL, mi
 		}
 	}
 
-	total.perms <- num.pairs*n.perm
-	if(!is.null(num.perm.limit) && total.perms > num.perm.limit){
-		choice <- readline(prompt = paste("The number of permutations (", total.perms, ") exceeds ", num.perm.limit, ".\nDo you want to proceed (y/n)?\n", sep = ""))
-		if(length(grep("n", choice) > 0)){
-			message("Stopping pair scan...")
-			return(data.obj)
-			}else{
-				cat("Continuing pairwise scan...\n")
-				}
-			}
-	cat("\nPerforming", n.perm, "permutations on", num.pairs, "marker pairs,\n")
-	cat("For a total of", total.perms, "permutations\n")
 	
 	
 	#make a list to hold the results. 
@@ -85,21 +78,26 @@ function(data.obj, scan.what = c("eigentraits", "raw.traits"), n.perm = NULL, mi
 			cat("\nScanning phenotype ", colnames(pheno)[p], ":\n", sep = "")
 			}
 				
-		pairscan.results <- one.pairscan(phenotype.vector = pheno[,p], genotype.matrix = geno, covar.vector = covar.flags[,p], pairs.matrix = pared.marker.mat, n.perm = n.perm, verbose = verbose)
+		pairscan.results <- one.pairscan(phenotype.vector = pheno[,p], genotype.matrix = geno, covar.vector = covar.flags[,p], pairs.matrix = pared.marker.mat, n.perm = 0, verbose = verbose)
 		results.list[[p]] <- pairscan.results[[1]]
-		results.perm.list[[p]] <- pairscan.results[[2]]
+		# results.perm.list[[p]] <- pairscan.results[[2]]
 		} #end looping over phenotypes
 	 
 	 
+	#generate the null distribution using pairscan.null
+	num.pairs <- choose(dim(data.obj$geno.for.pairscan)[2], 2)
+	total.perm = n.perm*num.pairs
+
+	#calculate the number of top markers to use based
+	#on the thresholding of the singlescan
+	n.top.markers <- dim(data.obj$geno.for.pairscan)[2]
+	
+	data.obj <- pairscan.null(data.obj, scan.what = scan.what, total.perm = total.perm, n.top.markers = n.top.markers, verbose = verbose)
 
 	names(results.list) <- names(scanone.result)
-	names(results.perm.list) <- names(scanone.result)
 
 
-		data.obj$"pairscan.results" <- results.list	  #add the results to the data object
-		if (n.perm > 1) {
-			data.obj$"pairscan.perm" <- results.perm.list
-			}
+	data.obj$"pairscan.results" <- results.list	  #add the results to the data object
 
 
 

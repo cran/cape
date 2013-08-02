@@ -8,8 +8,11 @@ Plot the final epistatic network
 This function plots the final results with a using a different layout than \code{\link{plotVariantInfluences}}. Instead of the adjacency matrix, this function plots interactions between markers with arrows indicating the direction of influence. The function \code{\link{get.network}} must be run before plotting the network.
 }
 \usage{
-plotNetwork(data.obj, collapsed.net = TRUE, 
-trait = NULL, chr = NULL, show.effect.size = FALSE)
+plotNetwork(data.obj, collapsed.net = TRUE, trait = NULL, 
+phenotype.labels = NULL, main.lwd = 4, inter.lwd = 3, 
+label.cex = 1.5, percent.bend = 15, chr.gap = 1, 
+label.gap = 5, positive.col = "#af8dc3", 
+negative.col = "#7fbf7b")
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -22,25 +25,45 @@ trait = NULL, chr = NULL, show.effect.size = FALSE)
   \item{trait}{
 	A character vector indicating which traits should be plotted. If NULL, all traits are plotted.
 }
-  \item{chr}{
-	A character vector indicating which chromosomes should be plotted. If NULL, all chromosomes are plotted.
+  \item{phenotype.labels}{
+	A vector of strings listing alternate names for the phenotypes.
 	}
-\item{show.effect.size}{
-	A logical value indicating whether the height of chromosome main effect bars should vary with the effect size.
+\item{main.lwd}{
+	A numeric value specifying the line width of the main effects bars surrounding the chromosome bars.
 	}
-}
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
+\item{inter.lwd}{
+	A numeric value specifying the line width of the interaction arrows drawn inside the chromosome circle
+	}
+\item{label.cex}{
+	A numberic value specifying the size of the chromomsome labels.
+	}
+\item{percent.bend}{
+	A numeric value between 0 and 100 specifying how much curvature should be added to the arrows within the circle.
+	}
+\item{chr.gap}{
+	A numeric value between 0 and 100 indicating what percentage of the circle should be devoted to individual gaps between chromosomes.
+	}
+\item{label.gap}{
+	A numeric value between 0 and 100 indicating what percentage of the circle should be devoted to the phenotype labels.
+	}
+\item{positive.col}{
+	A color value (either rgb or R color name) to represent positive interactions and main effects. The default value is purple.
+	}
+\item{negative.col}{
+	A color value (either rgb or R color name) to represent negative interactions and main effects. The default value is green.
+	}
+
+
 }
 \seealso{
 \code{\link{get.network}}, \code{\link{plotVariantInfluences}}
 }
 \examples{
-# not run
-# plotNetwork(obesity.cross, collapsed.net = TRUE)
-# plotNetwork(obesity.cross, collapsed.net = FALSE)
-# plotNetwork(obesity.cross, collapsed.net = TRUE, trait = "glucose")
-# plotNetwork(obesity.cross, collapsed.net = TRUE, chr = c(3:7))
+\dontrun{
+	plotNetwork(obesity.cross, collapsed.net = TRUE)
+	plotNetwork(obesity.cross, collapsed.net = FALSE)
+	plotNetwork(obesity.cross, collapsed.net = TRUE, trait = "glucose")
+	}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

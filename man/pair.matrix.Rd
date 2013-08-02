@@ -24,9 +24,6 @@ pair.matrix(elements, ordered = FALSE, self.pairs = FALSE)
 \value{
 	A two-column matrix of all pairwise combinations of the vector elements is returned.
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \examples{
 el <- letters[1:4]

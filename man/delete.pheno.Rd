@@ -22,9 +22,6 @@ delete.pheno(data.obj, phenotypes)
 \value{
 This function returns the data object with the specified phenotypes removed.
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 \examples{
 data(obesity.cross)
 str(obesity.cross)

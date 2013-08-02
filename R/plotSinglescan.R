@@ -1,5 +1,6 @@
 plotSinglescan <-
-function(data.obj, chr = NULL, traits = NULL, standardized = TRUE, show.marker.labels = FALSE, mark.covar = TRUE, mark.chr = TRUE, plot.type = "h", overlay = FALSE, trait.colors = NULL, show.rejected.markers = FALSE, show.selected.markers = FALSE){
+function(data.obj, chr = NULL, traits = NULL, show.alpha.values = NULL, standardized = TRUE, show.marker.labels = FALSE, mark.covar = TRUE, mark.chr = TRUE, plot.type = "h", overlay = FALSE, trait.colors = NULL, show.rejected.markers = FALSE, show.selected.markers = FALSE){
+	
 	
 	if(show.rejected.markers && show.selected.markers){
 		stop("show.rejected.markers and show.rejected.markers cannot both be TRUE.")
@@ -85,8 +86,25 @@ function(data.obj, chr = NULL, traits = NULL, standardized = TRUE, show.marker.l
 			}
 
 
-	pairscan.threshold <- data.obj$pairscan.thresh
-	covar.threshold <- data.obj$covar.thresh
+		all.alpha <- data.obj$alpha
+		
+		if(!is.null(show.alpha.values)){
+			alpha.to.include <- which(all.alpha %in% sort(show.alpha.values))
+			if(length(alpha.to.include) < length(show.alpha.values)){
+				cant.find <- setdiff(show.alpha.values, all.alpha)
+				warning("The following alpha values were not calculated by singlescan():\n")
+				cat(cant.find, sep = "\n")
+				}
+			}else{
+			alpha.to.include <- 1:length(data.obj$alpha)
+			}
+			
+		alpha.thresholds <- rep(NA, length(alpha.to.include))
+		for(a in 1:length(alpha.to.include)){
+			alpha.thresholds[a] <- data.obj$alpha.thresh[[alpha.to.include[a]]]
+			}
+		
+		
 
 	if(!overlay){
 		layout.mat <- get.layout.mat(length(results.el), "upright")
@@ -96,14 +114,29 @@ function(data.obj, chr = NULL, traits = NULL, standardized = TRUE, show.marker.l
 
 	layout(layout.mat)	
 	for(p in 1:length(results.to.plot[1,])){
-		# dev.new(width = plot.width, height = plot.height)
+
+		#figure out the axix label
+		if(!overlay){
+			if(standardized){
+				y.label <- paste(colnames(results.to.plot)[p], "[|Eff|/se]", sep = " ")
+				}else{
+				y.label <- paste(colnames(results.to.plot)[p], "Eff", sep = " ")	
+				}
+			}else{
+			if(standardized){
+				y.label <- "[|Eff|/se]"
+				}else{
+				y.label <- "Eff"
+				}				
+			}
+
 		pheno.res <- results.to.plot[,p]
 
 		if(standardized){
 			if(!overlay){
-				all.vals <- c(pheno.res, pairscan.threshold, covar.threshold, 0)		
+				all.vals <- c(pheno.res, unlist(alpha.thresholds), 0)		
 				}else{
-				all.vals <- c(results.to.plot, pairscan.threshold, covar.threshold, 0)	
+				all.vals <- c(results.to.plot, unlist(alpha.thresholds), 0)
 					}
 			}else{
 				if(!overlay){
@@ -117,29 +150,30 @@ function(data.obj, chr = NULL, traits = NULL, standardized = TRUE, show.marker.l
 		if(p == 1 || !overlay){
 			par(mar = c(3, 4, 3, 2) + 0.1)
 			plot.new()
-			
-
 			plot.window(xlim = c(0, length(pheno.res)), ylim = c(min(all.vals), max(all.vals[is.finite(all.vals)])))
 			
 		
 			#shade the chromosome regions
-			if(mark.chr){
+			# if(!show.marker.labels){
 				markers.used.locale <- which(colnames(data.obj$geno) %in% rownames(results.to.plot))
 				chr.id <- data.obj$chromosome[markers.used.locale]
 				par(xpd = TRUE)
 				for(ch in 1:length(chr)){
 					x.min <- min(which(chr.id == chr[ch])); x.max <- max(which(chr.id == chr[ch]))
-					if(ch %% 2 == 1){
+					if(ch %% 2 == 1 && mark.chr){ #shade chromosome regions if mark.chr is TRUE
 						polygon(x = c(x.min, x.min, x.max, x.max), y = c(min(all.vals), max(all.vals), max(all.vals), min(all.vals)), col = "lightgray", border = NA)
 						}
-					if(chr[ch] == 0){
-						text(x = x.max, y = min(all.vals)-((max(all.vals)-min(all.vals))*0.05), labels = "Cov.", cex = 0.5, adj = 0, font = 2)
-						}else{
-						text(x = mean(c(x.min, x.max)), y = min(all.vals)-((max(all.vals)-min(all.vals))*0.05), labels = chr[ch], cex = 0.5, font = 2)
+
+					if(!show.marker.labels){ #plot the chromosome labels if we are not plotting marker labels
+						if(chr[ch] == 0){
+							text(x = x.max, y = min(all.vals)-((max(all.vals)-min(all.vals))*0.05), labels = "Cov.", cex = 0.5, adj = 0, font = 2)
+							}else{
+							text(x = mean(c(x.min, x.max)), y = min(all.vals)-((max(all.vals)-min(all.vals))*0.05), labels = chr[ch], cex = 0.5, font = 2)
+							}
 						}
 					}
 				par(xpd = FALSE)
-				}
+				# }
 		
 				abline(h = 0)
 				
@@ -165,37 +199,29 @@ function(data.obj, chr = NULL, traits = NULL, standardized = TRUE, show.marker.l
 
 			if(standardized){
 
-				#add the marker labels to the x axis	    
-			    # text(1:length(pheno.res), par("usr")[3] - 0.25, srt = 90, adj = 1, labels = NULL, xpd = TRUE, cex = 0.5)
-				#add lines to indicate the significance thresholds
-				abline(h = pairscan.threshold, lty = 1)
-				abline(h = covar.threshold, lty = 2)
+				#add the lines for the significance thresholds
+				for(a in 1:length(alpha.thresholds))				
+					points(x = 1:length(marker.names), y = rep(alpha.thresholds[[a]], length(marker.names)), type = "l", lty = a)
+					}
+
+				#add labels for significance lines
 				par(xpd = TRUE)
-				text(x = length(marker.names)*1.05, y = pairscan.threshold, labels = paste("p =", data.obj$alpha.for.pairs), cex = 0.5, adj = 0)
-				text(x = length(marker.names)*1.05, y = covar.threshold, labels = paste("p =", data.obj$alpha.for.covar), cex = 0.5, adj = 0)
+				for(a in 1:length(data.obj$alpha)){
+					text(x = length(marker.names)*1.02, y = alpha.thresholds[[a]], labels = paste("p =", data.obj$alpha[a]), cex = 0.5, adj = 0)
+					}
+									
 				par(xpd = FALSE)
 								
 				if(!overlay){
 					mtext(colnames(results.to.plot)[p], cex = 2)
-					mtext(paste(colnames(results.to.plot)[p], "[|Eff|/se]", sep = " "), side = 2, line = 2.5)
+					mtext(y.label, side = 2, line = 2.5)
 					}else{
-					mtext("|Eff|/se", side = 2, line = 2.5)	
+					mtext(y.label, side = 2, line = 2.5)	
 					}
+		
 				axis(2)
-
-				}else{
-				
 				abline(h = 0)
-				if(!overlay){
-					mtext(colnames(results.to.plot)[p], cex = 2)
-					mtext(paste(colnames(results.to.plot)[p], "[Eff]", sep = " "), side = 2, line = 2.5)	
-					}else{
-					mtext("Eff", side = 2, line = 2.5)		
-					}
 				
-				axis(2)
-
-				# text(1:length(pheno.res), par("usr")[3] - abs((par("usr")[3])*0.1), srt = 90, adj = 1, xpd = TRUE, cex = 0.5)
 				}
 				
 			if(show.selected.markers || show.rejected.markers){
@@ -221,27 +247,34 @@ function(data.obj, chr = NULL, traits = NULL, standardized = TRUE, show.marker.l
 					}
 				par(xpd = FALSE)
 				}
-			}
 			
+			
+		marker.chr <- data.obj$chromosome[which(names(pheno.res) %in% colnames(data.obj$geno))]
 		if(standardized){
 			#plot the effect sizes
-			points(pheno.res, type = plot.type, col = col.mat[,p], pch = 16)
-			if(!overlay){
-				mtext(colnames(results.to.plot)[p], cex = 2)
-				mtext(paste(colnames(results.to.plot)[p], "[|Eff|/se]", sep = " "), side = 2, line = 2.5)
-				axis(2)
+			for(ch in chr){
+				chr.locale <- which(marker.chr == ch)
+				if(ch != 0){
+					points(x = chr.locale, y = pheno.res[chr.locale], type = plot.type, col = col.mat[chr.locale,p], pch = 16)
+					}else{
+					points(x = chr.locale, y = pheno.res[chr.locale], type = "h", col = col.mat[chr.locale,p], pch = 16)	
+					}
 				}
+			
 			}else{
-			points(pheno.res, type = plot.type, col = col.mat[,p], pch = 16)
-			if(!overlay){
-				abline(h = 0)
-				mtext(colnames(results.to.plot)[p], cex = 2)
-				mtext(paste(colnames(results.to.plot)[p], "[Eff]", sep = " "), side = 2, line = 2.5)
-				axis(2)
+			
+			for(ch in chr){
+				chr.locale <- which(marker.chr == ch)
+				if(ch != 0){
+					points(x = chr.locale, y = pheno.res[chr.locale], type = plot.type, col = col.mat[,p], pch = 16)
+					}else{
+					points(x = chr.locale, y = pheno.res[chr.locale], type = "h", col = col.mat[,p], pch = 16)	
+					}
 				}
+			}	
+				
 			}
 			
-		}
 		
 		if(overlay){
 			par(xpd = TRUE)

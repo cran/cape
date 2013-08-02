@@ -25,9 +25,6 @@ An quoted expression used to subset individuals.
 \value{
 The cross object is returned including only the individuals meeting the criteria in the provided expression.
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \seealso{
 \code{\link{select.by.chr}}

@@ -22,9 +22,6 @@ get.layout.mat(num.panes, type = c("landscape", "upright"))
 \value{
 Returns a matrix that can be used as a layout matrix by the function \code{\link{layout}}
 }
-\author{
-Anna L. Tyler
-}
 % Add one or more standard keywords, see file KEYWORDS in the
 % R documentation directory.
 \keyword{internal}% __ONLY ONE__ keyword per line

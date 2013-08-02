@@ -22,9 +22,6 @@ create.covar(data.obj, pheno.which)
 \value{
 This function returns the data object with the designated phenotype removed from the phenotype matrix and added to the genotype matrix
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 \examples{
 data(obesity.cross)
 str(obesity.cross)

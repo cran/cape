@@ -22,9 +22,6 @@ get.col.num(data.mat, col.which = NULL, warn = TRUE)
 	A logical indicating whether the use should be warned if any of the entries in col.which are not found.
 }
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 \examples{
 
 mat <- matrix(rnorm(50), ncol = 5)

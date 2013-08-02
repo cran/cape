@@ -30,17 +30,9 @@ This function returns a list with two elements:
 Broman, K. W., Wu, H., Sen, S., and Churchill, G. A. (2003). R/qtl: QTL mapping in experimental crosses. Bioinformatics, 19:889-890.
 Horn, R. A. and Johnson, C. R. (1985). Matrix Analysis. Cambridge University Press, Cambridge, UK.
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \seealso{
 \code{\link{select.markers.for.pairscan}}
-}
-\examples{
-# not run
-# obesity.cross <- get.linearly.independent(obesity.cross)
-
 }
 % Add one or more standard keywords, see file KEYWORDS in the
 % R documentation directory.

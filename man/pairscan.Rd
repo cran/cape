@@ -60,17 +60,14 @@ The results element for the permutation tests has the same structure as for the 
 \references{
 Carter, G. W., Hays, M., Sherman, A., & Galitski, T. (2012). Use of pleiotropy to model genetic interactions in a population. PLoS genetics, 8(10), e1003010. doi:10.1371/journal.pgen.1003010
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \seealso{
 \code{\link{select.markers.for.pairscan}}, \code{\link{plotPairscan}}
 }
 \examples{
-# not run
-# obesity.cross <- pairscan(obesity.cross, scan.what = "eigentraits", n.perm = 10, 
-# min.per.genotype = 6, use.pairs.threshold = TRUE, verbose = TRUE)
+\dontrun{
+	obesity.cross <- pairscan(obesity.cross, scan.what = "eigentraits", n.perm = 10, 
+	min.per.genotype = 6, use.pairs.threshold = TRUE, verbose = TRUE)}
 }
 % Add one or more standard keywords, see file KEYWORDS in the
 % R documentation directory.

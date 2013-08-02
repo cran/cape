@@ -18,9 +18,6 @@ rotate.mat(mat)
 \value{
 A matrix that is rotated 90 degrees clockwise from the original matrix is returned 
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 \examples{
 mat <- matrix(1:10, ncol = 10, nrow = 10)
 rot.mat <- rotate.mat(mat)

@@ -28,9 +28,6 @@ report.progress(current, total, percent.text = 10, percent.dot = 2)
 \value{
 This function does not return any values but prints values to the screen.
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 
 \examples{
 	

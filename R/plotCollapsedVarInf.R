@@ -1,11 +1,20 @@
 plotCollapsedVarInf <-
-function(data.obj, expand.labels = FALSE, all.markers = FALSE){
+function(data.obj, expand.labels = FALSE, all.markers = FALSE, scale.effects = c("log10", "sqrt", "none")){
 	
 	adj.mat <- data.obj$collapsed.net
 	if(is.null(adj.mat)){
-		stop("This function operates on the collapsed network. collapse.net() must be run first.")
+		stop("This function operates on the collapsed network. get.network() with collapsed.linked.markers = TRUE must be run first.")
 		}
 	
+	if(length(grep("n", scale.effects)) > 0){
+		scale.effects <- "none"
+		}
+	if(length(scale.effects) == 1){
+		if(scale.effects != "log10" & scale.effects != "sqrt" & scale.effects != "none"){
+			stop("scale.effects must be 'log10', 'sqrt' or 'none.'")
+			}
+		}
+
 	
 	blocks <- data.obj$linkage.blocks.collapsed
 	
@@ -29,6 +38,24 @@ function(data.obj, expand.labels = FALSE, all.markers = FALSE){
 			rownames(adj.mat) <- marker.names
 			colnames(adj.mat) <- c(marker.names, pheno.names)
 			}
+
+		main <- "Condensed Variant Influences"
+	
+		if(scale.effects == "log10"){
+			neg.locale <- which(adj.mat < 0)
+			scaled.effects <- log10(abs(adj.mat))
+			scaled.effects[neg.locale] <- scaled.effects[neg.locale]*-1	
+			adj.mat <- scaled.effects
+			main <- "log10 of Condensed Variant Influences"
+			}
+		if(scale.effects == "sqrt"){
+			neg.locale <- which(adj.mat < 0)
+			scaled.effects <- sqrt(abs(adj.mat))
+			scaled.effects[neg.locale] <- scaled.effects[neg.locale]*-1	
+			adj.mat <- scaled.effects
+			main <- "Square Root of Condensed Variant Influences"
+			}
+
 
 		myImagePlot(adj.mat, min.x = (max(abs(adj.mat), na.rm = TRUE)*-1), max.x = max(abs(adj.mat), na.rm = TRUE), main = "Condensed Variant Influences", xlab = "Target", ylab = "Source")
 
@@ -69,11 +96,11 @@ function(data.obj, expand.labels = FALSE, all.markers = FALSE){
 				
 			#rename the rest of the markers with their names
 			marker.rows <- rownames(expanded.adj.mat)
-			block.locale <- grep("Block", marker.rows)
-			not.block <- setdiff(marker.rows, marker.rows[block.locale])
-			not.block.locale <- which(marker.rows %in% not.block)
+			block.locale <- suppressWarnings(which(is.na(as.numeric(marker.rows))))
+			not.block <- suppressWarnings(which(!is.na(as.numeric(marker.rows))))
+			not.block.locale <- marker.rows[not.block]
 			row.marker.names <- apply(matrix(not.block, nrow = 1), 2, get.marker.name)
-			marker.rows[not.block.locale] <- row.marker.names
+			marker.rows[not.block] <- row.marker.names
 
 			rownames(expanded.adj.mat) <- marker.rows
 			colnames(expanded.adj.mat)[1:length(marker.rows)] <- marker.rows
@@ -85,7 +112,7 @@ function(data.obj, expand.labels = FALSE, all.markers = FALSE){
 					location <- sig.locale[i,]
 					adj.rowname <- rownames(adj.mat)[location[1]]
 					adj.colname <- colnames(adj.mat)[location[2]]
-					expanded.adj.mat[adj.rowname, adj.colname] <- adj.mat[location[1], location[2]]
+					expanded.adj.mat[as.character(adj.rowname), as.character(adj.colname)] <- adj.mat[as.numeric(location[1]), as.numeric(location[2])]
 					}
 				}
 						
@@ -104,6 +131,24 @@ function(data.obj, expand.labels = FALSE, all.markers = FALSE){
 			}
 			
 		expanded.adj.mat[which(expanded.adj.mat == 0)] <- NA
+		
+			main <- "Condensed Variant Influences"
+	
+	if(scale.effects == "log10"){
+		neg.locale <- which(expanded.adj.mat < 0)
+		scaled.effects <- log10(abs(expanded.adj.mat))
+		scaled.effects[neg.locale] <- scaled.effects[neg.locale]*-1	
+		expanded.adj.mat <- scaled.effects
+		main <- "log10 of Condensed Variant Influences"
+		}
+	if(scale.effects == "sqrt"){
+		neg.locale <- which(expanded.adj.mat < 0)
+		scaled.effects <- sqrt(abs(expanded.adj.mat))
+		scaled.effects[neg.locale] <- scaled.effects[neg.locale]*-1	
+		expanded.adj.mat <- scaled.effects
+		main <- "Square Root of Condensed Variant Influences"
+		}
+
 		myImagePlot(expanded.adj.mat, min.x = (max(abs(expanded.adj.mat), na.rm = TRUE)*-1), max.x = max(abs(expanded.adj.mat), na.rm = TRUE), main = "Condensed Variant Influences", xlab = "Target", ylab = "Source")
 
 			

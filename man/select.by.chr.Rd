@@ -25,9 +25,6 @@ select.by.chr(data.obj, chr, include.covariates = TRUE)
 \value{
 This function returns the data object with the genotype matrix pared down to only the desired chromosomes.
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \seealso{
 \code{\link{select.by.ind}}, \code{\link{create.covar}}

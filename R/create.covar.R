@@ -1,6 +1,10 @@
 create.covar <-
 function(data.obj, pheno.which){
 
+	if(is.null(pheno.which)){
+		return(data.obj)
+		}
+
 	pheno <- data.obj$pheno
 	geno <- data.obj$geno
 	chromosome <- data.obj$chromosome

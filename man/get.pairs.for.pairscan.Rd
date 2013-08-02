@@ -29,9 +29,6 @@ max.pair.cor = NULL, verbose = FALSE)
 \value{
 This function returns a two-column matrix of marker pairs. This matrix is then used as an argument in \code{\link{one.pairscan}} to specify which marker pairs should be tested. 
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 
 \seealso{
 \code{\link{one.pairscan}}

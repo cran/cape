@@ -25,17 +25,9 @@ This function returns the data object containing the specified pairscan threshol
 \references{
 Carter, G. W., Hays, M., Sherman, A., & Galitski, T. (2012). Use of pleiotropy to model genetic interactions in a population. PLoS genetics, 8(10), e1003010. doi:10.1371/journal.pgen.1003010
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \seealso{
 \code{\link{select.markers.for.pairscan}}, \code{\link{pairscan}}
-}
-\examples{
-# not run
-# obesity.cross <- set.pairscan.thresh(obesity.cross, pairscan.thresh = 3.5)
-# plotSinglescan(obesity.cross)
 }
 % Add one or more standard keywords, see file KEYWORDS in the
 % R documentation directory.

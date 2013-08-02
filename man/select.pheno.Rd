@@ -22,9 +22,6 @@ A vector of either column numbers of the desired phenotypes, or character string
 \value{
 This function returns the data object with a phenotype matrix that contains only the specified phenotypes.
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \examples{
 data(obesity.cross)

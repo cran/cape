@@ -37,7 +37,8 @@ save.permutations = FALSE)
 This function adds a total of six objects to the data object.
 First, a flag (\code{transform.to.phenospace}) is added to the data object to indicate whether variant influences were transformed to phenotype space.
 
-The results from the pairwise scan and the permutations of the pairwise scan are converted to phenospace if specified. These actions each add one object each to the data object (\code{var.to.pheno.influence} and \code{var.to.pheno.influence.perm}). Each element is itself a list of matrices corresponding to the original phenotypes. Each matrix contains one row per marker pair (or permutation of a marker pair) and contains the influence coefficient and standard error of the influence coefficient for each pair.
+The results from the pairwise scan and the permutations of the pairwise scan are converted to phenospace if specified. These actions each add one object each to the data object (\code{var.to.pheno.influence} and 
+\code{var.to.pheno.influence.perm}). Each element is itself a list of matrices corresponding to the original phenotypes. Each matrix contains one row per marker pair (or permutation of a marker pair) and contains the influence coefficient and standard error of the influence coefficient for each pair.
 
 After the coefficients have been transformed to phenotype space, each marker is considered individually and its influence on each phenotype across all marker pair contexts is tabulated. This is done for both the pairwise scan and the permutations of the pairwise scans and adds two new objects (\code{var.to.pheno.test.stat} and \code{var.to.pheno.test.stat.perm}) to the data object. Each object is a list containing one element for each of the original phenotypes. Each element contains a table in which all instances of each marker are listed along with that marker's direct phenotypic influence, the standard error of the influence, and the t statistic (\eqn{\beta/\sigma}) of the influence.
 
@@ -47,13 +48,6 @@ Finally, because each marker can only have one influence on each phenotype, the 
 \references{
 Carter, G. W., Hays, M., Sherman, A., & Galitski, T. (2012). Use of pleiotropy to model genetic interactions in a population. PLoS genetics, 8(10), e1003010. doi:10.1371/journal.pgen.1003010
 Holm, S. (1979). A simple sequentially rejective multiple test procedure. Scandinavian journal of statistics, pages 65-70.
-}
-\author{
-Vivek M. Philip, Anna L. Tyler, Wei Lu, Justin J. Hendrick, and Gregory W. Carter
-}
-\examples{
-# not run
-# obesity.cross <- direct.influence(obesity.cross)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

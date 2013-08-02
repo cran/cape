@@ -75,6 +75,12 @@ function(data.obj, p.or.q = 0.05, filename = "Variant.Influences.csv", delim = "
 		}else{
 			final.table <- final.table[order(final.table[,"|Effect|/SE"], decreasing = TRUE),]
 			}
+			
+	#replace 0 adjusted p values with a < string
+	adj.p.col <- as.vector(na.omit(match(c("qval", "lfdr", "p.adjusted"), colnames(final.table))))
+	smallest.adj.p <- min(as.numeric(final.table[which(as.numeric(final.table[,adj.p.col]) > 0),adj.p.col]))
+	zero.locale <- which(final.table[,adj.p.col] == 0)
+	final.table[zero.locale,adj.p.col] <- paste("<", signif(smallest.adj.p, 3))
 
 	if(mark.covar){
 		covar.flags <- data.obj$covar.for.pairscan

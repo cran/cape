@@ -1,5 +1,5 @@
 singlescan <-
-function(data.obj, n.perm = NULL, covar = NULL, scan.what = c("eigentraits", "raw.traits"), auto.covar.selection = FALSE, alpha.for.covar = 0.01, alpha.for.pairs = 0.1, verbose = FALSE) {
+function(data.obj, n.perm = NULL, covar = NULL, scan.what = c("eigentraits", "raw.traits"), alpha = c(0.01, 0.05), verbose = FALSE) {
 	
 	if(is.null(n.perm)){
 		stop("The number of permutations must be specified.")
@@ -10,14 +10,10 @@ function(data.obj, n.perm = NULL, covar = NULL, scan.what = c("eigentraits", "ra
 		stop("The number of permutations must be at least 2.")
 		}
 		
-	
-	if(alpha.for.pairs <= alpha.for.covar){
-		stop("alpha.for.covar must be lower than alpha.for.pairs")
-		}
+			
 		
-		
-	data.obj$alpha.for.pairs <- alpha.for.pairs
-	data.obj$alpha.for.covar <- alpha.for.covar
+	data.obj$alpha <- alpha
+
 	
 	#If the user does not specify a scan.what, 
 	#default to eigentraits, basically, if eigen,
@@ -81,10 +77,10 @@ function(data.obj, n.perm = NULL, covar = NULL, scan.what = c("eigentraits", "ra
 	cat("\nPerforming permutations to calculate significance threshold...\n")
 	}
 	
-	data.obj <- genome.wide.threshold.1D(data.obj, n.perm = n.perm, alpha.for.pairs = alpha.for.pairs, alpha.for.covar = alpha.for.covar, scan.what = scan.what, verbose = verbose)
+	data.obj <- genome.wide.threshold.1D(data.obj, n.perm = n.perm, alpha = alpha, scan.what = scan.what, verbose = verbose)
 	
 	#get the threshold for covariates
-	covar.threshold <- data.obj$covar.thresh
+	# covar.threshold <- data.obj$covar.thresh
 
 
 	#if there are covariates specified, pull these out.
@@ -166,18 +162,21 @@ function(data.obj, n.perm = NULL, covar = NULL, scan.what = c("eigentraits", "ra
 	
 		data.obj$singlescan.results <- results.list
 	
+		#took out automatic covariate selection, but still need to make covariate flags matrix
+		data.obj <- get.covar(data.obj, covar.thresh = Inf)	
+	
 		#calculate the covariate flags based on the oneD scan effects
-		if(auto.covar.selection){
-			data.obj <- get.covar(data.obj)
-			}else{
-			data.obj <- get.covar(data.obj, covar.thresh = Inf)	
-			}
+		# if(auto.covar.selection){
+			# data.obj <- get.covar(data.obj)
+			# }else{
+			# data.obj <- get.covar(data.obj, covar.thresh = Inf)	
+			# }
 		
 		if(!is.null(covar)){
 			data.obj <- set.covar(data.obj, markers = covar, plot.covar = FALSE)
 			}
 			
-		data.obj$covar.thresh <- covar.threshold
+		# data.obj$covar.thresh <- covar.threshold
 		
 		return(data.obj)
 	

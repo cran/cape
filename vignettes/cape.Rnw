@@ -43,7 +43,7 @@
 
 \title{\bf cape: A package for the combined analysis of epistasis and pleiotropy}
 
-\author{Anna L. Tyler$^1$, Wei Lu$^1,2$, Justin J. Hendrick$^1$, Vivek M. Philip$^1$, and Gregory W. Carter$^1$}
+\author{Anna L. Tyler$^1$, Wei Lu$^{1,2}$, Justin J. Hendrick$^1$, Vivek M. Philip$^1$, and Gregory W. Carter$^1$}
 
 \maketitle
 
@@ -447,25 +447,27 @@ selecting markers to use as covariates in the pairwise scan.
 
 <<>>=
 obesity.cross <- singlescan(obesity.cross, n.perm = 100, covar = "mom", 
-scan.what = "eigentraits", auto.covar.selection = FALSE, 
-alpha.for.covar = 0.01, alpha.for.pairs = 0.1, verbose = FALSE)
+scan.what = "eigentraits", alpha = c(0.01, 0.05), verbose = FALSE)
 @
 
-Markers can be selected for inclusion in the pairwise scan based on their having significant
-main effects as determined through permutation testing. The significance threshold is set with 
-the argument \texttt{alpha.for.pairs}. After the single-locus scan, if filtering markers by 
-significance is desired, the function \texttt{{\color{blue}select.markers.for.pairscan}} selects
-only those markers exceeding this significance cutoff for inclusion in the pairscan. If no filtering
-is desired, this threshold is ignored.\\
+The argument \texttt{alpha} takes a vector of alpha values for which significance thresholds
+will be calculated. These values are used primarily for plotting purposes. 
 
-The function \texttt{{\color{blue}singlescan()}} can also automatically select markers to
-include as covariates in the pairwise scan. Like the marker inclusion selection, marker 
-covariate selection is also based on marker effect size, and the alpha for this threshold 
-is set by the argument \texttt{alpha.for.covar}. Automatic covariate selection is recommended 
-in populations in which genetic markers are independent of one another, but not in populations 
-in which markers are linked (see \underline{\nameref{sec:Covariate Selection}}). To use 
-automatic covariate selection, set the argument \texttt{auto.covar.selection} to 
-\texttt{TRUE}.\\
+%Markers can be selected for inclusion in the pairwise scan based on their having significant
+%main effects as determined through permutation testing. The significance threshold is set with 
+%the argument \texttt{alpha.for.pairs}. After the single-locus scan, if filtering markers by 
+%significance is desired, the function \texttt{{\color{blue}select.markers.for.pairscan}} selects
+%only those markers exceeding this significance cutoff for inclusion in the pairscan. If no filtering
+%is desired, this threshold is ignored.\\
+
+%The function \texttt{{\color{blue}singlescan()}} can also automatically select markers to
+%include as covariates in the pairwise scan. Like the marker inclusion selection, marker 
+%covariate selection is also based on marker effect size, and the alpha for this threshold 
+%is set by the argument \texttt{alpha.for.covar}. Automatic covariate selection is recommended 
+%in populations in which genetic markers are independent of one another, but not in populations 
+%in which markers are linked (see \underline{\nameref{sec:Covariate Selection}}). To use 
+%automatic covariate selection, set the argument \texttt{auto.covar.selection} to 
+%\texttt{TRUE}.\\
 
 Covariates to be used in the single-marker scan should be specified through the argument
 \texttt{covar}. These covariates should have already been moved to the marker matrix
@@ -485,73 +487,100 @@ plotSinglescan(obesity.cross, mark.chr = TRUE, mark.covar = FALSE)
 
 In this figure the t-statistic ($\beta/\sigma$) of each marker is plotted as a vertical line.
 Results for both eigentraits are shown here as ET1 and ET2, and chromosome numbers are
-written along the x axis. If markers were being filtered for inclusion in the pair scan, the 
-markers above the covariate line at p = 0.01 would be selected for inclusion in the pair scan. 
-The alpha value can be adjusted to include more or fewer markers in the pair scan as 
-desired. The value of this threshold is stored in \texttt{obesity.cross\$pairscan.thresh}
-and can also be assigned manually using \texttt{{\color{blue}set.pairscan.thresh()}}. 
-This threshold is useful for large data sets for which 
-it is impractical to test all marker pairs. Here we use all marker in the pairwise scan. 
+written along the x axis. If filtering of markers for the pair-wise scan is desired, an effect size
+cutoff can be specified using either \texttt{{\color{blue}set.pairscan.thresh()}} or in 
+\texttt{{\color{blue}select.markers.for.pairscan()}}. If a specific number of markers is desired, 
+\texttt{{\color{blue}select.markers.for.pairscan()}} can determine the threshold at which this number
+of markers is included in the pair scan. Setting a threshold for inclusion is useful for large data 
+sets for which it is impractical to test all marker pairs. Here we use all markers in the pairwise scan. 
 In this example we will not filter the markers.\\
 
-The higher dashed line represents the alpha value defined by the argument \texttt{alpha.for.covar},
-which here was set to the default value of 0.01. This threshold can be used for automatic covariate
-selection. If the argument \texttt{automatic.covar.selection} is set to \texttt{TRUE} all markers 
-exceeding the \texttt{alpha.for.covar} threshold will automatically be designated as covariates. This 
-automated selection is generally only recommended for populations in which variants 
-segregate independently. For more details on covariate selection, see 
-\underline{\nameref{sec:Covariate Selection}}.
+%The higher dashed line represents the alpha value defined by the argument \texttt{alpha.for.covar},
+%which here was set to the default value of 0.01. This threshold can be used for automatic covariate
+%selection. If the argument \texttt{automatic.covar.selection} is set to \texttt{TRUE} all markers 
+%exceeding the \texttt{alpha.for.covar} threshold will automatically be designated as covariates. This 
+%automated selection is generally only recommended for populations in which variants 
+%segregate independently. For more details on covariate selection, see 
+%\underline{\nameref{sec:Covariate Selection}}.
 
 
 \section*{Covariate Selection}
 \addcontentsline{toc}{section}{Covariate Selection}
 \label{sec:Covariate Selection}
 As mentioned previously, conditioning on large main effects may aid in the discovery of
-interactions. Therefore \texttt{cape} allows specification of genetic markers as covariates,
-which can be done either manually or automatically. Automatic covariate selection is 
-particularly useful in populations in which variants segregate independently. For example, 
-\emph{Drosophila} have virtually no linkage between markers \citep{Mackay:2012fd}; 
-therefore most markers can be assumed to assort independently. Similarly, mutations 
-to genes on different chromosomes in a yeast population segregate independently. 
-In these and other similar cases, automatic covariate selection is appropriate because 
-markers achieving the significance threshold can be assumed to be independent of each
-other and will not reduce the significance of other markers due to linkage if used as covariates.\\
+interactions. Therefore \texttt{cape} allows specification of genetic markers as covariates.
+%which can be done either manually or automatically. Automatic covariate selection is 
+%particularly useful in populations in which variants segregate independently. For example, 
+%\emph{Drosophila} have virtually no linkage between markers \citep{Mackay:2012fd}; 
+%therefore most markers can be assumed to assort independently. Similarly, mutations 
+%to genes on different chromosomes in a yeast population segregate independently. 
+%In these and other similar cases, automatic covariate selection is appropriate because 
+%markers achieving the significance threshold can be assumed to be independent of each
+%other and will not reduce the significance of other markers due to linkage if used as covariates.\\
 
-In a mouse F2 intercross or backcross, on the other hand, markers on a single chromosome
-tend to be linked, and groups of markers may be significantly associated with a phenotype 
-due to linkage with a causative locus. In this case, markers from a single linkage block carry
-partially redundant information and, if treated as independent covariates, will obfuscate 
-interactions between makers in the linkage block and other truly independent markers. 
-Thus, if markers in the study population are linked, it is recommended that any marker 
-covariates be set manually and that only one covariate should be selected from each 
-linkage block.\\
+This specification is recommended if there are markers with particularly large effect sizes
+that may obfuscate weak interactions. In an organism in which variants segregate relatively
+independently, such as in \emph{Drosophila} \citep{Mackay:2012fd}, it may be useful to
+select individual markers with very high effect sizes as covariates. In a population with more
+correlation between adjacent markers, more care should be given to this process. In a mouse 
+F2 intercross or backcross, on the other hand, markers on a single chromosome tend to be 
+linked, and groups of markers may be significantly associated with a phenotype due to linkage 
+with a causative locus. In this case, markers from a single linkage block carry partially redundant 
+information and, if treated as independent covariates, will obfuscate interactions between makers 
+in the linkage block and other truly independent markers. Thus, if markers in the study population 
+are linked, it is recommended that any marker covariates be set manually and that only one 
+covariate should be selected from each linkage block.\\
 
-To use automatic covariate selection, set \texttt{auto.covar.selection} to \texttt{TRUE} when
-running \texttt{{\color{blue}}singlescan}. All markers above the \texttt{alpha.for.covar} threshold 
-will be automatically included as covariates in the pair scan. If this option is chosen, is is
-still possible to adjust the covariate threshold after the single-marker scan to include
-more or fewer covariates as desired. In general we recommend that only the 
-markers with the very strongest effects are treated as covariates to avoid overfitting the 
-model. The function \texttt{{\color{blue}get.covar()}} sets the covariate threshold in the 
-data object and recalculates which markers are to be used as covariates in the pair scan.\\
+Setting covariates, as well as the filtering of markers for the pair-wise scan can be done with 
+the function \texttt{{\color{blue}select.markers.for.pairscan()}}. When calling this function, if
+thresholding the markers based on effect size, set \texttt{use.pairs.threshold} to TRUE, and
+\texttt{pairscan.thresh} to the desired standardized effect size threshold. Alternatively, this
+function can be used to select a threshold based on a desired number of markers to test
+in the pair-wise scan. The target number of markers desired is set in \texttt{num.markers}.
+The function then searches through multiple thresholds to find a linearly independent 
+matrix holding the number of desired markers. It starts the search at the threshold set in
+\texttt{start.thresh} and stops when it finds a threshold resulting in \texttt{num.markers} 
+plus or minus the \texttt{tolerance}. This process is slow, and it is recommended that the 
+starting threshold be set as close to the estimated correct threshold as possible and run
+only once to find the desired threshold. After the first run, the threshold can be set manually.
 
+In addition to selecting markers based on an effect size threshold, 
+\texttt{{\color{blue}select.markers.for.pairscan()}} can also set specific markers as covariates
+through the argument \texttt{specific.markers}. This argument takes a vector of strings and
+sets each one as a covariate. 
 
-\verb@ > obesity.cross <- get.covar(obesity.cross, covar.thresh = 4.5)@\\
-
-If selecting covariates manually, set \texttt{auto.covar.selection} to \texttt{FALSE} when
-running \texttt{{\color{blue}}singlescan}. The plots from the single-marker scan can
-then be examined to determine which markers should be used as covariates. The 
-function \texttt{{\color{blue}set.covar()}} can then be used to set covariates individually.\\
-
-Here, because of the large effects of maternal environment on ET1, we make this marker 
-a covariate. The function \texttt{{\color{blue}set.covar()}} optionally includes a plot to verify 
-the covariate selection. Covariates are marked in red.
-\\
-
-<<echo=TRUE,fig=TRUE>>=
-obesity.cross <- set.covar(obesity.cross, pheno = "ET1",  
-markers = c("mom"), is.covar = TRUE, plot.covar = TRUE)
+<<>>=
+obesity.cross <- select.markers.for.pairscan(obesity.cross, 
+use.pairs.threshold = FALSE)
 @
+
+
+%To use automatic covariate selection, set \texttt{auto.covar.selection} to \texttt{TRUE} when
+%running \texttt{{\color{blue}}singlescan}. All markers above the \texttt{alpha.for.covar} threshold 
+%will be automatically included as covariates in the pair scan. If this option is chosen, is is
+%still possible to adjust the covariate threshold after the single-marker scan to include
+%more or fewer covariates as desired. In general we recommend that only the 
+%markers with the very strongest effects are treated as covariates to avoid overfitting the 
+%model. The function \texttt{{\color{blue}get.covar()}} sets the covariate threshold in the 
+%data object and recalculates which markers are to be used as covariates in the pair scan.\\
+%
+%
+%\verb@ > obesity.cross <- get.covar(obesity.cross, covar.thresh = 4.5)@\\
+%
+%If selecting covariates manually, set \texttt{auto.covar.selection} to \texttt{FALSE} when
+%running \texttt{{\color{blue}}singlescan}. The plots from the single-marker scan can
+%then be examined to determine which markers should be used as covariates. The 
+%function \texttt{{\color{blue}set.covar()}} can then be used to set covariates individually.\\
+%
+%Here, because of the large effects of maternal environment on ET1, we make this marker 
+%a covariate. The function \texttt{{\color{blue}set.covar()}} optionally includes a plot to verify 
+%the covariate selection. Covariates are marked in red.
+%\\
+%
+%<<echo=TRUE,fig=TRUE>>=
+%obesity.cross <- set.covar(obesity.cross, pheno = "ET1",  
+%markers = c("mom"), is.covar = TRUE, plot.covar = TRUE)
+%@
 
 
 
@@ -584,17 +613,15 @@ This step is performed by the function \texttt{{\color{blue}select.markers.for.p
 calculates the correlation between all pairs of markers. If any are found to be perfectly correlated, 
 the first marker is removed.\\
 
-\texttt{{\color{blue}select.markers.for.pairscan()}} also filters markers for inclusion in the
-pair scan by the significance threshold, if this has been specified by \texttt{use.pairs.threshold}. 
-This is useful in large crosses in which it may be impossible to test all possible pairs
-of markers in a reasonable amount of time. The significance threshold is determined 
-by the argument \texttt{alpha.for.pairs} in the function \texttt{{\color{blue}singlescan()}}.\\
+As mentioned above, \texttt{{\color{blue}select.markers.for.pairscan()}} also optionally filters 
+markers for inclusion in the pair scan by standardized effect size. This is useful in large 
+crosses in which it may be impossible to test all possible pairs of markers in a reasonable 
+amount of time.
 
-
-<<>>=
+\begin{verbatim}
 obesity.cross <- select.markers.for.pairscan(obesity.cross, 
 use.pairs.threshold = FALSE)
-@
+\end{verbatim}
 
 The number of markers removed is printed to the screen, and the names of these markers
 are written to the file \texttt{markers.removed.txt} in the current working directory. This filtering
@@ -630,10 +657,13 @@ n.perm = 100, min.per.genotype = 6, verbose = FALSE)
 %@
 
 The arguments here are familiar from \texttt{{\color{blue}singlescan()}}, with the exception
-of one additional argument. \texttt{min.per.genotype} is a threshold that prevents empty
-cells in genotype matrices. In an intercross, there are three possible genotypes at each
-marker, giving a total of nine possible genotypes for the pair. For example, for two markers 
-each with the genotypes AA, AB, and BB, the pairwise genotypes are the following:\\
+of two additional arguments. \texttt{min.per.genotype} and \texttt{max.pair.cor} are thresholds 
+that prevent highly correlated markers from being tested in pairs. Only one of these arguments 
+can be set depending on whether the genotypes in the data set are continuous or discrete.
+If the genotypes are discrete, \texttt{min.per.genotype} can be set to prevent empty cells in 
+genotype matrices. In an intercross, there are three possible genotypes at each marker, 
+giving a total of nine possible genotypes for the pair. For example, for two markers each 
+with the genotypes AA, AB, and BB, the pairwise genotypes are the following:\\
 
 \begin{center}
 \begin{tabular}{ r|c|c|c| }
@@ -663,17 +693,28 @@ The threshold used to determine insufficient recombination between markers is gi
 fewer than six individuals in any of the genotype cells. This value can be adjusted, but caution 
 should be used in interpreting the results if \texttt{min.per.genotype} is very low or 0.\\
 
+Alternatively, if genotypes are coded continuously, the argument \texttt{max.pair.cor} can be 
+set to establish an upper threshold on the Pearson correlation between marker pairs. As in 
+the case with discrete genotypes, testing highly correlated markers against each other can
+lead to false associations. Either \texttt{max.pair.cor} or \texttt{min.per.genotype}, but not both,
+must be set.\\
+
 The \texttt{n.perm} argument in \texttt{{\color{blue}pairscan()}} sets the number of 
-permutations performed per marker pair. To calculate empirical p values, the permutations
-are combined across all markers to result in one large null distribution. Thus, large null
-distributions can be achieved with relatively few permutations per pair. This is useful, as
-even with relatively sparse genotyping the number of tests performed can be large and take
-many hours to perform.\\
+permutations performed per marker pair. To generate a null distribution for the 
+pair-wise tests, CAPE performs permutation tests in the following way: First a singlescan
+is run on the permuted phenotypes. Then the N markers with the largest effect sizes 
+are selected, where N is the same number of markers being tested in the pairwise scan.
+This ensures that if there are very few markers being tested in the pairwise scan, we do not
+generate a biased null distribution by only performing permutation tests repeatedly on 
+these markers. A pairwise scan is then performed on these top N markers using the permuted
+phenotype. To calculate empirical p values, the permutations are combined across all markers 
+to result in one large null distribution. Thus, large null distributions can be achieved with 
+relatively few permutations per pair. This is useful, as even with relatively sparse genotyping 
+the number of tests performed can be large and take many hours to perform.\\
 
 The results of the pair scan can be plotted with \texttt{{\color{blue}plotPairscan()}}.
-This plot shows the resulting $\beta$ coefficient for each pair of markers. The t statistics
-of each interaction ($\beta/\sigma$) can be plotted by setting \texttt{standardized = TRUE}.
-Gray and white bars show the boundaries of the chromosomes.
+This plot shows the resulting $\beta/\sigma$ for each pair of markers. Gray and 
+white bars show the boundaries of the chromosomes.
 
 %<<fig=FALSE, results=hide, print=FALSE>>=
 %plotPairscan(obesity.cross, phenotype = c("ET1", "ET2"), standardized = FALSE, 
@@ -681,8 +722,7 @@ Gray and white bars show the boundaries of the chromosomes.
 %@
 
 \begin{verbatim}
-plotPairscan(obesity.cross, phenotype = c("ET1", "ET2"), standardized = FALSE, 
-pdf.label = "Pairscan.Regression.pdf")
+plotPairscan(obesity.cross, phenotype = c("ET1", "ET2"))
 \end{verbatim}
 \includegraphics{pair_regression.pdf}
 
@@ -926,37 +966,42 @@ variants and phenotypes.
 
 \begin{verbatim}
 plotVariantInfluences(obesity.cross, p.or.q = 0.01, 
-all.markers = FALSE, standardize = FALSE, not.tested.col = "lightgray")
+all.markers = FALSE, standardize = TRUE, not.tested.col = "lightgray", 
+scale.effects = "log10",  pheno.width = 8)
 \end{verbatim}
 
 
 \begin{center}
 \label{fig:varinf}
-\includegraphics[width=4in]{variant_influences.pdf}
+\includegraphics[width=6in]{variant_influences.pdf}
 \end{center}
  
  
- There are several arguments in this function to note. The argument \texttt{p.or.q} takes in
- the p, q, or local fdr value at which interactions are considered significant. Only significant 
- interactions are plotted. Non-significant interactions are colored white. It should be noted that 
- some of the white boxes have
- gray dots in them. These dots indicate that these pairs were not tested for interactions because they
- were filtered out due to insufficient representation of individual phenotypes. This usually occurs because
- the markers are linked and there is low recombination between them. These pairs are marked with dots
- to distinguish them from pairs that were tested but did not have significant interactions between them. 
- The color of the dots can be changed with the argument \texttt{not.tested.col}. The default is \texttt{lightgray}.
- This can be changed to \texttt{FALSE} or \texttt{NA} if no distinction between not-tested and not-significant is 
- desired. Gray and white bars along the margins of the plot indicate the boundaries of the chromosomes.\\
+There are several arguments in this function to note. The argument \texttt{p.or.q} takes in
+the p, q, or local fdr value at which interactions are considered significant. Only significant 
+interactions are plotted. Non-significant interactions are colored white. It should be noted that 
+some of the white boxes have gray dots in them. These dots indicate that these pairs were not 
+tested for interactions because they were filtered out due to insufficient representation of individual 
+phenotypes. This usually occurs because the markers are linked and there is low recombination 
+between them. These pairs are marked with dots to distinguish them from pairs that were tested 
+but did not have significant interactions between them. The color of the dots can be changed 
+with the argument \texttt{not.tested.col}. The default is \texttt{lightgray}. This can be changed to 
+\texttt{FALSE} or \texttt{NA} if no distinction between not-tested and not-significant is desired. 
+Gray and white bars along the margins of the plot indicate the boundaries of the chromosomes.\\
 
 It should also be noted that not all of the original markers from the single-locus scan are represented in
 the final figure. This figure is showing only those markers that were included in the pair scan. The figure
 can be changed to show all markers by setting \texttt{all.markers} to TRUE. However, with large numbers 
 of markers, especially if not all markers are included in the pair scan, the figure can get quite crowded if all 
-markers are included. Finally, the argument \texttt{standardize} determines whether the function plots the 
-raw direct influence coefficients or the coefficients divided by standard error.\\
+markers are included.\\
+
+The argument \texttt{scale.effects} allows application of a function, either $log_{10}$ or square root
+to the values in the adjacency matrix. These transformations can help increase the contrast between
+markers. And finally, the argument \texttt{pheno.width} specifies how wide the main effects should
+be relative to the interaction effects for better visualization.\\
 
 
-The table of significant influences can be written to a file using the function\\
+A table of significant influences can be written to a file using the function\\
 \texttt{{\color{blue}writeVariantInfluences()}}.
 
 %<<>>=
@@ -978,15 +1023,13 @@ of \texttt{cape}. The function for plotting results, \texttt{{\color{blue}plotVa
 plots an asymmetric adjacency matrix, which is useful for identifying patterns in
 variant interactions.\\
 
-\pagebreak
-
 Another useful visualization of the network can be plotted using \texttt{{\color{blue}plotNetwork()}}.
-This function plots the chromosomes linearly and shows interactions as arrows between
-locations on chromosomes (see figures below). Main effects are plotted beneath the chromosomes. Before
-plotting the network in this format, the function \texttt{{\color{blue}get.network()}} must be be
-run to create a network object. The function \texttt{{\color{blue}get.network()}} network offers 
-the option of condensing markers based on their linkage. The minimum Pearson $R^2$ 
-threshold separating two markers is provided in the argument \texttt{r2.thresh}.
+This function plots the chromosomes in a circle and shows interactions as arrows between
+regions on chromosomes (see figures below). Main effects are plotted in the circles around the 
+chromosomes. Before plotting the network in this format, the function \texttt{{\color{blue}get.network()}} 
+must be be run to create a network object. The function \texttt{{\color{blue}get.network()}} network offers 
+the option of condensing markers based on their linkage. The minimum Pearson $r$ 
+threshold separating two markers is provided in the argument \texttt{r.thresh}.
 The argument \texttt{p.or.q} determines the p, q, or local FDR value at which marker influences
 are determined significant.
 
@@ -1004,21 +1047,21 @@ are determined significant.
 
 \begin{verbatim}
 obesity.cross <- get.network(obesity.cross, p.or.q = 0.01, 
-collapse.linked.markers = TRUE, r2.thresh = 0.8, standardize = FALSE)
+collapse.linked.markers = TRUE, r.thresh = 0.5)
 plotNetwork(obesity.cross, collapsed.net = TRUE)
 \end{verbatim}
 
 
 \begin{figure}[!ht]
 \begin{center}
-\includegraphics[width=6.5in]{Network_Collapsed.pdf}
+\includegraphics[width=5in]{Network_Collapsed.pdf}
 \end{center}
 \end{figure}
 
 \pagebreak
 
 If no collapse by linkage is desired, the argument \texttt{collapse.linked.markers} can be set
-to \texttt{FALSE} and \texttt{r2.thresh} will be ignored.
+to \texttt{FALSE} and \texttt{r.thresh} will be ignored.
 
 
 %<<>>==
@@ -1034,28 +1077,28 @@ to \texttt{FALSE} and \texttt{r2.thresh} will be ignored.
 
 \begin{verbatim}
 obesity.cross <- get.network(obesity.cross, p.or.q = 0.01, 
-collapse.linked.markers = FALSE, standardize = FALSE)
+collapse.linked.markers = FALSE)
 plotNetwork(obesity.cross, collapsed.net = FALSE)
 \end{verbatim}
 
 
 \begin{figure}[!ht]
 \begin{center}
-\includegraphics[width=6.5in]{Network_Full.pdf}
+\includegraphics[width=5in]{Network_Full.pdf}
 \end{center}
 \end{figure}
 
 
 Both the network figure and the adjacency matrix show direct influences of 
 markers on the phenotypes as well as interactions between markers. As 
-expected, NZO variants on multiple 
-chromosomes show positive effects on plasma insulin and glucose levels as well as on 
-body weight. Maternal obesity was found to suppress the effects of markers on 
-Chromosome 15, and a marker on Chromosome 2 suppressed the effects of a 
-marker on Chromosome 18. In the latter interaction, neither marker had an 
-individual main effect, although the Chromosome 18 marker has a marginally significant 
-effect (q = 0.018) on body weight that is completely suppressed by the Chromosome 1 
-marker.
+expected, NZO variants on multiple chromosomes show positive effects on 
+plasma insulin and glucose levels as well as on body weight. Maternal 
+obesity was found to suppress the effects of markers on Chromosome 15, 
+and a marker on Chromosome 2 suppressed the effects of a marker on 
+Chromosome 18. In the latter interaction, neither marker had an individual 
+main effect, although the Chromosome 18 marker has a marginally significant 
+effect (q = 0.018) on body weight that is completely suppressed by the 
+Chromosome 1 marker.
 %In R/cape markers are assigned significant main effects only
 %if they alter phenotype independent of pair context. This reduces the incidence of false 
 %positive main effects that depend on genetic background. While the Chromosome 2 
@@ -1128,7 +1171,7 @@ interaction network. Thus we recommend users assess single-phenotype epistasis
 using functions in \texttt{cape} or in parallel analyses using tools such as \texttt{R/qtl} 
 and \texttt{R/qtlbim} \citep{rqtlbim}.\\
 
-
+\clearpage
  
  \section*{Tables of Functions}
  \addcontentsline{toc}{section}{Tables of Functions}

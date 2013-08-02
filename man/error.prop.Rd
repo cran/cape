@@ -30,13 +30,6 @@ Carter, G. W., Hays, M., Sherman, A., & Galitski, T. (2012). Use of pleiotropy t
 
 Bevington PR (1969) Data Reduction and Error Analysis for the Physical Sciences. New York: McGraw-Hill.
 }
-\author{
-Vivek M. Philip, Anna L. Tyler, Wei Lu, Justin J. Hendrick, and Gregory W. Carter
-}
-\examples{
-# not run
-# obesity.cross <- error.prop(obesity.cross)
-}
 % Add one or more standard keywords, see file KEYWORDS in the
 % R documentation directory.
 \keyword{math}

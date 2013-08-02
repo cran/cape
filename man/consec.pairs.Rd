@@ -19,12 +19,10 @@ A vector of elements for which consecutive pairs are desired. Elements can be of
 \value{
 A two-column matrix is returned. Each row of the matrix consists of two consecutive elements of the input vector. All consecutive pairs are included.
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 \examples{
 V <- 1:5
 consec.pairs(V)
+V
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

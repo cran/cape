@@ -11,9 +11,13 @@ markers are variable across individuals. Mono-allelic markers are removed. If an
 information, the first marker of the pair is discarded.
 }
 \usage{
-select.markers.for.pairscan(data.obj, use.pairs.threshold = FALSE, 
-specific.markers = NULL)
+select.markers.for.pairscan(data.obj, 
+use.pairs.threshold = FALSE, 
+pairscan.thresh = NULL, specific.markers = NULL, 
+num.markers = NULL, start.thresh = 4, 
+tolerance = 10, verbose = TRUE)
 }
+
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data.obj}{
@@ -22,8 +26,23 @@ specific.markers = NULL)
   \item{use.pairs.threshold}{
 	A logical value. If TRUE only markers that fall above the significance threshold alpha.for.pairs (see \code{\link{singlescan}}). If FALSE, all markers are used.
 	}
+	\item{pairscan.thresh}{
+		A numerical value indicating a standardized effect size below which markers are rejected for the pair scan.
+	}
 	\item{specific.markers}{
 	An optional vector of column numbers or names specifying specific markers to include in the pairscan. 
+	}
+	\item{num.markers}{
+		An optional number. If specified, the algorithm attempts to find a standardized effect threshold that will give the number of markers specified. This can take a long time, since linear non-independence must be calculated for each thresholded set of markers.
+	}
+	\item{start.thresh}{
+		If num.markers is specified, start.thresh specifies the standardized effect size at which the algorithm begins its search for the appropriate threshold. This should be set as close as possible to the estimated final effect size to minimize the amount of time spent looking for a threshold.
+	}
+	\item{tolerance}{
+		If num.markers is specified, tolerance determines how close the algorithm will get to the number of desired markers. If 100 markers are desired, and tolerance is set to 10, the algorithm will stop if it finds a threshold giving between 90 and 110 markers.
+	}
+	\item{verbose}{
+		A logical value indicating whether the progress of the threshold finding algorithm should be reported.
 	}
 }
 \details{
@@ -39,17 +58,9 @@ This function returns the data object with two new elements:
 	A matrix holding flags for whether each marker should be treated as a covariate. The matrix has one row for each of the filtered markers and one column for each eigentrait being analyzed. The entries of the matrix contain a 1 if the marker is to be used as a covariate for the pair scan and 0 otherwise.
 }
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 
 \seealso{
 \code{\link{singlescan}}, \code{\link{get.linearly.independent}}, \code{\link{plotSinglescan}}
-}
-\examples{
-# not run
-# obesity.cross <- select.markers.for.pairscan(obesity.cross, use.pairs.threshold = FALSE)
-# plotSinglescan(obesity.cross, show.rejected.markers = TRUE)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

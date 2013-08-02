@@ -1,5 +1,5 @@
 read.population <-
-function(filename = NULL, pheno.col = NULL, geno.col = NULL, delim = ",", na.strings = "-") {
+function(filename = NULL, pheno.col = NULL, geno.col = NULL, delim = ",", na.strings = "-", check.chr.order = TRUE) {
 
 	if(is.null(filename)){
 		filename <- file.choose()
@@ -20,12 +20,25 @@ function(filename = NULL, pheno.col = NULL, geno.col = NULL, delim = ",", na.str
 	char.pheno <- which(pheno.classes == "character")
 
 	if(length(char.pheno) > 0){
-		message("All phenotypes must be numeric.\nMake sure NA strings are the same for phenotypes and genotypes.")
+		message("All phenotypes must be numeric.")
 		cat("The following phenotype columns have character values:", colnames(cross.data)[char.pheno], sep = "\n")
+		cat("This error can occur if NA's are coded with multiple characters. Make sure NA coding is consistent throughout the data set.")
 		return(NULL)
 		}
 
 	chr <- as.vector(as.matrix(cross.data[1,beginGeno:dim(cross.data)[2]]))
+	
+	if(check.chr.order){
+		x.locale <- grep("x", chr, ignore.case = TRUE)
+		y.locale <- grep("y", chr, ignore.case = TRUE)
+		just.num.chr <- setdiff(1:length(chr), c(x.locale, y.locale))
+		consec.chr <- consec.pairs(as.numeric(chr[just.num.chr]))
+		order.check <- apply(consec.chr, 1, function(x) x[2] - x[1])
+		if(length(which(order.check < 0)) > 0){
+			warning("The chromosomes appear to be out of order.\nIt is best to sort the chromosomes before beginning the analysis.")
+			}
+		}
+		
 	marker.loc <- as.numeric(cross.data[2,beginGeno:dim(cross.data)[2]])
 
 	#take out the genotype matrix
@@ -58,6 +71,8 @@ function(filename = NULL, pheno.col = NULL, geno.col = NULL, delim = ",", na.str
    		}
    	geno.columns <- get.col.num(geno, geno.col)
   	geno <- geno[,geno.columns] 
+  	chr <- chr[geno.columns]
+	marker.loc <- marker.loc[geno.columns]
    
     #run a check to see how the genotypes are stored.
 	#genotypes can be stored as (0,1,2), ("A","H","B")
@@ -102,7 +117,7 @@ function(filename = NULL, pheno.col = NULL, geno.col = NULL, delim = ",", na.str
 			}else{
 			baseGeno <- all.genotypes[all.genotypes != "H"][1]
 			notBaseGeno <- "H"
-			cat("The genotypes are encoded as ", baseGeno, " and H\nConverting to 0 and 0.5.\n", sep = "")
+			cat("The genotypes are encoded as ", baseGeno, " and H\nConverting to 0 and 1.\n", sep = "")
 	 		}
 	
 
@@ -116,6 +131,8 @@ function(filename = NULL, pheno.col = NULL, geno.col = NULL, delim = ",", na.str
 	    	genotypes[which(as.character(genotypes) == notBaseGeno)] <- 1
 	    	if(length(all.genotypes) == 3){
 	    		genotypes[which(as.character(genotypes) == "H")] <- 0.5
+	    		}else{
+	    		genotypes[which(as.character(genotypes) == "H")] <- 1
 	    		}
 	    	return(as.numeric(genotypes))
 	    	}
@@ -130,6 +147,11 @@ function(filename = NULL, pheno.col = NULL, geno.col = NULL, delim = ",", na.str
  	#check to see if the genotypes are encoded as (0, 1, 2)
  	numeric.test <- which(all.genotypes == 2) #check for 2, since 2 is unique to this encoding
  	if(length(numeric.test) > 0){
+ 		outside.upper.bound <- which(all.genotypes > 2)
+ 		outside.lower.bound <- which(all.genotypes < 0)
+ 		if(length(outside.upper.bound) > 0 || length(outside.lower.bound) > 0){
+ 			stop("Assuming (0,1,2) coding, but I detected genotypes greater than 2 or less than 0.")
+ 			}
  		cat("The genotypes are encoded as 0, 1, 2.\nConverting to 0, 0.5, 1.\n")
  		found.genotype.mode <- 1 #set the flag indicating we've figured out the encoding
  		#turn 0, 1, 2 into 0, 0.5 and 1 respectively
@@ -167,6 +189,8 @@ function(filename = NULL, pheno.col = NULL, geno.col = NULL, delim = ",", na.str
  		stop("\nGenotypes must be encoded as (0, 1, 2), (A,H,B), or probabilities.\n")
  		}
 
+	#put in code here to distribute the genotypes between -1 and 1 so we get symmetric m12/m21 null distributions
+	
 	#construct the data object
 	marker.names <- colnames(geno)
 	colnames(geno) <- 1:dim(geno)[2]

@@ -29,9 +29,6 @@ segment.region(region.min, region.max, num.points, alignment = c("center", "ends
 A vector of coordinates is returned specifying the coordinates at which points should be plotted to be evenly distributed in the region.
 }
 
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 
 \examples{
 num.points <- 5

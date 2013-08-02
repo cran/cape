@@ -28,16 +28,9 @@ This function returns the data object with only the selected eigentraits.
 \references{
 Carter, G. W., Hays, M., Sherman, A., & Galitski, T. (2012). Use of pleiotropy to model genetic interactions in a population. PLoS genetics, 8(10), e1003010. doi:10.1371/journal.pgen.1003010
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \seealso{
 \code{\link{get.eigentraits}}, \code{\link{plotSVD}}
-}
-\examples{
-# not run
-# obesity.cross <- select.eigentraits(obesity.cross, c(1,2))
 }
 % Add one or more standard keywords, see file KEYWORDS in the
 % R documentation directory.

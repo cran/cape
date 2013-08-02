@@ -123,35 +123,27 @@ obesity.cross <- select.eigentraits(obesity.cross, traits.which = c(1,2))
 
 
 ###################################################
-### code chunk number 14: cape.Rnw:448-451
+### code chunk number 14: cape.Rnw:448-450
 ###################################################
 obesity.cross <- singlescan(obesity.cross, n.perm = 100, covar = "mom", 
-scan.what = "eigentraits", auto.covar.selection = FALSE, 
-alpha.for.covar = 0.01, alpha.for.pairs = 0.1, verbose = FALSE)
+scan.what = "eigentraits", alpha = c(0.01, 0.05), verbose = FALSE)
 
 
 ###################################################
-### code chunk number 15: cape.Rnw:482-483
+### code chunk number 15: cape.Rnw:484-485
 ###################################################
 plotSinglescan(obesity.cross, mark.chr = TRUE, mark.covar = FALSE)
 
 
 ###################################################
-### code chunk number 16: cape.Rnw:551-553
-###################################################
-obesity.cross <- set.covar(obesity.cross, pheno = "ET1",  
-markers = c("mom"), is.covar = TRUE, plot.covar = TRUE)
-
-
-###################################################
-### code chunk number 17: cape.Rnw:594-596
+### code chunk number 16: cape.Rnw:552-554
 ###################################################
 obesity.cross <- select.markers.for.pairscan(obesity.cross, 
 use.pairs.threshold = FALSE)
 
 
 ###################################################
-### code chunk number 18: cape.Rnw:612-614
+### code chunk number 17: cape.Rnw:639-641
 ###################################################
 plotSinglescan(obesity.cross, mark.chr = TRUE, show.rejected.markers = TRUE, 
 standardized = TRUE)

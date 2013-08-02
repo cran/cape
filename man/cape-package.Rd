@@ -12,8 +12,8 @@ This package infers predictive networks between genetic variants and between gen
 \tabular{ll}{
 Package: \tab cape\cr
 Type: \tab Package\cr
-Version: \tab 1.0\cr
-Date: \tab 2012-12-30\cr
+Version: \tab 1.3\cr
+Date: \tab 2013-08-12\cr
 License: \tab GPL-3\cr
 }
 The cape analysis begins by reading in a genetic data set with \code{\link{read.population}}. The data are converted into a data object, to which results are added throughout the analysis. This data object is an argument in most functions, and is referred to as \code{data.obj}. Because this package uses pleiotropy to resolve models of epistasis, the phenotypes used should have common underlying molecular players, but not be perfectly correlated. In general phenotypes should be correlated with a Pearson r between 0.4 and 0.8. The phenotypes of interest are then decomposed into eigentraits using \code{\link{get.eigentraits}}. Any number of phenotypes can be decomposed, but \code{cape} requires between two and 12 eigentraits for the analysis. The phenotype decomposition into eigentraits maximizes the complementary information between the phenotypes. Before investigating epistatic interactions through a pair-wise scan of the genetic variants, a single-variant scan (\code{\link{singlescan}}) is run. This allows for thresholding of markers for the pair scan if the cross is prohibitively large to test all pairs of variants. The single-variant scan also allows selection of variants with very large main effects to be used as covariates in the pair scan. The pair scan (\code{\link{pairscan}}) performs a regression on each variant pair. Finally, the coefficients from the pairwise scan are reparameterized to yield directional influences between variants and from variants to phenotypes. The final result is an asymmetric adjacency matrix describing these variant influences. The p values of these influences are corrected for multiple tests.

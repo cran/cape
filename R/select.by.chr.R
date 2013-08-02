@@ -14,6 +14,7 @@ function(data.obj, chr, include.covariates = TRUE){
 	data.obj$geno <- sub.geno
 	data.obj$chromosome <- data.obj$chromosome[chr.locale]
 	data.obj$marker.location <- data.obj$marker.location[chr.locale]
+	data.obj$marker.names <- data.obj$marker.names[chr.locale]
 
 	return(data.obj)
 	

@@ -26,9 +26,6 @@ Mean centering subtracts the mean phenotype value from each phenotype value yiel
 \value{
 This function returns data.obj with the normalized phenotypes in place of the original phenotypes. 
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 \note{
  Both normalization and mean centering are highly recommended before obtaining the eigentraits with singular value decomposition (SVD) (see \code{\link{get.eigentraits}}). 
  This normalization procedure can also be performed by \code{\link{get.eigentraits}} 
@@ -40,7 +37,8 @@ Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carte
 \examples{
 library(cape)
 data(obesity.cross)
-hist(obesity.cross$pheno[,"glucose"], main = "Histogram of Glucose", xlab = "Glucose (mg/dL)")
+hist(obesity.cross$pheno[,"glucose"], main = "Histogram of Glucose", 
+xlab = "Glucose (mg/dL)")
 ## be sure to move over any covariates before normalizing the phenotypes
 obesity.cross <- create.covar(obesity.cross, "mom")
 obesity.cross <- norm.pheno(obesity.cross)

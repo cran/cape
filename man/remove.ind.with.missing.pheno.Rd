@@ -19,9 +19,6 @@ remove.ind.with.missing.pheno(data.obj)
 \value{
 The data object is returned after the individuals with missing phenotype data have been removed. A message is also printed to the screen reporting how many individuals were removed.
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \seealso{
 \code{\link{get.eigentraits}}

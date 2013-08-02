@@ -31,9 +31,6 @@ Returns the error propagated coefficients and standard errors for m12 and m21
 \references{
 Carter, G. W., Hays, M., Sherman, A., & Galitski, T. (2012). Use of pleiotropy to model genetic interactions in a population. PLoS genetics, 8(10), e1003010. doi:10.1371/journal.pgen.1003010
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 % Add one or more standard keywords, see file KEYWORDS in the
 % R documentation directory.
 \keyword{internal}% __ONLY ONE__ keyword per line

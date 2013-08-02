@@ -37,18 +37,16 @@ mark.covar = FALSE, write.file = TRUE)
 \value{
 This function writes a table of direct influences to a file. It also returns the table invisibly, i.e. if the output of the function is assigned to an object, the object will contain the table of influences. Otherwise, nothing is returned.
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 \examples{
-# not run
+
 # here the table is written to a file, but nothing is returned.
-# writeVariantInfluences(obesity.cross)
+\dontrun{writeVariantInfluences(obesity.cross)}
 
 # here the table is written to a file, and returned to the 
 # object sig.table
-# sig.table <- writeVariantInfluences(obesity.cross)
-# print(sig.table)
+\dontrun{
+	sig.table <- writeVariantInfluences(obesity.cross)
+	print(sig.table)}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

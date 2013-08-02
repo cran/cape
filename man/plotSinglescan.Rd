@@ -8,9 +8,9 @@ This function plots the results obtained from the single-marker regression perfo
 }
 \usage{
 plotSinglescan(data.obj, chr = NULL, traits = NULL, 
-standardized = TRUE, show.marker.labels = FALSE, 
-mark.covar = TRUE, mark.chr = TRUE, plot.type = "h", 
-overlay = FALSE, trait.colors = NULL, 
+show.alpha.values = NULL, standardized = TRUE, 
+show.marker.labels = FALSE, mark.covar = TRUE, mark.chr = TRUE, 
+plot.type = "h", overlay = FALSE, trait.colors = NULL, 
 show.rejected.markers = FALSE, show.selected.markers = FALSE)
 }
 %- maybe also usage for other objects documented here.
@@ -24,6 +24,9 @@ show.rejected.markers = FALSE, show.selected.markers = FALSE)
 	\item{traits}{
 		An optional vector indicating which traits should be plotted. If NULL, the default, all traits are plotted.
 	}
+	\item{show.alpha.values}{
+		A numeric vector indicating which alpha values specified in \code{\link{singlescan}} should be plotted. If NULL, all alpha values calculated in \code{\link{singlescan}} are plotted.
+	}
 	\item{standardized}{
 		A logical value. If TRUE, the absolute value of the regression t statistics (\eqn{\beta/\sigma}) are plotted. If FALSE, the raw regression coefficients (\eqn{\beta}) are plotted.
 	}
@@ -34,7 +37,7 @@ show.rejected.markers = FALSE, show.selected.markers = FALSE)
 		A logical value. If TRUE, the covarates for the pair scan are marked in red. If FALSE, all markers are plotted in black.
 	}
 	\item{mark.chr}{
-		A lovical value. If TRUE, alternating chromosomes are shaded in gray to aid in visualizing chromosome boundaries.
+		A logical value. If TRUE, alternating chromosomes are shaded in gray to aid in visualizing chromosome boundaries.
 		}
 	\item{plot.type}{
 		A character indicating whether the marker effects should be plotted as vertical lines ("h"), points ("p"), lines ("l"), or both lines and points ("b"). 
@@ -56,19 +59,15 @@ show.rejected.markers = FALSE, show.selected.markers = FALSE)
 \value{
 Nothing is returned from this function. It produces a plot of the effects 
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \seealso{
 \code{\link{singlescan}}, \code{\link{select.markers.for.pairscan}}
 }
 \examples{
-# not run 
 # plot all markers and both eigentraits
-# plotSinglescan(obesity.cross)
+\dontrun{plotSinglescan(obesity.cross)}
 # plot only results from chromosomes 1 through 4
-# plotSinglescan(obesity.cross, chr = c(1:4))
+\dontrun{plotSinglescan(obesity.cross, chr = c(1:4))}
 }
 % Add one or more standard keywords, see file KEYWORDS in the
 % R documentation directory.

@@ -19,9 +19,6 @@ A numeric vector to be normalized
 A logical value indicating how rank ties should be handled. If FALSE, ties are not broken. If TRUE, a small jitter factor is added to each term to break ties.
 }
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 \seealso{
 \code{\link{rank}}
 }

@@ -3,16 +3,15 @@ function(data.obj, transform.to.phenospace = TRUE, pval.correction = c("holm", "
 
 
 	#This object keeps large intermediate data
-	if(save.permutations){
-		intermediate.data <- vector(mode = "list")
-		}
+	intermediate.data <- vector(mode = "list")
+
 		
 	if(length(grep("h", pval.correction) > 0)){
 		pval.correction = "holm"
 		}
 
-	if(pval.correction != "holm" && pval.correction != "fdr" && pval.correction != "lfdr"){
-		stop("Method must be one of the following: 'holm', 'fdr', 'lfdr'")
+	if(pval.correction != "holm" && pval.correction != "fdr" && pval.correction != "lfdr" && pval.correction != "none"){
+		stop("Method must be one of the following: 'holm', 'fdr', 'lfdr', 'none'")
 		}
 		
 
@@ -29,9 +28,7 @@ function(data.obj, transform.to.phenospace = TRUE, pval.correction = c("holm", "
 		n.gene <- dim(geno)[2]
 		if(perm){
 			scan.two.results <- data.obj$pairscan.perm		
-			if(save.permutations){
-				intermediate.data$pairscan.results <- scan.two.results
-				}
+			intermediate.data$pairscan.results <- scan.two.results
 			data.obj$pairscan.perm <- NULL
 			gc()
 			}else{
@@ -198,10 +195,10 @@ function(data.obj, transform.to.phenospace = TRUE, pval.correction = c("holm", "
 		if(verbose){cat("calculating direct influence of permutations...\n")}
 		perm.stats <- dir.inf(data.obj, perm = TRUE)
 		
-		if(save.permutations){
-			intermediate.data$var.to.pheno.influence <- exp.stats
-			intermediate.data$var.to.pheno.influence.perm <- perm.stats
-			}
+
+		intermediate.data$var.to.pheno.influence <- exp.stats
+		intermediate.data$var.to.pheno.influence.perm <- perm.stats
+
 		#================================================================
 		#================================================================	
 
@@ -289,10 +286,6 @@ function(data.obj, transform.to.phenospace = TRUE, pval.correction = c("holm", "
 		if(verbose){cat("calculating individual marker influences in permutations...\n")}
 		perm.stats.per.marker <- direct.influence.stat(perm.stats, perm = TRUE)
 		
-			if(save.permutations){
-				intermediate.data$var.to.pheno.test.stat.perm <- exp.stats.per.marker
-				intermediate.data$var.to.pheno.test.stat <- perm.stats.per.marker
-				}
 		#================================================================
 	
 	direct.influence.epcal<- function(exp.stats.per.marker, perm.stats.per.marker){
@@ -321,16 +314,73 @@ function(data.obj, transform.to.phenospace = TRUE, pval.correction = c("holm", "
 		if(verbose){cat("calculating p values...\n")}
 		emp.p.table <- direct.influence.epcal(exp.stats.per.marker, perm.stats.per.marker)
 		#replace the direct influence tables with the tables with the added empirical p values
-		if(save.permutations){
-			intermediate.data$var.to.pheno.test.stat <- emp.p.table
-			}
+		intermediate.data$var.to.pheno.test.stat <- emp.p.table
+		intermediate.data$var.to.pheno.test.stat.perm <- perm.stats.per.marker
+		
 		#================================================================
 		#================================================================
 		
 		
+	# #using a ks test means that too many markers are significant
+	# #calculating an empirical p value and correcting it is too stringent
+	# direct.influence.max <- function(emp.p.table){
+		
+		# stat <- emp.p.table
+
+		# markers <- unique(stat[[1]][,1])
+		# max.stat.list <- vector(length(stat), mode = "list")
+		# names(max.stat.list) <- names(stat)
+		
+		# #go through each of the phenotypes and find the maximum 
+		# #influence of each marker
+		# for(ph in 1:length(stat)){
+			# max.stat.table <- NULL
+			# for(m in markers){
+				# marker.locale <- which(stat[[ph]][,1] == m)
+				# temp.table <- matrix(stat[[ph]][marker.locale,], nrow = length(marker.locale))
+				# colnames(temp.table) <- colnames(stat[[ph]])
+				# max.stat.locale <- which(as.numeric(temp.table[,"|t.stat|"]) == max(as.numeric(temp.table[,"|t.stat|"])))
+				
+				# # ninetyfifth <- get.percentile(stat[[ph]][,"|t.stat|"], percentile = 95)
+				# # pval <- length(which(temp.table[,"|t.stat|"] <= ninetyfifth))/length(temp.table[,"|t.stat|"])
+				# emp <- temp.table[,"|t.stat|"]; null  <- stat[[ph]][,"|t.stat|"]
+				# # pval <- suppressWarnings(ks.test(emp, sample(null, length(null)/2)))$p.value
+				# sample.seq <- seq(1, length(null), 1)
+				# pval <- suppressWarnings(ks.test(emp, null[sample.seq]))$p.value
+				# max.stats <- matrix(c(temp.table[max.stat.locale,], rep(pval, length(max.stat.locale))), nrow = length(max.stat.locale))
+				# max.stat.table <- rbind(max.stat.table, max.stats[1,]) #if there is more than one max, just take one
+				# }	
+
+			# ordered.table <- max.stat.table[order(max.stat.table[,5], decreasing = TRUE),]
+
+			# if(pval.correction == "holm"){
+				# adj.p <- p.adjust(max.stat.table[,7], method = "holm")
+				# adj.p.name <- "p.adjusted"
+				# }
+			# if(pval.correction == "fdr"){
+				# fdr.out <- suppressWarnings(fdrtool(max.stat.table[,7], statistic = "pvalue", plot = FALSE, verbose = FALSE, cutoff.method = "pct0"))
+				# adj.p <- fdr.out$qval
+				# adj.p.name <- "qval"
+				# }
+			# if(pval.correction == "lfdr"){
+				# fdr.out <- suppressWarnings(fdrtool(max.stat.table[,7], statistic = "pvalue", plot = FALSE, verbose = FALSE, cutoff.method = "pct0"))
+				# adj.p <- fdr.out$lfdr
+				# adj.p.name <- "lfdr"
+				# }
+			# if(pval.correction == "none"){
+				# adj.p <- max.stat.table[,7]
+				# adj.p.name <- "p.adjusted"
+				# }
+			# max.stat.table[,7] <- adj.p
+			# max.stat.list[[ph]] <- max.stat.table
+			# dimnames(max.stat.list[[ph]])[[2]] <- c(colnames(stat[[1]]), adj.p.name)
+			# }
+	
+		# return(max.stat.list)
+		# }
 
 	direct.influence.max <- function(emp.p.table){
-
+		
 		stat <- emp.p.table
 
 		markers <- unique(stat[[1]][,1])
@@ -379,9 +429,6 @@ function(data.obj, transform.to.phenospace = TRUE, pval.correction = c("holm", "
 	if(verbose){cat("calculating maximum influence of each marker...\n")}
 	max.stat.list <- direct.influence.max(emp.p.table)
 	data.obj$max.var.to.pheno.influence <- max.stat.list
-	
-	
-		
 	
 	
 	return(data.obj)

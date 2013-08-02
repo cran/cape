@@ -22,16 +22,9 @@ plotSVD(data.obj, orientation = c("vertical", "horizontal"))
 \value{
 No values are returned
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \seealso{
 \code{\link{get.eigentraits}}
-}
-\examples{
-# not run
-# plotSVD(obesity.cross)
 }
 % Add one or more standard keywords, see file KEYWORDS in the
 % R documentation directory.

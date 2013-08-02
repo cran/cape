@@ -7,7 +7,7 @@
 This function plots the results from the pairwise regressions. The matrices are plotted with results coded on a yellow to blue scale. Results from all phenotypes are plotted on the same scale.
 }
 \usage{
-plotPairscan(data.obj, phenotype = NULL, standardized = FALSE, 
+plotPairscan(data.obj, phenotype = NULL, standardized = TRUE, 
 show.marker.labels = FALSE, show.chr = TRUE, 
 label.chr = TRUE, pdf.label = "Pairscan.Regression.pdf", 
 verbose = FALSE)
@@ -42,16 +42,9 @@ verbose = FALSE)
 \value{
 No values are returned.
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \seealso{
 \code{\link{pairscan}}
-}
-\examples{
-# not run
-# plotPairscan(data.obj)
 }
 % Add one or more standard keywords, see file KEYWORDS in the
 % R documentation directory.

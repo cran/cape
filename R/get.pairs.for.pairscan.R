@@ -30,8 +30,8 @@ function(geno, min.per.genotype = NULL, max.pair.cor = NULL, verbose = FALSE){
 		}else{
 		thresh.param <- max.pair.cor
 		check.linkage <- function(m1,m2,thresh.param){
-			pair.cor <- cor(m1, m2, use = "complete")
-			if(pair.cor > max.pair.cor) {
+			pair.cor <- try(cor(m1, m2, use = "complete"), silent = TRUE)
+			if(class(pair.cor) == "try-error" || pair.cor > max.pair.cor) {
 				return(FALSE) #pair failed check
 				}else{
 				return(TRUE) #pair passed check
@@ -51,7 +51,7 @@ function(geno, min.per.genotype = NULL, max.pair.cor = NULL, verbose = FALSE){
 	
 	good.pairs <- apply(all.pairs, 1, check.one.pair)
 	
-	pairs.mat <- all.pair.names[which(good.pairs),]
+	pairs.mat <- all.pair.names[which(good.pairs),,drop = FALSE]
 	colnames(pairs.mat) <- c("marker1", "marker2")
 	rownames(pairs.mat) <- NULL
 	

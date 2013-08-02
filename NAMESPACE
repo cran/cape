@@ -2,9 +2,10 @@ importFrom("corpcor", pseudoinverse)
 importFrom("evd", qgev, fgev)
 importFrom("qpcR", propagate)
 importFrom("Matrix", rankMatrix)
-import(igraph)
+import("igraph")
 importFrom("fdrtool", fdrtool)
+importFrom("shape", Arrowhead)
 
-export(calc.delta.errors, calc.p, consec.pairs, create.covar, delete.pheno, direct.influence, error.prop, genome.wide.threshold.1D, get.col.num, get.covar, get.eigentraits, get.layout.mat, get.linearly.independent, get.network, get.pairs.for.pairscan, linkage.blocks, myImagePlot, norm.pheno, one.pairscan, pair.matrix, pairscan, plotCollapsedVarInf, plotNetwork, plotPairscan, plotSinglescan, plotSVD, plotVariantInfluences, read.population, remove.ind.with.missing.pheno, report.progress, rotate.mat, rz.transform, segment.region, select.by.chr, select.by.ind, select.eigentraits, select.markers.for.pairscan, select.pheno, set.covar, set.pairscan.thresh, singlescan, writeVariantInfluences)
+export(calc.delta.errors, calc.p, consec.pairs, create.covar, delete.pheno, direct.influence, error.prop, genome.wide.threshold.1D, get.col.num, get.covar, get.eigentraits, get.layout.mat, get.linearly.independent, get.network, get.pairs.for.pairscan, linkage.blocks.stepwise, myImagePlot, norm.pheno, one.pairscan, one.singlescan, pair.matrix, pairscan.null, pairscan, plotCollapsedVarInf, plotNetwork, plotPairscan, plotSinglescan.heat, plotSinglescan, plotSVD, plotVariantInfluences, read.population, remove.ind.with.missing.pheno, report.progress, rotate.mat, rz.transform, segment.region, select.by.chr, select.by.ind, select.eigentraits, select.markers.for.pairscan, select.pheno, set.covar, set.pairscan.thresh, singlescan, writePopulation, writeVariantInfluences)
 
 

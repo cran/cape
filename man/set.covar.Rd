@@ -34,19 +34,16 @@ This function operates on the element in data.obj called \code{covar.flags}. Thi
 \references{
 Carter, G. W., Hays, M., Sherman, A., & Galitski, T. (2012). Use of pleiotropy to model genetic interactions in a population. PLoS genetics, 8(10), e1003010. doi:10.1371/journal.pgen.1003010
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \seealso{
 \code{\link{plotSinglescan}}, \code{\link{get.covar}}, \code{\link{create.covar}}
 }
 \examples{
-# not run
-# obesity.cross <- set.covar(obesity.cross, pheno = "ET1", 
-# markers = c("D1Mit213", "D1Mit76", "D1Mit46", "D1Mit200", "D1Mit37", "D2Mit2"), 
-# is.covar = TRUE, plot.covar = TRUE)
+\dontrun{
+	obesity.cross <- set.covar(obesity.cross, pheno = "ET1", 
+	markers = c("D1Mit213", "D1Mit76", "D1Mit46", "D1Mit200", "D1Mit37", "D2Mit2"), 
+	is.covar = TRUE, plot.covar = TRUE)}
 }
 % Add one or more standard keywords, see file KEYWORDS in the
 % R documentation directory.

@@ -8,7 +8,8 @@ Plot variant-to-variant influences
 This function plots the final network as does \code{\link{plotVariantInfluences}}, but it plots the network condensed by linkage blocks as performed by \code{\link{get.network}}. This function can only be run after running \code{\link{get.network}}
 }
 \usage{
-plotCollapsedVarInf(data.obj, expand.labels = FALSE, all.markers = FALSE)
+plotCollapsedVarInf(data.obj, expand.labels = FALSE, 
+all.markers = FALSE, scale.effects = c("log10", "sqrt", "none"))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -20,18 +21,16 @@ plotCollapsedVarInf(data.obj, expand.labels = FALSE, all.markers = FALSE)
 	}
 	\item{all.markers}{
 		A logical value. If TRUE all markers are plotted. If FALSE only markers tested in the pair scan are plotted.
-}
-}
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
+	}
+	\item{scale.effects}{
+		A string indicating a scaling function by which the effects should be scaled. This is useful in increasing contrast between effects with large variance.
+	}
 }
 
 \seealso{
-\code{\link{pairscan}}}
-\examples{
-# not run
-# plotCollapsedVarInf(obesity.cross)
+\code{\link{pairscan}}
 }
+
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
 \keyword{hplot}

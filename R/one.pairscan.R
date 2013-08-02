@@ -4,11 +4,18 @@ function(phenotype.vector, genotype.matrix, covar.vector, pairs.matrix, n.perm =
 		# require(Matrix)
 		
 		#============================================================================
-		# check to see that the covariates are not redundant
+		# check to see that the covariates are not redundant and are linearly independent
 		#============================================================================
 		use.covars <- which(covar.vector == 1)
 		if(length(use.covars) > 0){
 			cov.mat <- matrix(genotype.matrix[,as.numeric(use.covars)], ncol = length(use.covars))
+			
+			design.cov <- cbind(rep(1, dim(cov.mat)[1]), cov.mat)
+			rank.cov <- rankMatrix(design.cov)
+			if(rank.cov[[1]] < dim(design.cov)[2]){
+				stop("The covariate matrix does not appear to be linearly independent.\nIf you are using dummy variables for groups, leave one of the groups out.")
+				}
+			
 			cor.mat <- cor(cov.mat)
 			diag(cor.mat) <- 0
 			perfect.cor <- which(abs(signif(cor.mat, 2)) == 1)
@@ -16,6 +23,8 @@ function(phenotype.vector, genotype.matrix, covar.vector, pairs.matrix, n.perm =
 				stop("Check the covariates. There appears to be at least one pair of redundant covariates.")
 				}
 			}
+			
+			
 		#============================================================================
 		
 			
@@ -160,7 +169,7 @@ function(phenotype.vector, genotype.matrix, covar.vector, pairs.matrix, n.perm =
 
 			marker.pair.results <- get.model.results(marker.names = markers, m1 = marker1, m2 = marker2)
 			
-			if(!is.null(marker.pair.results)){
+			if(length(marker.pair.results) > 0){
 				all.model.effects[m,] <- marker.pair.results[[1]]
 				all.model.se[m,] <- marker.pair.results[[2]]
 				all.model.cov[m,] <- marker.pair.results[[3]]
@@ -212,7 +221,7 @@ function(phenotype.vector, genotype.matrix, covar.vector, pairs.matrix, n.perm =
 		     	}
 		      
 		      
-			if(!is.null(all.model.effects.perm)){
+			if(length(all.model.effects.perm) > 0){
 				colnames(all.model.effects.perm) <- colnames(all.model.se.perm) <- column.names
 				untested.pairs.perm <- which(is.na(rowSums(all.model.effects.perm)))
 				if(length(untested.pairs.perm) > 0){
@@ -229,7 +238,7 @@ function(phenotype.vector, genotype.matrix, covar.vector, pairs.matrix, n.perm =
 			final.effects.table <- cbind(pairs.matrix, all.model.effects)
 			final.se.table <- cbind(pairs.matrix, all.model.se)
 			
-			if(!is.null(all.model.effects.perm)){
+			if(length(all.model.effects.perm) > 0){
 				marker.pairs.used.perm <- apply(marker.pairs.used.perm, 2, as.numeric)
 		      	colnames(marker.pairs.used.perm) <- c("marker1", "marker2")
 				final.effects.table.perm <- cbind(marker.pairs.used.perm, all.model.effects.perm)
@@ -238,14 +247,14 @@ function(phenotype.vector, genotype.matrix, covar.vector, pairs.matrix, n.perm =
 
 			final.cov.table <- all.model.cov
 			
-			if(!is.null(all.model.effects.perm)){
+			if(length(all.model.effects.perm) > 0){
 				final.cov.table.perm <- all.model.cov.perm
 				}
 
 			phenotype.results <- list(final.effects.table, final.se.table, final.cov.table)
 			names(phenotype.results) <- c("pairscan.effects", "pairscan.se", "model.covariance")
 	      	
-	      	if(!is.null(all.model.effects.perm)){
+	      	if(length(all.model.effects.perm) > 0){
 				phenotype.perm.results <- list(final.effects.table.perm, final.se.table.perm, final.cov.table.perm)
 				names(phenotype.perm.results) <- c("pairscan.effects.perm", "pairscan.se.perm", "model.covariance.perm")
 	      		}else{

@@ -32,19 +32,12 @@ This function adds three new elements to the data.obj list.
 \references{
 Carter, G. W., Hays, M., Sherman, A., & Galitski, T. (2012). Use of pleiotropy to model genetic interactions in a population. PLoS genetics, 8(10), e1003010. doi:10.1371/journal.pgen.1003010
 }
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
-}
 \note{
 There must be more individuals than phenotypes to perform this calculation. An error results if there are more phenotypes than individuals.
 }
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \seealso{
 \code{\link{norm.pheno}}, \code{\link{plotSVD}}
-}
-\examples{
-# not run
-# obesity.cross <- get.eigentraits(obesity.cross)
 }
 
 % Add one or more standard keywords, see file KEYWORDS in the

@@ -1,21 +1,124 @@
 plotNetwork <-
-function(data.obj, collapsed.net = TRUE, trait = NULL, chr = NULL, show.effect.size = FALSE){
+function(data.obj, collapsed.net = TRUE, trait = NULL, phenotype.labels = NULL, main.lwd = 4, inter.lwd = 3, label.cex = 1.5, percent.bend = 15, chr.gap = 1, label.gap = 5, positive.col = "#af8dc3", negative.col = "#7fbf7b"){
 
-	# require(igraph)	
+	# require(shape)
+	circle.dens = 0.0005
+	center.x = 1; center.y = 1; radius = 2
+
+	# chr.rel.length <- c(98.5, 103.9, 82.7, 88.6, 90.2, 79, 89.1, 76.2, 75.1, 77.9, 88, 63.9, 67.3, 66.4, 59, 57.8, 61.3, 59.4, 56.9)
+	chr.rel.length <- c(1)
 	
-	iArrows <- igraph:::igraph.Arrows
-			
 	all.chr <- data.obj$chromosome
 	all.pos <- data.obj$marker.location
+	chr <- sort(unique(as.numeric(all.chr)))
+	covar.exists <- which(chr == 0)
+	
+	if(length(covar.exists) > 0){
+		num.true.chr = length(chr) - length(covar.exists)
+		covar.names = data.obj$marker.names[which(data.obj$chromosome == 0)]
+		chr.names <- chr[which(chr != 0)]
+		chr.names <- c(covar.names, chr.names)
+		chr <- chr[which(chr != 0)]
+		names(chr) <- rep("chr", length(chr))
+		names(covar.names) <- rep("covar", length(covar.names))
+		chr <- c(covar.names, chr)
+		}else{
+		num.true.chr = length(chr)
+		chr.names <- chr
+		names(chr) <- rep("chr", length(chr))
+		}
+		
+	
+	if(length(chr.rel.length) != num.true.chr){
+		# warning("The relative lengths of the chromosomes will not be plotted.")
+		rel.length <- rep(1, num.true.chr)
+		}else{
+		rel.length <- chr.rel.length/max(chr.rel.length)
+		}
 
+	if(length(covar.exists) > 0){
+		rel.length <- c(rep(0.2, length(covar.names)), rel.length)
+		}
+	
+
+	#============================================================================================
+	# internal functions
+	#============================================================================================
+	get.circle <- function(radius, center.x = 1, center.y = 1, dens = circle.dens){
+		t <- seq(0,2*pi, dens)	
+		x <- radius*cos(t)+center.x
+		y <- radius*sin(t)+center.y
+		result <- list(x,y); names(result) <- c("x", "y")
+		return(result)
+		}
+	
+	
+	get.block.coord <- function(radius.coord, start, pts.per.chr, block.rel.locale){
+		coord.x <- radius.coord$x[start:(start+pts.per.chr[i]-1)] #get the relative x and y coordinates for the block
+		coord.y <- radius.coord$y[start:(start+pts.per.chr[i]-1)]
+		x.coord <- coord.x[round(length(coord.x)*as.numeric(block.rel.locale[2])):round(length(coord.x)*as.numeric(block.rel.locale[3]))]
+		y.coord <- coord.y[round(length(coord.x)*as.numeric(block.rel.locale[2])):round(length(coord.y)*as.numeric(block.rel.locale[3]))]
+		return(cbind(rep(names(chr.blocks.locale)[ch], length(x.coord)), x.coord, y.coord))
+		}
+
+	#assign a chromosome and relative position to each block
+	get.chr.pos <- function(block){
+		marker.locale <- which(colnames(data.obj$geno) %in% block)
+		chr <- unique(all.chr[marker.locale])
+		if(length(chr) > 1){
+			chr.char <- paste(chr, collapse = ", ")
+			stop(paste("There is linkage between markers on chromosomes ", chr.char,". Please try a high r2.thresh.", sep = ""))
+			}
+		min.pos <- min(all.pos[marker.locale])
+		max.pos <- max(all.pos[marker.locale])
+		total.length <- max(all.pos[all.chr == chr])
+		return(c(chr, min.pos/total.length, max.pos/total.length))
+		}
+	
+	get.block.effect <- function(block){
+		effects <- rep(NA, length(var.to.pheno)); names(effects) <- names(var.to.pheno)
+		marker.locale <- lapply(var.to.pheno, function(x) match(block, x[,1]))
+		for(i in 1:length(marker.locale)){
+			effects[i] <- mean(var.to.pheno[[i]][marker.locale[[i]], "|t.stat|"])
+			}
+		return(effects)	
+		}
+		
+	#this function returns the points on a line between two points
+	get.line <- function(x0, y0, x1, y1, dens = circle.dens){
+		x.pts <- segment.region(x0, x1, 1/dens, alignment = "ends")
+		slope <- (y1-y0)/(x1-x0)
+		y.pts <- slope*(x.pts - x0) + y0
+		result <- list(x.pts, y.pts); names(result) <- c("x", "y")
+		return(result)
+		}
+	#============================================================================================
+	# end internal functions
+	#============================================================================================
+
+	#get coordinates for the multiple concentric circles we will use
+	chr.radius <- get.circle(radius)
+	inner.bar.radius = get.circle(radius*0.98)
+	inter.radius = get.circle(radius*0.96)
+	bend.to.radius = get.circle(radius/2)
+
+	#divide into chromosomes
+	num.chr = length(chr)
+	gap = round((length(chr.radius$x)*chr.gap)/100) #number of values to skip for gap between chromosomes
+
+
+	label.gap <- round((length(chr.radius$x)*label.gap)/100)
+	full.length <- length(chr.radius$x) - (gap*num.chr) - label.gap
+	full.chr <- rel.length*(1/sum(rel.length))
+	pts.per.chr <- floor(full.length*full.chr)
+	
 	
 	if(collapsed.net){
 		adj.mat <- data.obj$collapsed.net
 		}else{
 		adj.mat <- data.obj$full.net	
 		}
-		
-		
+
 		if(is.null(adj.mat)){
 			stop("get.network() must be run before plotting the collapsed network.")
 			}
@@ -27,57 +130,28 @@ function(data.obj, collapsed.net = TRUE, trait = NULL, chr = NULL, show.effect.s
 			}
 			
 		all.markers <- as.vector(unlist(blocks))
-		
-		
-		#assign a chromosome and relative position to each block
-		get.chr.pos <- function(block){
-			marker.locale <- which(colnames(data.obj$geno) %in% block)
-			chr <- unique(all.chr[marker.locale])
-			if(length(chr) > 1){
-				chr.char <- paste(chr, collapse = ", ")
-				stop(paste("There is linkage between markers on chromosomes ", chr.char,". Please try a high r2.thresh.", sep = ""))
-				}
-			pos <- mean(all.pos[marker.locale])
-			max.pos <- max(all.pos[all.chr == chr])
-			return(c(chr, pos/max.pos))
-			}
-		
+				
+
 		chr.pos <- t(sapply(blocks, get.chr.pos))
-		colnames(chr.pos) <- c("chromosome", "position")
+		colnames(chr.pos) <- c("chromosome", "min.position", "max.position")
+		#center the mark positions and replace the 0 chromosomes with real names
+		chr.pos[which(chr.pos[,1] == 0),2:3] <- 0.5
 
-		if(is.null(chr)){
-			chr <- unique(all.chr)
-			}else{
-			chr <- sort(chr)	
+		if(length(covar.exists) > 0){
+			chr.pos[which(chr.pos[,1] == 0),1] <- covar.names
 			}
-			
-		#calculate beginning and end x coordinates for each chromosome
-		num.chr <- length(chr)
-		chr.x <- matrix(NA, ncol = 2, nrow = num.chr)
-		rownames(chr.x) <- chr
-		chr.x[,1] <- (0:(num.chr-1))+(num.chr*0.005)
-		chr.x[,2] <- (1:num.chr)-(num.chr*0.005)
-
-
+		
+		
 		#get the average effect size for the var to 
 		#pheno effects for each block
 		var.to.pheno <- data.obj$max.var.to.pheno.influence
 
-		get.block.effect <- function(block){
-			effects <- rep(NA, length(var.to.pheno)); names(effects) <- names(var.to.pheno)
-			marker.locale <- lapply(var.to.pheno, function(x) match(block, x[,1]))
-			for(i in 1:length(marker.locale)){
-				effects[i] <- mean(var.to.pheno[[i]][marker.locale[[i]], "|t.stat|"])
-				}
-			return(effects)	
-			}
-			
 		block.effects <- t(sapply(blocks, get.block.effect))
 		rel.block.effects <- block.effects/max(block.effects)
 		
 		#and each phenotype
 		if(is.null(trait)){
-			pheno <- names(data.obj$max.var.to.pheno.influence)
+			pheno <- names(data.obj$max.var.to.pheno.influence)				
 			}else{
 			pheno <- trait
 			trait.locale <- which(trait %in% names(data.obj$max.var.to.pheno.influence))
@@ -89,114 +163,194 @@ function(data.obj, collapsed.net = TRUE, trait = NULL, chr = NULL, show.effect.s
 				}
 			}
 			
+		if(is.null(phenotype.labels)){
+			pheno.names <- pheno
+			}else{
+			pheno.names <- phenotype.labels
+			if(length(phenotype.labels) != length(pheno)){
+				stop("I'm detecting the wrong number of phenotype labels.")
+				}	
+			}
+			
+		#get the circle coordinates for each trait
+		trait.circ <- vector(mode = "list", length = length(pheno))
+		names(trait.circ) <- pheno
+		start.radius <- 1.05
+		gap.radius <- 0.05
+		for(i in 1:length(pheno)){
+			effect.radius = get.circle(radius*start.radius)
+			trait.circ[[i]] <- effect.radius
+			start.radius <- start.radius + gap.radius
+			}
+		
+		
+		label.radius = get.circle((radius*start.radius)+0.1)
 		
 		#if we need to filter chr.pos and adj.mat to include
-		#only the chromomsomes and phenotypes we are including
-		chr.pos <- chr.pos[which(chr.pos[,"chromosome"] %in% chr),]
+		#only the phenotypes we are including
 		all.block.pheno <- c(rownames(chr.pos), pheno)
-		adj.mat <- adj.mat[,colnames(adj.mat) %in% all.block.pheno]
-		adj.mat <- adj.mat[rownames(adj.mat) %in% rownames(chr.pos),]
-		
-		#get the absolute position of each marker
-		get.abs.mrk <- function(chr.pos.row){
-			chr.locale <- which(rownames(chr.x) == chr.pos.row[1])
-			mrk.pos <- ((chr.x[chr.locale,2] - chr.x[chr.locale,1])*as.numeric(chr.pos.row[2])) + chr.x[chr.locale,1]
-			return(as.numeric(mrk.pos))
-			}
-		
-		ph.x <- apply(chr.pos, 1, get.abs.mrk)
-		
-		#if there are covariates, expand the covariate "chromosome"
-		#to give each covariate its own segment
-		covar.exists <- which(chr.pos[,1] == 0)
-		covar.locale <- which(rownames(chr.x) == 0)
-		if(length(covar.locale) > 0){
-			covar.min <- chr.x[covar.locale,1]
-			covar.max <- chr.x[covar.locale,2]
-			new.cov.x <- matrix(NA, ncol = 2, nrow = length(which(all.chr == 0)))
-			region.centers <- segment.region(covar.min, covar.max, length(which(all.chr == 0)), "center") 
-			new.cov.x[,1] <- region.centers - ((covar.max-covar.min)/100)
-			new.cov.x[,2] <- region.centers + ((covar.max-covar.min)/100)
-			rownames(new.cov.x) <- rep(0, dim(new.cov.x)[1])
-			chr.x <- chr.x[which(rownames(chr.x) != 0),]
-			chr.x <- rbind(chr.x, new.cov.x)
-			
-			#also adjust the positions of the covariates in ph.x
-			covar.blocks <- rownames(chr.pos)[which(chr.pos[,1] == 0)]
-			if(length(covar.blocks) > 0){
-				sig.covar <- NULL
-				for(i in 1:length(covar.blocks)){
-					sig.covar <- blocks[[covar.blocks[i]]]
-					}
-				covar.pos <- which(colnames(data.obj$geno)[which(all.chr == 0)] %in% sig.covar)
-				cov.centers <- segment.region(covar.min, covar.max, length(which(all.chr == 0)), "center")
-				cov.locale <- which(chr.pos[,1] == 0)
-				ph.x[cov.locale] <- cov.centers[covar.pos]
-				}
-			}
-		
-		
-		#take out the covariate label and add it in at the end
-		chr.labels <- chr
-		chr.labels[which(chr.labels == 0)] <- ""
+		adj.mat <- adj.mat[,colnames(adj.mat) %in% all.block.pheno, drop = FALSE]
+	
+		main.effect.mat <- adj.mat[,which(colnames(adj.mat) %in% pheno), drop = FALSE]
+	
+	chr.coord.table <- NULL #the coordinates of the chromosomes
+	block.coord.table <- NULL #the coordinates of the blocks for plotting interaction polygons
+	inner.bar.coord.table <- NULL #the coordinates of the blocks for plotting target bars
+	
+	plot.new()
+	#give the right margin a bit more room to write covariate names
+	plot.window(xlim = c(min(label.radius$x), max(label.radius$x)*1.25), ylim = c(min(label.radius$y), max(label.radius$y)))
+	par(mar = c(2,2,2,0))
+	plot.dim <- par("usr")
+	
+	#segment the y coordinates of the gap region
+	#in the outermost circle to evenly space the
+	#label sticks and gaps
+	pheno.label.starts <- round(segment.region(1, label.gap, num.points = length(pheno), alignment = "center"))
+	# pheno.label.y <- segment.region(trait.circ[[length(trait.circ)]]$y[1], trait.circ[[length(trait.circ)]]$y[label.gap], num.points = length(pheno), alignment = "center")
 
-		dev.new(width = 12, height = 7)
-		plot.new()
-		plot.window(xlim = c(0,length(chr)), ylim = c(0,1))
-		for(i in 1:length(chr.x[,1])){
-			segments(chr.x[i,1], 0.5, chr.x[i,2], 0.5, lwd = 5)
-			text(x = mean(chr.x[i,]), y = 1, chr.labels[i], cex = 1.5)
-			}
-		if(length(covar.locale) > 0){
-			text(x = mean(new.cov.x), y = 1, "Cov.", cex = 1.5)
+	#put the labels between the outermost trait circle and the edge of the plot
+	label.x <- max(trait.circ[[length(trait.circ)]]$x) + (plot.dim[2] - max(trait.circ[[length(trait.circ)]]$x))*0.25
+	arrow.start.x <- max(trait.circ[[length(trait.circ)]]$x) + (plot.dim[2] - max(trait.circ[[length(trait.circ)]]$x))*0.2
+	
+	for(tr in length(trait.circ):1){
+
+		#add light gray bars to help the eye track the phenotypes
+		#they should be staggered so the label sticks don't overlap
+		circ.x <- trait.circ[[tr]]$x[pheno.label.starts[tr]:length(trait.circ[[tr]]$x)]
+		circ.y <- trait.circ[[tr]]$y[pheno.label.starts[tr]:length(trait.circ[[tr]]$y)]
+		points(circ.x, circ.y, type = "l", col = "lightgray", lwd = main.lwd)
+
+		#and add phenotype labels
+		arrow.end.x <- trait.circ[[tr]]$x[pheno.label.starts[tr]]
+		arrow.y <- trait.circ[[tr]]$y[pheno.label.starts[tr]]
+		segments(x0 = arrow.start.x, x1 = arrow.end.x, y0 = arrow.y, lwd = main.lwd, col = "lightgray")
+		text(label.x, arrow.y, labels = pheno.names[tr], adj = 0)
+
+		}
+	
+	
+	start = label.gap
+	for(i in 1:length(chr)){
+		chr.x.coord <- chr.radius$x[start:(start+pts.per.chr[i]-1)]
+		chr.y.coord <- chr.radius$y[start:(start+pts.per.chr[i]-1)]
+		points(chr.x.coord, chr.y.coord, type = "l", lwd = main.lwd)
+		chr.coord.table <- rbind(chr.coord.table, cbind(rep(chr[i], length(chr.x.coord)), chr.x.coord, chr.y.coord))
+		
+		if(names(chr)[i] == "covar"){
+			text.adj = 0
+			}else{
+			text.adj = 0.5
 			}
 			
-		par(xpd = TRUE)
-		num.pheno <- length(pheno)
-		ph.y <- 0.45
-		gap <- 0.1
-		for(ph in 1:length(pheno)){
-			edge.col <- rep("gray", length(ph.x))
-			sig.locale <- which(adj.mat[,pheno[ph]] != 0)
-			if(length(sig.locale) > 0){
-				edge.col[which(adj.mat[,pheno[ph]] > 0)] <- rgb(0, 201/256, 87/256)
-				edge.col[which(adj.mat[,pheno[ph]] < 0)] <- "red"
-				}
-			text(x = -0.8, y = ph.y, pheno[ph], cex = 0.8)
-			if(show.effect.size){
-				segments(x0 = ph.x, y0 = rep(ph.y, length(ph.x)), y1 = rep(ph.y, length(ph.x))+(rel.block.effects[,ph]*gap*0.5), col = edge.col)	
-				}else{
-				points(x = ph.x, y = rep(ph.y, length(ph.x)), col = edge.col, pch = "|", cex = 1.5)
-				}
-			ph.y <- ph.y - gap
-			}
+		text(mean(label.radius$x[start:(start+pts.per.chr[i]-1)]), mean(label.radius$y[start:(start+pts.per.chr[i]-1)]), chr.names[i], adj = text.adj, cex = label.cex)
 		
-
-		#add arrows for the variant interactions
-		just.m <- adj.mat[,-which(colnames(adj.mat) %in% pheno)]
+		# get the number of blocks on this chromosome
+		chr.blocks.locale <- which(chr.pos[,1] == chr[i])
+		if(length(chr.blocks.locale) > 0){
+			for(ch in 1:length(chr.blocks.locale)){
+				main.effects <- main.effect.mat[chr.blocks.locale[ch],,drop=FALSE]
+				block.rel.locale <- chr.pos[chr.blocks.locale[ch],,drop=FALSE]
+				
+				for(ph in 1:length(pheno)){
+						
+					if(main.effects[ph] != 0){ #if there are significant effects of this block, add them to the circle
+						if(main.effects[ph] < 0){trait.col = negative.col}else{trait.col = positive.col}
+						
+						block.coord <- get.block.coord(radius.coord = trait.circ[[ph]], start, pts.per.chr, block.rel.locale)
+	
+						if(!collapsed.net || names(chr)[i] == "covar" || dim(block.coord)[1] == 1){
+							pt.locale <- which(trait.circ[[ph]]$x == block.coord[,2])
+							pt.x1 <- trait.circ[[ph]]$x[pt.locale-1]; pt.x2 <- trait.circ[[ph]]$x[pt.locale]
+							pt.y1 <- trait.circ[[ph]]$y[pt.locale-1]; pt.y2 <- trait.circ[[ph]]$y[pt.locale]
+							points(c(pt.x1, pt.x2), c(pt.y1, pt.y2), type = "l", lwd = main.lwd, col = trait.col)
+							# points(as.numeric(block.coord[,2]), as.numeric(block.coord[,3]), type = "p", pch = 16, col = trait.col)
+							}else{
+							points(as.numeric(block.coord[,2]), as.numeric(block.coord[,3]), type = "l", lwd = main.lwd, col = trait.col)
+							}
+						}
+					
+					#collect positions of the blocks for polygons and inner target bars on slightly smaller circles
+					block.coord.table <- rbind(block.coord.table, get.block.coord(inter.radius, start, pts.per.chr, block.rel.locale))
+					inner.bar.coord.table <- rbind(inner.bar.coord.table, get.block.coord(inner.bar.radius, start, pts.per.chr, block.rel.locale))				
+	
+					} #end looping through phenotypes
+				} #end looping through blocks
+			} #end case for if there are blocks on this chromosome
+		start = start + pts.per.chr[i] + gap
+		}
+		
+		
+		#add the interactions
+		just.m <- adj.mat[,-which(colnames(adj.mat) %in% pheno), drop = FALSE]
+		#adjust the values, so we can scale the line width by effect size
+		# just.m <- just.m/max(abs(just.m))
 		for(i in 1:dim(just.m)[1]){
 			sig.locale <- which(just.m[i,] != 0)
 			
 			if(length(sig.locale) > 0){
-				edge.col <- rep(NA, length(sig.locale))
-				edge.col[which(just.m[i,sig.locale] > 0)] <- rgb(0, 201/256, 87/256)
-				edge.col[which(just.m[i,sig.locale] < 0)] <- "red"
 				
-				target.spec.pos <- ph.x[colnames(just.m)[sig.locale]]
-				source.spec.pos <- rep(ph.x[rownames(just.m)[i]], length(sig.locale))
+				for(s in 1:length(sig.locale)){
+					if(just.m[i,sig.locale[s]] > 0){edge.col <- positive.col}else{edge.col = negative.col}
 				
-				curve.dir <- sign(target.spec.pos-source.spec.pos)
-				curve.mag <- 1.3/length(chr)
-				iArrows(x1 = source.spec.pos, y1 = rep(0.5, length(sig.locale)), x2 = target.spec.pos, y2 = rep(0.5, length(sig.locale)), h.lwd=1, sh.lwd=2, sh.col=edge.col, curve = curve.mag*curve.dir, width=1, size=0.7)
-				}
-			}
-			
-			
-			if(collapsed.net){
-				mtext("Linkage Block Influences", cex = 1.2, line = 2)
-				}else{
-				mtext("Variant Influences", cex = 1.2, line = 2)	
-				}	
-
+					#find the start and stop positions
+					start.block <- rownames(just.m)[i]
+					start.block.coord <- block.coord.table[which(block.coord.table[,1] == start.block),,drop=FALSE]
+				
+					end.block <- colnames(just.m)[sig.locale[s]]
+					end.block.coord <- block.coord.table[which(block.coord.table[,1] == end.block),,drop=FALSE]
 	
-	}
+	
+					#draw a polygon to connect the start block and stop position
+					start.inter.x <- as.numeric(start.block.coord[,2])
+					start.inter.y <- as.numeric(start.block.coord[,3])
+
+					end.inter.x <- as.numeric(end.block.coord[,2])
+					end.inter.y <- as.numeric(end.block.coord[,3])
+
+					#sort the corners of the polygon according to their distance from the center of the circle
+					start.mat <- matrix(c(start.inter.x[1], start.inter.y[1], start.inter.x[length(start.inter.x)], start.inter.y[length(start.inter.y)]), ncol = 2, byrow = TRUE)
+					end.mat <- matrix(c(end.inter.x[1], end.inter.y[1], end.inter.x[length(end.inter.x)], end.inter.y[length(end.inter.y)]), ncol = 2, byrow = TRUE)
+					rownames(start.mat) <- c("dist.start.min", "dist.start.max") 
+					rownames(end.mat) <- c("dist.end.min", "dist.end.max") 
+					start.dist <- order(apply(start.mat, 1, function(x) dist(matrix(c(x, center.x, center.y), ncol = 2, byrow = TRUE))))
+					end.dist <- order(apply(end.mat, 1, function(x) dist(matrix(c(x, center.x, center.y), ncol = 2, byrow = TRUE))))
+					
+					#add a bar to indicate the block at the source end of the interaction
+					start.bar.coord <- inner.bar.coord.table[which(inner.bar.coord.table[,1] == start.block),,drop=FALSE]
+					points(as.numeric(start.bar.coord[,2]), as.numeric(start.bar.coord[,3]), type = "l", lwd = main.lwd, col = "darkgray")
+					
+					#add a bar to indicate the block at the target end of the interaction
+					end.bar.coord <- inner.bar.coord.table[which(inner.bar.coord.table[,1] == end.block),,drop=FALSE]
+					points(as.numeric(end.bar.coord[,2]), as.numeric(end.bar.coord[,3]), type = "l", lwd = main.lwd, col = "darkgray")
+					
+
+					#find the midpoint of the line between source and target
+					mid.point.x <- mean(c(mean(start.inter.x), mean(end.inter.x)))
+					mid.point.y <- mean(c(mean(start.inter.y), mean(end.inter.y)))
+					
+					
+					#get the points on the line between the midpoint and the center of the circle
+					pts.to.center <- get.line(mid.point.x, mid.point.y, center.x, center.y, dens = circle.dens)
+					#find the point that makes this line the correct percentage long
+					shifted.x <- pts.to.center$x[round(((percent.bend/100))*length(pts.to.center$x))]
+					shifted.y <- pts.to.center$y[round(((percent.bend/100))*length(pts.to.center$y))]
+					if(length(shifted.x) == 0){shifted.x = mid.point.x}
+					if(length(shifted.y) == 0){shifted.y = mid.point.y}
+
+					
+					#make a spline curve based on the start and stop of the line plus this shifted midpoint
+					inter.curve <- xspline(c(mean(start.inter.x), shifted.x, mean(end.inter.x)), y = c(mean(start.inter.y), shifted.y, mean(end.inter.y)), shape = 1, draw = FALSE)
+					points(inter.curve$x, inter.curve$y, col = edge.col, type = "l", lwd = inter.lwd)
+					# points(inter.curve$x, inter.curve$y, col = edge.col, type = "l", lwd = sqrt(abs(just.m[i,sig.locale[s]])))
+
+					#add an arrowhead pointed at the target
+					arrow.rad <- atan2((mean(end.inter.y)-shifted.y), (mean(end.inter.x)-shifted.x))
+					arrow.deg <- arrow.rad*(180/pi)
+					Arrowhead(x0 = mean(end.inter.x), y0 = mean(end.inter.y), arr.col = edge.col, arr.adj = 1, lcol = edge.col, angle = arrow.deg, arr.lwd = inter.lwd)
+										
+				}
+			} #end case for when there are significicant interactions in this row
+		}
+		
+}

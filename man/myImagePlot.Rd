@@ -19,9 +19,6 @@ myImagePlot(x, ...)
 	Additional plotting arguments, such as x and y labels. MyImagePlot also looks for min.x and max.x arguments to specify the scale of z values on which the x matrix should be plotted.
 }
 }
-\author{
-Vivek M. Philip, Anna L. Tyler, Wei Lu, Justin J. Hendrick, and Gregory W. Carter
-}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \seealso{
 \code{\link{plotPairscan}}

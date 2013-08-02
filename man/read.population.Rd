@@ -9,7 +9,8 @@ This function reads in data for \code{cape} analysis and formats it into an obje
 }
 \usage{
 read.population(filename = NULL, pheno.col = NULL, 
-geno.col = NULL, delim = ",", na.strings = "-")
+geno.col = NULL, delim = ",", na.strings = "-",
+check.chr.order = TRUE)
 }
 %- maybe also usage for other objects documented here.
 \arguments{
@@ -28,6 +29,9 @@ An optional character string with path name specifying the file to be read in. O
 	\item{na.strings}{
 	The symbol used to denote missing data in the file. 	
 	}
+	\item{check.chr.order}{
+	A logical value indicating whether the order of the chromosomes should be checked. In general, chromosomes should be entered in increasing numerical value. CAPE does not sort chromosomes, and they will be plotted in the order in which they are entered. If the chromosomes have non-numeric and non-X or Y names, and cannot be checked appropriately, or an alternate order is desired, set check.chr.order to FALSE.
+	}
 }
 \details{
 All phenotype and genotype data must be contained in a single comma-separated file. The phenotypes should be listed in columns at the beginning of the file, followed by the genotype data. Each row of the file corresponds to one individual. The file must contain the following attributes:
@@ -45,9 +49,6 @@ The file is converted to a list object that is used as the main argument in most
 \item{geno}{A matrix containing the genotype data for the population. Each genotype is stored in a column, and individuals are stored in rows. Regardless of original format, the genotypes are converted to probabilities for in the data object. Genotypes originally coded as A,H,B for example, will be encoded as 0,0.5,1 respectively.}
 \item{chromosome}{A vector containing the chromosome on which each marker is found.}
 \item{marker.location}{A vector containing the chromosomal position of each marker.}
-}
-\author{
-Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Gregory W. Carter
 }
 % Add one or more standard keywords, see file KEYWORDS in the
 % R documentation directory.
