@@ -1,5 +1,5 @@
 read.population <-
-function(filename = NULL, pheno.col = NULL, delim = ",", na.strings = "-") {
+function(filename = NULL, pheno.col = NULL, geno.col = NULL, delim = ",", na.strings = "-") {
 
 	if(is.null(filename)){
 		filename <- file.choose()
@@ -52,6 +52,12 @@ function(filename = NULL, pheno.col = NULL, delim = ",", na.strings = "-") {
 	pheno <- matrix(apply(pheno, 2, as.numeric), ncol = dim(pheno)[2], byrow = FALSE)
 	colnames(pheno) <- colnames(cross.data)[pheno.columns]
 		 	
+   
+   if(is.null(geno.col)){
+	   	geno.col <- 1:dim(geno)[2]
+   		}
+   	geno.columns <- get.col.num(geno, geno.col)
+  	geno <- geno[,geno.columns] 
    
     #run a check to see how the genotypes are stored.
 	#genotypes can be stored as (0,1,2), ("A","H","B")
@@ -122,7 +128,7 @@ function(filename = NULL, pheno.col = NULL, delim = ",", na.strings = "-") {
     
 	
  	#check to see if the genotypes are encoded as (0, 1, 2)
- 	numeric.test <- grep(2, all.genotypes) #check for 2, since 2 is unique to this encoding
+ 	numeric.test <- which(all.genotypes == 2) #check for 2, since 2 is unique to this encoding
  	if(length(numeric.test) > 0){
  		cat("The genotypes are encoded as 0, 1, 2.\nConverting to 0, 0.5, 1.\n")
  		found.genotype.mode <- 1 #set the flag indicating we've figured out the encoding

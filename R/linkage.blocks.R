@@ -3,12 +3,12 @@ function(data.obj, p.or.q = 0.05, collapse.linked.markers = TRUE, r2.thresh = 0.
 	
 	net.data <- data.obj$var.to.var.p.val
 	pheno.net.data <- data.obj$max.var.to.pheno.influence
-	data.obj$r2.thresh <- r2.thresh
+	data.obj$network.p.or.q <- p.or.q
 	
-	
-	if(!collapse.linked.markers){
-		r2.thresh <- 2
+	if(collapse.linked.markers){
+		data.obj$r2.thresh <- r2.thresh
 		}
+
 	
 	if(length(net.data) == 0){
 		stop("calc.p() must be run to calculate variant-to-variant influences.")
@@ -20,10 +20,6 @@ function(data.obj, p.or.q = 0.05, collapse.linked.markers = TRUE, r2.thresh = 0.
 	var.sig.col <- as.vector(na.omit(match(c("qval", "lfdr", "p.adjusted"), colnames(net.data))))
 	sig.markers <- net.data[which(net.data[, var.sig.col] <= p.or.q), 1:2]
 	
-	if(length(sig.markers) == 0){
-		stop("There are no significant blocks at this p.or.q value.")
-		}
-
 	sig.pheno <- vector(mode = "list", length = length(pheno.net.data))
 	pheno.sig.col <- as.vector(na.omit(match(c("qval", "lfdr", "p.adjusted"), colnames(pheno.net.data[[1]]))))
 	for(ph in 1:length(pheno.net.data)){
@@ -44,7 +40,7 @@ function(data.obj, p.or.q = 0.05, collapse.linked.markers = TRUE, r2.thresh = 0.
 	
 	#take these out of the genotype matrix
 	marker.geno <- data.obj$geno[,as.character(sorted.markers)]
-	all.cor <- cor(marker.geno, use = "complete")^2
+	all.cor <- cor(marker.geno, use = "pairwise.complete.obs")^2
 	#zero out the diagonal and the lower triangle
 	all.cor[lower.tri(all.cor, diag = TRUE)] <- 0
 	
@@ -53,12 +49,13 @@ function(data.obj, p.or.q = 0.05, collapse.linked.markers = TRUE, r2.thresh = 0.
 
 	#start with a linkage block list that contains one marker per block
 	link.block <- as.vector(sorted.markers, mode = "list")
-	names(link.block) <- paste("Block", 1:length(link.block), sep = "")
-	
+
+	# names(link.block) <- paste("Block", 1:length(link.block), sep = "")	
 	# name.blocks <- lapply(link.block, get.marker.names)
 	
 	#if there are no markers in LD, just return the list as is.
 	if(length(in.ld) == 0){
+		names(link.block) <- sorted.markers
 		if(collapse.linked.markers){
 			data.obj$linkage.blocks.collapsed <- link.block
 			}else{
@@ -120,10 +117,20 @@ function(data.obj, p.or.q = 0.05, collapse.linked.markers = TRUE, r2.thresh = 0.
 		to.nullify <- which(link.block %in% 0)
 		}
 	
-			
-	# name.blocks <- lapply(link.block, get.marker.names)
-	# names(name.blocks) <- paste("Block", 1:length(link.block), sep = "")
+	block.chr <- function(block){
+		chr <- unique(data.obj$chromosome[block])
+		return(chr)
+		}
 	
+	block.chrom <- sapply(link.block, block.chr)
+	u_chrom <- unique(block.chrom)
+	block.names <- rep(NA, length(block.chrom))
+	for(ch in 1:length(u_chrom)){
+		chrom.locale <- which(block.chrom == u_chrom[ch])
+		block.names[chrom.locale] <- paste("Chr", block.chrom[chrom.locale], "_", 1:length(chrom.locale), sep = "")
+		}
+
+	names(link.block) <- block.names
 	
 	if(collapse.linked.markers){
 		data.obj$linkage.blocks.collapsed <- link.block

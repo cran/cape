@@ -10,7 +10,8 @@ to a file in the current working directory.
 }
 \usage{
 writeVariantInfluences(data.obj, p.or.q = 0.05, 
-filename = "Variant.Influences.csv", delim = ",")
+filename = "Variant.Influences.csv", delim = ",", 
+mark.covar = FALSE, write.file = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -26,6 +27,12 @@ filename = "Variant.Influences.csv", delim = ",")
 	\item{delim}{
 		A character string indicating the delimeter in the data file. The default indicates a comma-separated file (",").
 	}
+	\item{mark.covar}{
+		A logical value. If TRUE, an asterisk is appended the names of markers used as covariates in the pair scan.
+		}
+	\item{write.file}{
+		A logical value indicating whether the table should be written to a file or simply returned.
+		}
 }
 \value{
 This function writes a table of direct influences to a file. It also returns the table invisibly, i.e. if the output of the function is assigned to an object, the object will contain the table of influences. Otherwise, nothing is returned.

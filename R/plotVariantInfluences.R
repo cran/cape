@@ -1,5 +1,5 @@
 plotVariantInfluences <-
-function(data.obj, p.or.q = 0.05, all.markers = FALSE, standardize = FALSE, not.tested.col = "lightgray"){
+function(data.obj, p.or.q = 0.05, all.markers = FALSE, standardize = FALSE, not.tested.col = "lightgray", show.marker.labels = FALSE, show.chr = TRUE, label.chr = TRUE){
 	
 	var.influences <- data.obj$var.to.var.p.val
 		
@@ -9,9 +9,6 @@ function(data.obj, p.or.q = 0.05, all.markers = FALSE, standardize = FALSE, not.
 	
 	if(not.tested.col == TRUE){
 		not.tested.col = "lightgray"
-		}
-	if(not.tested.col == FALSE || is.na(not.tested.col)){
-		not.tested.col = "white"
 		}
 	
 	if(is.null(var.influences)){
@@ -28,6 +25,24 @@ function(data.obj, p.or.q = 0.05, all.markers = FALSE, standardize = FALSE, not.
 		}else{
 		unique.markers <- unique(c(as.vector(var.influences[,"Source"]), as.vector(var.influences[,"Target"]), pheno.inf[[1]][,"marker"]))
 		}
+		
+	unique.marker.locale <- which(colnames(data.obj$geno) %in% unique.markers)
+	#get coordinates of the chromosome boundaries
+	if(show.chr){
+		chromosomes <- data.obj$chromosome[sort(unique.marker.locale)]
+		u_chr <- unique(chromosomes[which(!is.na(chromosomes))])
+		chr.boundaries <- apply(matrix(u_chr, ncol = 1), 1, function(x) max(which(chromosomes == x))) + 0.5
+		chr.boundaries <- c(0, chr.boundaries)
+		if(label.chr){
+			chr.names <- unique(chromosomes)
+			}else{
+			chr.names <- NULL
+			}
+		}else{
+		chr.boundaries <- NULL
+		chr.names <- NULL
+		}
+	
 		
 	marker.locale <- match(unique.markers, colnames(data.obj$geno))
 	sorted.markers <- unique.markers[order(marker.locale)]
@@ -88,6 +103,12 @@ function(data.obj, p.or.q = 0.05, all.markers = FALSE, standardize = FALSE, not.
 	
 	#get the coordinates for all pairs not tested
 	not.tested.locale <- which(is.na(rotate.mat(full.inf.mat)), arr.ind = TRUE)
+	
+	if(not.tested.col == FALSE || is.na(not.tested.col)){
+		full.inf.mat[not.tested.locale] <- NA
+		not.tested.locale <- NULL
+		}
+	
 	#take out any values that aren't significant by the cutoff
 	full.inf.mat[which(full.pval.mat > p.or.q)] <- NA
 		
@@ -97,8 +118,8 @@ function(data.obj, p.or.q = 0.05, all.markers = FALSE, standardize = FALSE, not.
 			text(0.5, 0.5, "No Significant Interactions")
 		}else{
 		data.obj$full.adjacency <- full.inf.mat
-		myImagePlot(full.inf.mat, min.x = (max(abs(full.inf.mat), na.rm = TRUE)*-1), max.x = max(abs(full.inf.mat), na.rm = TRUE), main = "Variant Influences", xlab = "Target", ylab = "Source", mark.coords = not.tested.locale, mark.col = not.tested.col)
-		if(not.tested.col != "white"){
+		myImagePlot(full.inf.mat, min.x = (max(abs(full.inf.mat), na.rm = TRUE)*-1), max.x = max(abs(full.inf.mat), na.rm = TRUE), main = "Variant Influences", xlab = "Target", ylab = "Source", mark.coords = not.tested.locale, mark.col = not.tested.col, show.labels = show.marker.labels, chromosome.coordinates = chr.boundaries, chr.names = chr.names)
+		if(!is.null(not.tested.locale)){
 			legend("bottomright", legend = "not testable", col = not.tested.col, pch = 16)
 			}
 		}

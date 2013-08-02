@@ -8,7 +8,7 @@
 This function uses the perumtation results to calculate empirical p values for the variant-to-variant influences calculated by \code{\link{error.prop}}. It also adjusts these p values using Holm's step-down procedure.
 }
 \usage{
-calc.p(data.obj, pval.correction = c("holm", "fdr", "lfdr"))
+calc.p(data.obj, pval.correction = c("holm", "fdr", "lfdr", "none"))
 }
 
 \arguments{
@@ -16,7 +16,7 @@ calc.p(data.obj, pval.correction = c("holm", "fdr", "lfdr"))
 	The object in which all results are stored. See \code{\link{read.population}}.
 	}
 	\item{pval.correction}{
-		One of "holm", "fdr", or "lfdr", indicating whether the p value correction method used should be the Holm step-down procedure, false discovery rate or local false discovery rate respectively.
+		One of "holm", "fdr", "lfdr" or "none", indicating whether the p value correction method used should be the Holm step-down procedure, false discovery rate, local false discovery, or no correction rate respectively.
 	}
 }
 \value{

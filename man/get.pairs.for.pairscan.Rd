@@ -8,7 +8,8 @@ Select marker pairs for pairscan based on filters
 This function selects which marker pairs can be tested in the pair scan. Even if all markers are linearly independent, some marker pairs may have insufficient recombination between them to populate all genotype combinations. Marker pairs for which genotype combinations have insufficient numbers of individuals are not tested. This function determines which marker pairs have sufficient representation in all genotype combinations. 
 }
 \usage{
-get.pairs.for.pairscan(geno, min.per.genotype, verbose = FALSE)
+get.pairs.for.pairscan(geno, min.per.genotype = NULL,
+max.pair.cor = NULL, verbose = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -16,8 +17,11 @@ get.pairs.for.pairscan(geno, min.per.genotype, verbose = FALSE)
 	A two dimensional genotype matrix with rows containing individuals and columns containing markers. Each entry is a value between 0 and 1 indicating the genotype of each individual at each marker. 
 }
   \item{min.per.genotype}{
-	A numeric value indicating the minimum tolerable number of individuals for any of the genotype combinations of marker 1 and marker 2.
+	The minimum number of individuals allowable per genotype. If for a given marker pair, one of the genotypes is underrepresented, the marker pair is not tested. If this value is NULL, max.pair.cor must have a numeric value.
 }
+	\item{max.pair.cor}{
+		A numeric value between 0 and 1 indicating the maximum Pearson correlation that two markers are allowed. If the correlation between a pair of markers exceeds this threshold, the pair is not tested. If this value is set to NULL, min.per.genotype must have a numeric value.
+	}
   \item{verbose}{
 	A logical value. If TRUE, the script prints a message to the screen to indicate that it is running. If FALSE, no message is printed.
 	}

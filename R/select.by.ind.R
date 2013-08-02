@@ -13,7 +13,11 @@ function(data.obj, geno.or.pheno = "pheno", expr){
 		stop("Expression must be in the format 'colname comparison value'")
 		}
 	
-	col.locale <- grep(as.character(expr.pieces[[1]][1]), colnames(sub.mat))
+	if(geno.or.pheno == "geno"){
+		col.locale <- which(data.obj$marker.names == as.character(expr.pieces[[1]][1]))
+		}else{
+		col.locale <- which(colnames(sub.mat) == as.character(expr.pieces[[1]][1]))
+		}
 	if(length(col.locale) == 0){
 		stop("I can't find the column name: ", expr.pieces[[1]][1])
 		}
@@ -41,7 +45,12 @@ function(data.obj, geno.or.pheno = "pheno", expr){
 	
 	data.obj$pheno <- data.obj$pheno[vals.locale,]
 	data.obj$geno <- data.obj$geno[vals.locale,]
-	
+	if(!is.null(data.obj$raw.pheno)){
+		data.obj$raw.pheno <- data.obj$raw.pheno[vals.locale,]
+		}
+	if(!is.null(data.obj$ET)){
+		data.obj$ET <- data.obj$ET[vals.locale,]
+		}	
 	
 	return(data.obj)
 	

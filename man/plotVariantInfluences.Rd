@@ -8,8 +8,10 @@ Plot variant-to-variant influences
 This function plots the reparameterized influences of variants on each other. The epistatic interactions from the pairwise scan are reparameteriezed to the terms \eqn{m_{12}} and \eqn{m_{21}}, where the subscripts indicate the source and target variants respectively. These terms are interpreted as the effect that the source variant exerts on the target variant when both are present. Negative influences represent suppression while positive influences represent enhancement.
 }
 \usage{
-plotVariantInfluences(data.obj, p.or.q = 0.05, all.markers = FALSE, 
-standardize = FALSE, not.tested.col = "lightgray")
+plotVariantInfluences(data.obj, p.or.q = 0.05, 
+all.markers = FALSE, standardize = FALSE, 
+not.tested.col = "lightgray", show.marker.labels = FALSE, 
+show.chr = TRUE, label.chr = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -28,6 +30,15 @@ standardize = FALSE, not.tested.col = "lightgray")
 	\item{not.tested.col}{
 		A color name used to mark variant pairs that were not tested due to linkage. The color distinguishes these pairs from those that were tested, but do not have significant interactions. The default color is light "gray". This can be changed to "white" or FALSE if no marking is desired.
 	}
+	\item{show.marker.labels}{
+		A logical value indicating whether the marker labels should be printed along the plot axes.
+	}
+	 \item{show.chr}{
+	 	A logical value. If TRUE, chromosomes are indicated by alternating gray and white blocks along plot axes.
+	 	}
+	 \item{label.chr}{
+	 	A logical value. If TRUE and if show.chr is TRUE, chromosome numbers are printed inside each gray and white block.
+	 	}
 }
 \value{
 No values are returned. The function generates a plot of the reparameterized source to target effects.

@@ -1,7 +1,7 @@
 genome.wide.threshold.1D <-
 function(data.obj, n.perm = 1000, alpha.for.pairs = 0.05, alpha.for.covar = 0.01, scan.what = c("eigentraits", "raw.traits"), verbose = FALSE){
 	
-	require("evd")
+	# require("evd")
 
 	#calculate the numbers of markers, phenotypes and samples
 	n.gene <- dim(data.obj$geno)[2]

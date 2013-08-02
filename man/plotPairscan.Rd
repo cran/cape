@@ -8,7 +8,9 @@ This function plots the results from the pairwise regressions. The matrices are 
 }
 \usage{
 plotPairscan(data.obj, phenotype = NULL, standardized = FALSE, 
-pdf.label = "Pairscan.Regression.pdf")
+show.marker.labels = FALSE, show.chr = TRUE, 
+label.chr = TRUE, pdf.label = "Pairscan.Regression.pdf", 
+verbose = FALSE)
 }
 %- maybe also usage for other objects documented here.
 \arguments{
@@ -21,9 +23,21 @@ pdf.label = "Pairscan.Regression.pdf")
 	\item{standardized}{
 		A logical value. If FALSE, the plotted values are the beta coefficients of the interaction in the pairwise model. If TRUE, the t statistics (\eqn{\beta/\sigma}) are plotted.
 	 }
+	 \item{show.marker.labels}{
+	 	A logical value indicating whether marker labels should appear on the axes.
+	 }
+	 \item{show.chr}{
+	 	A logical value. If TRUE, chromosomes are indicated by alternating gray and white blocks along plot axes.
+	 	}
+	 \item{label.chr}{
+	 	A logical value. If TRUE and if show.chr is TRUE, chromosome numbers are printed inside each gray and white block.
+	 	}
 	 \item{pdf.label}{
 	 	A character string indicating the name of the file that the plots should be printed to. When multiple phenotypes are plotted, all penotypes are plotted on the same scale and each is plotted in a different page of the pdf.
 	 }
+	 \item{verbose}{
+	 	A logical value indicating whether the progress of the plotting function should be reported. Large data sets can take a long time to process and plot.
+	 	}
 }
 \value{
 No values are returned.

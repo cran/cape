@@ -1,5 +1,5 @@
 pairscan <-
-function(data.obj, scan.what = c("eigentraits", "raw.traits"), n.perm = NULL, min.per.genotype = 6, verbose = FALSE, num.pairs.limit = 1e4, num.perm.limit = 1e7) {
+function(data.obj, scan.what = c("eigentraits", "raw.traits"), n.perm = NULL, min.per.genotype = NULL, max.pair.cor = NULL, verbose = FALSE, num.pairs.limit = 1e4, num.perm.limit = 1e7) {
 
 	if(is.null(n.perm)){
 		stop("The number of permutations must be specified.")
@@ -41,7 +41,7 @@ function(data.obj, scan.what = c("eigentraits", "raw.traits"), n.perm = NULL, mi
 	
 	#fill in a matrix to index the marker pairs
 	marker.matrix <- pair.matrix(colnames(geno))
-	pared.marker.mat <- get.pairs.for.pairscan(geno, min.per.genotype = min.per.genotype, verbose = verbose)
+	pared.marker.mat <- get.pairs.for.pairscan(geno, min.per.genotype = min.per.genotype, max.pair.cor = max.pair.cor, verbose = verbose)
 
 	num.pairs <- dim(pared.marker.mat)[1]
 

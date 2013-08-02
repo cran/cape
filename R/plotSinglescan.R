@@ -1,5 +1,5 @@
 plotSinglescan <-
-function(data.obj, chr = NULL, traits = NULL, standardized = TRUE, mark.covar = TRUE, mark.chr = TRUE, plot.type = "h", overlay = FALSE, trait.colors = NULL, show.rejected.markers = FALSE, show.selected.markers = FALSE){
+function(data.obj, chr = NULL, traits = NULL, standardized = TRUE, show.marker.labels = FALSE, mark.covar = TRUE, mark.chr = TRUE, plot.type = "h", overlay = FALSE, trait.colors = NULL, show.rejected.markers = FALSE, show.selected.markers = FALSE){
 	
 	if(show.rejected.markers && show.selected.markers){
 		stop("show.rejected.markers and show.rejected.markers cannot both be TRUE.")
@@ -133,18 +133,28 @@ function(data.obj, chr = NULL, traits = NULL, standardized = TRUE, mark.covar = 
 						polygon(x = c(x.min, x.min, x.max, x.max), y = c(min(all.vals), max(all.vals), max(all.vals), min(all.vals)), col = "lightgray", border = NA)
 						}
 					if(chr[ch] == 0){
-						text(x = x.max, y = min(all.vals)-((max(all.vals)-min(all.vals))*0.05), labels = "Cov.", cex = 0.5, adj = 0)
+						text(x = x.max, y = min(all.vals)-((max(all.vals)-min(all.vals))*0.05), labels = "Cov.", cex = 0.5, adj = 0, font = 2)
 						}else{
-						text(x = mean(c(x.min, x.max)), y = min(all.vals)-((max(all.vals)-min(all.vals))*0.05), labels = chr[ch], cex = 0.5)
+						text(x = mean(c(x.min, x.max)), y = min(all.vals)-((max(all.vals)-min(all.vals))*0.05), labels = chr[ch], cex = 0.5, font = 2)
 						}
 					}
 				par(xpd = FALSE)
 				}
 		
-				# axis(1, at = 1:length(pheno.res), labels = FALSE)
 				abline(h = 0)
-			    # lbl <- marker.names
-
+				
+				if(show.marker.labels){
+					if(standardized){
+						if(mark.chr){y.val <- max(all.vals)*-0.08}else{y.val <- max(all.vals)*-0.05}
+						}else{
+						if(mark.chr){y.val <- min(all.vals) - (max(all.vals)*0.08)}else{y.val <- min(all.vals) - (max(all.vals)*0.05)}
+						
+						}
+					# axis(1, at = 1:length(pheno.res), labels = FALSE)			
+				    par(xpd = TRUE)
+					text(x = 1:length(pheno.res), y = y.val, labels = marker.names, srt = 90, cex = 0.5, adj = 1)
+					par(xpd = FALSE)
+					}
 
 			if(show.selected.markers){
 				ind.locale <- which(rownames(results.to.plot) %in% colnames(ind.markers) )

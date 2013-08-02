@@ -1,14 +1,14 @@
 calc.p <-
-function(data.obj, pval.correction = c("holm", "fdr", "lfdr")) {
+function(data.obj, pval.correction = c("holm", "fdr", "lfdr", "none")) {
 	
-	require("fdrtool")
+	# require("fdrtool")
 	
 	if(length(grep("h", pval.correction) > 0)){
 		pval.correction <- "holm"
 		}
 		
-	if(pval.correction != "holm" && pval.correction != "fdr" && pval.correction != "lfdr"){
-		stop("pval.correction must be one of the following: 'holm', 'fdr', 'lfdr'")
+	if(pval.correction != "holm" && pval.correction != "fdr" && pval.correction != "lfdr" && pval.correction != "none"){
+		stop("pval.correction must be one of the following: 'holm', 'fdr', 'lfdr', 'none'")
 		}
 		
 	
@@ -61,10 +61,16 @@ function(data.obj, pval.correction = c("holm", "fdr", "lfdr")) {
 
 	#adjust the p values
 	final.table <- rbind(m12, m21)
+	if(pval.correction == "none"){
+		p.adjusted <- as.numeric(final.table[,"P_empirical"])
+		final.table <- cbind(final.table, p.adjusted)
+		}
 	if(pval.correction == "holm"){
 		p.adjusted <- p.adjust(as.numeric(final.table[,"P_empirical"]), method = "holm")
 		final.table <- cbind(final.table, p.adjusted)
-		}else{
+		}
+		
+	if(pval.correction == "fdr" || pval.correction == "lfdr"){
 		fdr.out <- fdrtool(as.numeric(final.table[,"P_empirical"]), statistic = "pvalue", plot = FALSE, verbose = FALSE, cutoff.method = "fndr")
 		if(pval.correction == "lfdr"){
 			lfdr <- fdr.out$lfdr

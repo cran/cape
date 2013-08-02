@@ -1,7 +1,7 @@
 plotNetwork <-
-function(data.obj, collapsed.net = TRUE, trait = NULL, chr = NULL){
+function(data.obj, collapsed.net = TRUE, trait = NULL, chr = NULL, show.effect.size = FALSE){
 
-	require(igraph)	
+	# require(igraph)	
 	
 	iArrows <- igraph:::igraph.Arrows
 			
@@ -33,16 +33,22 @@ function(data.obj, collapsed.net = TRUE, trait = NULL, chr = NULL){
 		get.chr.pos <- function(block){
 			marker.locale <- which(colnames(data.obj$geno) %in% block)
 			chr <- unique(all.chr[marker.locale])
+			if(length(chr) > 1){
+				chr.char <- paste(chr, collapse = ", ")
+				stop(paste("There is linkage between markers on chromosomes ", chr.char,". Please try a high r2.thresh.", sep = ""))
+				}
 			pos <- mean(all.pos[marker.locale])
 			max.pos <- max(all.pos[all.chr == chr])
 			return(c(chr, pos/max.pos))
 			}
-				
+		
 		chr.pos <- t(sapply(blocks, get.chr.pos))
 		colnames(chr.pos) <- c("chromosome", "position")
 
 		if(is.null(chr)){
 			chr <- unique(all.chr)
+			}else{
+			chr <- sort(chr)	
 			}
 			
 		#calculate beginning and end x coordinates for each chromosome
@@ -51,7 +57,23 @@ function(data.obj, collapsed.net = TRUE, trait = NULL, chr = NULL){
 		rownames(chr.x) <- chr
 		chr.x[,1] <- (0:(num.chr-1))+(num.chr*0.005)
 		chr.x[,2] <- (1:num.chr)-(num.chr*0.005)
-		
+
+
+		#get the average effect size for the var to 
+		#pheno effects for each block
+		var.to.pheno <- data.obj$max.var.to.pheno.influence
+
+		get.block.effect <- function(block){
+			effects <- rep(NA, length(var.to.pheno)); names(effects) <- names(var.to.pheno)
+			marker.locale <- lapply(var.to.pheno, function(x) match(block, x[,1]))
+			for(i in 1:length(marker.locale)){
+				effects[i] <- mean(var.to.pheno[[i]][marker.locale[[i]], "|t.stat|"])
+				}
+			return(effects)	
+			}
+			
+		block.effects <- t(sapply(blocks, get.block.effect))
+		rel.block.effects <- block.effects/max(block.effects)
 		
 		#and each phenotype
 		if(is.null(trait)){
@@ -132,6 +154,7 @@ function(data.obj, collapsed.net = TRUE, trait = NULL, chr = NULL){
 		par(xpd = TRUE)
 		num.pheno <- length(pheno)
 		ph.y <- 0.45
+		gap <- 0.1
 		for(ph in 1:length(pheno)){
 			edge.col <- rep("gray", length(ph.x))
 			sig.locale <- which(adj.mat[,pheno[ph]] != 0)
@@ -140,8 +163,12 @@ function(data.obj, collapsed.net = TRUE, trait = NULL, chr = NULL){
 				edge.col[which(adj.mat[,pheno[ph]] < 0)] <- "red"
 				}
 			text(x = -0.8, y = ph.y, pheno[ph], cex = 0.8)
-			points(x = ph.x, y = rep(ph.y, length(ph.x)), col = edge.col, pch = "|", cex = 1.5)
-			ph.y <- ph.y - 0.05
+			if(show.effect.size){
+				segments(x0 = ph.x, y0 = rep(ph.y, length(ph.x)), y1 = rep(ph.y, length(ph.x))+(rel.block.effects[,ph]*gap*0.5), col = edge.col)	
+				}else{
+				points(x = ph.x, y = rep(ph.y, length(ph.x)), col = edge.col, pch = "|", cex = 1.5)
+				}
+			ph.y <- ph.y - gap
 			}
 		
 

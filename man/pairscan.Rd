@@ -9,8 +9,8 @@ This function performs the pairwise regression on all selected marker pairs. The
 }
 \usage{
 pairscan(data.obj, scan.what = c("eigentraits", "raw.traits"), 
-n.perm = NULL, min.per.genotype = 6, verbose = FALSE, 
-num.pairs.limit = 1e4, num.perm.limit = 1e7)
+n.perm = NULL, min.per.genotype = NULL, max.pair.cor = NULL, 
+verbose = FALSE, num.pairs.limit = 1e4, num.perm.limit = 1e7)
 }
 %- maybe also usage for other objects documented here.
 \arguments{
@@ -24,8 +24,11 @@ num.pairs.limit = 1e4, num.perm.limit = 1e7)
 	The number of permutations.
 }
   \item{min.per.genotype}{
-	The minimum number of individuals allowable per genotype. If for a given marker pair, one of the genotypes is underrepresented, the marker pair is not tested.
+	The minimum number of individuals allowable per genotype. If for a given marker pair, one of the genotypes is underrepresented, the marker pair is not tested. If this value is NULL, max.pair.cor must have a numeric value.
 }
+	\item{max.pair.cor}{
+		A numeric value between 0 and 1 indicating the maximum Pearson correlation that two markers are allowed. If the correlation between a pair of markers exceeds this threshold, the pair is not tested. If this value is set to NULL, min.per.genotype must have a numeric value.
+	}
   \item{verbose}{
 	A logical value indicating whether the progress of the scan should be printed to the screen.
 }

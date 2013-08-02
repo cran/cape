@@ -46,6 +46,8 @@ function(data.obj, orientation = c("vertical", "horizontal")){
 	
 	ColorLevels <- seq(min.weight, max.weight, length=length(ColorRamp))
 
+	barplot.axis.cex <- 1.7; barplot.labels.cex = 2; barplot.title.cex = 1.7
+
 	#plot the horizontal configuration
 	if(length(orient.test) == 0){
 		layout.mat <- matrix(c(0,1,1,0,3,2,5,7,0,4,6,0), nrow = 3, ncol = 4, byrow = TRUE)
@@ -77,13 +79,13 @@ function(data.obj, orientation = c("vertical", "horizontal")){
 		
 		#5) plot the barplot
 		par(mar = c(0, 0, 2, 2))
-		barplot(rev(var.accounted), names = "", horiz = TRUE, cex.axis = 1.5, cex.lab = 1.8, xlab = "")
+		barplot(rev(var.accounted), names = "", horiz = TRUE, cex.axis = barplot.axis.cex, cex.lab = barplot.labels.cex, xlab = "")
 		
 		#6) add the axis label for the barplot
 		par(mar = c(0,0,0,0))
 		plot.new()
 		plot.window(xlim = c(0, 1), ylim = c(0, 1))
-		text(x = 0.4, y = 0.5, labels = "Percent Total Variance", cex = 1.5) #the labels for the y axis (phenotypes)
+		text(x = 0.4, y = 0.5, labels = "Percent Total Variance", cex = barplot.title.cex) #the labels for the y axis (phenotypes)
 		
 		
 		#7) add the color ramp
@@ -108,13 +110,13 @@ function(data.obj, orientation = c("vertical", "horizontal")){
 		#2) plot the barplot
 		par(mar = c(0, 0, 4, 2))
 		mids <- barplot(var.accounted, plot = FALSE)
-		barplot(var.accounted, names = "", horiz = FALSE, cex.axis = 1.5, cex.lab = 1.8, ylab = "Percent Total Variance")
+		barplot(var.accounted, names = "", horiz = FALSE, cex.axis = barplot.axis.cex, cex.lab = barplot.labels.cex, ylab = "Percent Total Variance")
 		
 		#3) add the axis label for the barplot
 		par(mar = c(0,0,0,0))
 		plot.new()
 		plot.window(xlim = c(0, 1), ylim = c(0, 1))
-		text(x = 0.65, y = 0.4, labels = "Percent Total Variance", cex = 1.7, srt = 90) #the labels for the y axis (phenotypes)
+		text(x = 0.65, y = 0.4, labels = "Percent Total Variance", cex = barplot.title.cex, srt = 90) #the labels for the y axis (phenotypes)
 		
 		
 		#3) plot the weight matrix
@@ -135,7 +137,7 @@ function(data.obj, orientation = c("vertical", "horizontal")){
 	
 		#6) add the color ramp
 		par(mar = c(0,2,0,2))
-		image(1, ColorLevels, matrix(data=ColorLevels, ncol=length(ColorLevels),nrow=1), col=ColorRamp, xlab="",ylab="",xaxt="n")		
+		image(1, ColorLevels, matrix(data=ColorLevels, ncol=length(ColorLevels),nrow=1), col=ColorRamp, xlab="",ylab="",xaxt="n", cex.axis = 2)		
 
 		# dev.off()			
 		

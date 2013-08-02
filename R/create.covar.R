@@ -7,6 +7,7 @@ function(data.obj, pheno.which){
 	marker.location <- data.obj$marker.location
 	
 	new.marker.locale <- get.col.num(pheno, pheno.which)
+	new.marker.names <- c(data.obj$marker.names, colnames(data.obj$pheno)[new.marker.locale])
 	
 	if(length(new.marker.locale) == 0){
 		return(data.obj)
@@ -18,13 +19,17 @@ function(data.obj, pheno.which){
 	
 	new.marker <- matrix(pheno[,new.marker.locale], ncol = length(new.marker.locale))
 
-	new.geno <- cbind(geno, new.marker)
+	#scale the new markers to be between 0 and 1
+	
+	scaled.marker <- apply(new.marker, 2, function(x) x/max(x, na.rm = TRUE))
+
+	new.geno <- cbind(geno, scaled.marker)
 	
 	
 	colnames(new.geno) <- 1:dim(new.geno)[2]
 	rownames(new.geno) <- rownames(geno)
 		
-	new.marker.names <- c(data.obj$marker.names, pheno.which)
+	
 	chromosome <- c(chromosome, rep(0, length(pheno.which)))
 	marker.location <- c(marker.location, 1:length(pheno.which))
 	

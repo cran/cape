@@ -55,6 +55,18 @@ function(data.obj, n.perm = NULL, covar = NULL, scan.what = c("eigentraits", "ra
 		data.obj$marker.location <- data.obj$marker.location[-y.locale]
 		data.obj$marker.names <- data.obj$marker.names[-y.locale]
 		}
+		
+	#take out markers with only 1 allele
+	num.allele <- apply(gene, 2, function(x) length(unique(x)))
+	mono.allele <- which(num.allele == 1)
+	if(length(mono.allele) > 0){
+		message("\nRemoving invariant markers:")
+		cat(data.obj$marker.names[mono.allele], sep = "\n")
+		gene <- gene[,-mono.allele]
+		data.obj$chromosome <- data.obj$chromosome[-mono.allele]
+		data.obj$marker.location <- data.obj$marker.location[-mono.allele]
+		data.obj$marker.names <- data.obj$marker.names[-mono.allele]
+		}
 	
 	data.obj$geno <- gene
 	

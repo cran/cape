@@ -1,6 +1,9 @@
 error.prop <-
 function (data.obj, perm = FALSE, verbose = FALSE) {
 
+	# require("qpcR")
+	# require("corpcor")
+
 	if(verbose){
 		if(perm){
 			cat("\nCalculating error propagation of permuted coefficients.\n")
@@ -8,10 +11,6 @@ function (data.obj, perm = FALSE, verbose = FALSE) {
 			cat("\nCalculating error propagation of coefficients.\n")	
 			}
 		}
-
-	require("qpcR")
-	require("corpcor")
-
 
 	#====================================================================================
 	#begin internal functions

@@ -1,10 +1,28 @@
 plotPairscan <-
-function(data.obj, phenotype = NULL, standardized = FALSE, pdf.label = "Pairscan.Regression.pdf"){
+function(data.obj, phenotype = NULL, standardized = FALSE, show.marker.labels = FALSE, show.chr = TRUE, label.chr = TRUE, pdf.label = "Pairscan.Regression.pdf", verbose = FALSE){
 	
 	#get the markers used in the pair scan and sort them.
 	markers <- colnames(data.obj$geno.for.pairscan)
 	marker.locale <- match(markers, colnames(data.obj$geno))
 	sorted.markers <- markers[order(marker.locale)]
+
+	markers.which <- match(sorted.markers, colnames(data.obj$geno))
+	#get coordinates of the chromosome boundaries
+	if(show.chr){
+		chromosomes <- data.obj$chromosome[markers.which]
+		u_chr <- unique(chromosomes)
+		chr.boundaries <- apply(matrix(u_chr, ncol = 1), 1, function(x) max(which(chromosomes == x))) + 0.5
+		chr.boundaries <- c(0, chr.boundaries)
+		if(label.chr){
+			chr.names <- unique(chromosomes)
+			chr.names[which(chr.names == 0)] <- "c"
+			}else{
+			chr.names <- NULL	
+			}
+		}else{
+		chr.boundaries <- NULL
+		chr.names <- NULL
+		}
 
 	pairscan.result <- data.obj$pairscan.results
 	
@@ -33,22 +51,23 @@ function(data.obj, phenotype = NULL, standardized = FALSE, pdf.label = "Pairscan
 	max.x <- 0
 	#for each phenotype scanned
 	for(p in pheno.num){
+		if(verbose){cat("\n", phenotype[p], ":\n", sep = "")}
 		#build a results matrix
 		results.mat <- matrix(0, length(markers), length(markers))
+
 		colnames(results.mat) <- rownames(results.mat) <- sorted.markers
 		#and fill it in from the results in the table
 		for(i in 1:length(pairscan.result[[p]][[1]][,1])){
+			if(verbose){report.progress(i, length(pairscan.result[[p]][[1]][,1]))}
 			marker1 <- pairscan.result[[p]][[1]][i,1]
 			marker2 <- pairscan.result[[p]][[1]][i,2]
 			
 			#so we don't have to order the markers, put the effect
-			#in the upper left and lower right. Then blank out the
-			#lower right. Otherwise we get some entries in the top
+			#in the upper right and lower left. Then blank out the
+			#upper right. Otherwise we get some entries in the top
 			#triangle, and some in the bottom.
 			if(standardized){
-				# results.mat[as.character(marker1), as.character(marker2)] <- as.numeric(pairscan.result[[p]][[1]][i,"marker1:marker2"])/as.numeric(pairscan.result[[p]][[2]][i,"marker1:marker2"])
-				# results.mat[as.character(marker2), as.character(marker1)] <- as.numeric(pairscan.result[[p]][[1]][i,"marker1:marker2"])/as.numeric(pairscan.result[[p]][[2]][i,"marker1:marker2"])
-                results.mat[which(colnames(results.mat) == marker1), which(colnames(results.mat) == marker2)] <- as.numeric(pairscan.result[[p]][[1]][i, 
+               results.mat[which(colnames(results.mat) == marker1), which(colnames(results.mat) == marker2)] <- as.numeric(pairscan.result[[p]][[1]][i, 
                   "marker1:marker2"])/as.numeric(pairscan.result[[p]][[2]][i, 
                   "marker1:marker2"])
                 results.mat[which(colnames(results.mat) == marker2), which(colnames(results.mat) == marker1)] <- as.numeric(pairscan.result[[p]][[1]][i, 
@@ -56,8 +75,6 @@ function(data.obj, phenotype = NULL, standardized = FALSE, pdf.label = "Pairscan
                   "marker1:marker2"])
 				
 			}else{
-				# results.mat[as.character(marker1), as.character(marker2)] <- as.numeric(pairscan.result[[p]][[1]][i,"marker1:marker2"])
-				# results.mat[as.character(marker2), as.character(marker1)] <- as.numeric(pairscan.result[[p]][[1]][i,"marker1:marker2"])
                 results.mat[which(colnames(results.mat) == marker1), which(colnames(results.mat) == marker2)] <- as.numeric(pairscan.result[[p]][[1]][i, 
                   "marker1:marker2"])
                 results.mat[which(colnames(results.mat) == marker2), which(colnames(results.mat) == marker1)] <- as.numeric(pairscan.result[[p]][[1]][i, 
@@ -65,7 +82,9 @@ function(data.obj, phenotype = NULL, standardized = FALSE, pdf.label = "Pairscan
 				}
 			}
 			
-		results.mat[lower.tri(results.mat, diag = TRUE)] <- 0
+		# results.mat[lower.tri(results.mat, diag = TRUE)] <- 0
+		# results.mat[upper.tri(results.mat, diag = TRUE)] <- NA
+		diag(results.mat) <- NA
 		marker.locale <- which(sorted.markers %in% colnames(data.obj$geno))
 		colnames(results.mat) <- rownames(results.mat) <- data.obj$marker.names[marker.locale]
 		all.results.mats[[p]] <- results.mat
@@ -74,9 +93,11 @@ function(data.obj, phenotype = NULL, standardized = FALSE, pdf.label = "Pairscan
 		
 		}	
 
-		pdf(pdf.label)
+	
+
+		pdf(pdf.label, width = 7, height = 6)
 		for(p in 1:length(pheno.num)){
-			myImagePlot(all.results.mats[[pheno.num[p]]], xlab = "marker1", ylab = "marker2", main = phenotype[p], min.x = min.x, max.x = max.x)
+			myImagePlot(all.results.mats[[pheno.num[p]]], xlab = "marker1", ylab = "marker2", main = phenotype[p], min.x = min.x, max.x = max.x, show.labels = show.marker.labels, chromosome.coordinates = chr.boundaries, chr.names = chr.names)
 			}
 		dev.off()
 		

@@ -8,7 +8,8 @@
 This function reads in data for \code{cape} analysis and formats it into an object used by other functions in \code{cape}. A single comma-separated file containing both phenotype and genotype data is required. Chromosome and marker locations are required for each marker, and markers are assumed to be in order.
 }
 \usage{
-read.population(filename = NULL, pheno.col = NULL, delim = ",", na.strings = "-")
+read.population(filename = NULL, pheno.col = NULL, 
+geno.col = NULL, delim = ",", na.strings = "-")
 }
 %- maybe also usage for other objects documented here.
 \arguments{
@@ -18,6 +19,9 @@ An optional character string with path name specifying the file to be read in. O
   \item{pheno.col}{
 	An optional numeric vector specifying which columns the phenotypes of interest are in. If omitted, all phenotypes are read in.
 }
+	\item{geno.col}{
+	An optional numeric vector specifying which columns the genotypes of interest are in. If omitted, all genotypes are read in.
+	}
 	\item{delim}{
 		A character string indicating the delimeter in the data file. The default indicates a comma-separated file (",").
 	}

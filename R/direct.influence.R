@@ -338,7 +338,7 @@ function(data.obj, transform.to.phenospace = TRUE, pval.correction = c("holm", "
 		names(max.stat.list) <- names(stat)
 		
 		#go through each of the phenotypes and find the maximum 
-		#influence and median p value of each marker
+		#influence of each marker
 		for(ph in 1:length(stat)){
 			max.stat.table <- NULL
 			for(m in markers){
@@ -359,8 +359,8 @@ function(data.obj, transform.to.phenospace = TRUE, pval.correction = c("holm", "
 					fdr.out <- suppressWarnings(fdrtool(temp.table[,6], statistic = "pvalue", plot = FALSE, verbose = FALSE, cutoff.method = "pct0"))
 					adj.p <- fdr.out$lfdr
 					adj.p.name <- "lfdr"
-					}				
-				max.stats <- matrix(c(temp.table[max.stat.locale,], min(adj.p)), nrow = length(max.stat.locale))
+					}
+				max.stats <- matrix(c(temp.table[max.stat.locale,], rep(min(adj.p), length(max.stat.locale))), nrow = length(max.stat.locale))
 				max.stat.table <- rbind(max.stat.table, max.stats[1,]) #if there is more than one max, just take one
 				colnames(max.stat.table) <- c(colnames(stat[[1]]), adj.p.name)
 				}	

@@ -1,7 +1,24 @@
 one.pairscan <-
 function(phenotype.vector, genotype.matrix, covar.vector, pairs.matrix, n.perm = 0, verbose = FALSE){
 			
-		require(Matrix)
+		# require(Matrix)
+		
+		#============================================================================
+		# check to see that the covariates are not redundant
+		#============================================================================
+		use.covars <- which(covar.vector == 1)
+		if(length(use.covars) > 0){
+			cov.mat <- matrix(genotype.matrix[,as.numeric(use.covars)], ncol = length(use.covars))
+			cor.mat <- cor(cov.mat)
+			diag(cor.mat) <- 0
+			perfect.cor <- which(abs(signif(cor.mat, 2)) == 1)
+			if(length(perfect.cor) > 0){
+				stop("Check the covariates. There appears to be at least one pair of redundant covariates.")
+				}
+			}
+		#============================================================================
+		
+			
 		#============================================================================
 		#internal functions
 		#============================================================================
@@ -42,7 +59,7 @@ function(phenotype.vector, genotype.matrix, covar.vector, pairs.matrix, n.perm =
 			
 				#pull out the genotype data for each marker for ease of 
 				#reading the code later
-
+			
 				design.mat <- cbind(rep(1, length(m1)), genotype.matrix[,use.covars], m1, m2)
 				missing.rows <- which(is.na(rowSums(design.mat)))
 				if(length(missing.rows) > 0){

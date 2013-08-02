@@ -1,8 +1,18 @@
 writeVariantInfluences <-
-function(data.obj, p.or.q = 0.05, filename = "Variant.Influences.csv", delim = ","){
+function(data.obj, p.or.q = 0.05, filename = "Variant.Influences.csv", delim = ",", mark.covar = FALSE, write.file = TRUE){
 	
 	var.influences <- data.obj$var.to.var.p.val
 	pheno.results <- data.obj$max.var.to.pheno.influence
+	
+	if(is.null(var.influences)){
+		stop("calc.p() must be run to calculate variant-to-variant influences.")
+		}
+
+
+	if(is.null(pheno.results)){
+		stop("direct.influence() must be run to calculate variant-to-trait influences.")
+		}
+
 	
 	if(data.obj$transform.to.phenospace){
 		pheno.names <- colnames(data.obj$pheno)
@@ -12,13 +22,6 @@ function(data.obj, p.or.q = 0.05, filename = "Variant.Influences.csv", delim = "
 	num.pheno <- length(pheno.names)
 	
 	
-	if(is.null(var.influences)){
-		stop("calc.p() must be run to calculate variant-to-variant influences.")
-		}
-
-	if(is.null(pheno.results)){
-		stop("direct.influence() must be run to calculate variant-to-trait influences.")
-		}
 
 
 	var.sig.col <- as.vector(na.omit(match(c("qval", "lfdr", "p.adjusted"), colnames(var.influences))))
@@ -73,7 +76,24 @@ function(data.obj, p.or.q = 0.05, filename = "Variant.Influences.csv", delim = "
 			final.table <- final.table[order(final.table[,"|Effect|/SE"], decreasing = TRUE),]
 			}
 
-	write.table(final.table, file = filename, quote = FALSE, sep = delim, row.names = FALSE)
+	if(mark.covar){
+		covar.flags <- data.obj$covar.for.pairscan
+		is.covar <- rownames(covar.flags)[unique(as.vector(unlist(apply(covar.flags, 2, function(x) which(x == 1)))))]
+		covar.names <- data.obj$marker.names[match(is.covar, colnames(data.obj$geno))]
+		covar.source.locale <- which(final.table[,1] %in% covar.names)
+		covar.target.locale <- which(final.table[,2] %in% covar.names)
+		if(length(covar.source.locale) > 0){
+			final.table[covar.source.locale,1] <- paste(final.table[covar.source.locale,1], "*", sep = "")
+			}
+		if(length(covar.target.locale) > 0){
+			final.table[covar.target.locale,2] <- paste(final.table[covar.target.locale,2], "*", sep = "")
+			}
+		}
 	
-	invisible(final.table)	
+	if(write.file){
+		write.table(final.table, file = filename, quote = FALSE, sep = delim, row.names = FALSE)	
+		invisible(final.table)
+		}else{
+			return(final.table)
+			}
 }
