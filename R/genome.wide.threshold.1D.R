@@ -1,10 +1,10 @@
 genome.wide.threshold.1D <-
-function(data.obj, n.perm = 1000, alpha = c(0.01, 0.05), scan.what = c("eigentraits", "raw.traits"), verbose = FALSE){
+function(data.obj, geno.mat, n.perm = 1000, alpha = c(0.01, 0.05), scan.what = c("eigentraits", "raw.traits"), verbose = FALSE){
 	
 	# require("evd")
-
+	gene <- geno.mat
 	#calculate the numbers of markers, phenotypes and samples
-	n.gene <- dim(data.obj$geno)[2]
+	n.gene <- dim(gene)[2]
 
 
 	#pull out genotype and phenotype data for
@@ -14,15 +14,14 @@ function(data.obj, n.perm = 1000, alpha = c(0.01, 0.05), scan.what = c("eigentra
 	#default to eigentraits, basically, if eigen,
 	#et, or ET are anywhere in the string, use the
 	#eigentrais, otherwise, use raw phenotypes
-	type.choice <- c(grep("eigen", scan.what), grep("ET", scan.what), grep("et", scan.what))
-	if(length(type.choice) > 0){
-		pheno <- data.obj$ET
-		}else{
-			pheno <- data.obj$pheno
-			}
-
-	gene <- data.obj$geno
-	num.samples <- dim(pheno)[1]
+		type.choice <- c(grep("eigen", scan.what), grep("ET", scan.what), grep("et", scan.what))
+		if(length(type.choice) > 0){
+			pheno <- data.obj$ET
+			}else{
+				pheno <- data.obj$pheno
+				}
+	
+		num.samples <- dim(pheno)[1]
 	
 	
 	#make additional objects to be used in generating a null for the pairscan
@@ -53,6 +52,9 @@ function(data.obj, n.perm = 1000, alpha = c(0.01, 0.05), scan.what = c("eigentra
 		return(s)
 		}
 
+	one.perm <- function(){
+		
+	}
 	#====================================================
 
 
@@ -103,22 +105,15 @@ function(data.obj, n.perm = 1000, alpha = c(0.01, 0.05), scan.what = c("eigentra
 		s[[a]] <- as.vector(sapply(evd, function(x) get.s(x, alpha[a])))
 		}
 	
-	
 	#calculate one threshold over all phenotypes
 	thresholds <- lapply(s, mean)
 	names(thresholds) <- alpha
-
-	data.obj$alpha.thresh <- thresholds
-	data.obj$pheno.perm.mat <- pheno.perm.mat
-	data.obj$marker.rank.list <- marker.rank.list
-	data.obj$perm.max <- perm.max
-	
 		
 	if(verbose){
 		cat("\n") #make sure the prompt is on the next line at the end of everything
 		}
 		
-	return(data.obj)
+	return(thresholds)
 
 
 }

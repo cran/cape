@@ -1,10 +1,10 @@
 plotSinglescan.heat <-
-function(data.obj, standardized = TRUE, show.marker.labels = FALSE, show.chr.boundaries = TRUE, label.chr = TRUE, threshold.above = NULL, color = "lightblue2", scale.fun = NULL){
+function(data.obj, singlescan.obj, standardized = TRUE, show.marker.labels = FALSE, show.chr.boundaries = TRUE, label.chr = TRUE, threshold.above = NULL, color = "blue", light.dark = "light", scale.fun = NULL){
 	
 	
-	D1.results <- data.obj$singlescan.results
+	D1.results <- singlescan.obj$singlescan.results
 	marker.names <- data.obj$marker.names
-	ind.markers <- data.obj$geno.for.pairscan
+	ind.markers <- singlescan.obj$geno.for.pairscan
 		
 	if(is.null(D1.results)){
 		stop("singlescan() must be run before plotting the results")
@@ -49,7 +49,9 @@ function(data.obj, standardized = TRUE, show.marker.labels = FALSE, show.chr.bou
 			results.to.plot <- eval(cl)
 			}
 	
-		my.palette <- colorRampPalette(c("white", color), space = "rgb")
+	
+		col <- get.col(color, light.dark = light.dark)
+		my.palette <- colorRampPalette(col)
 		num.traits <- dim(results.to.plot)[2]
 		num.markers <- dim(results.to.plot)[1] 
 		image(x = 1:num.markers, y = 1:num.traits, z = results.to.plot, col = my.palette(50), axes = FALSE, xlab = "Chromosome", ylab = "")

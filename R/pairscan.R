@@ -1,48 +1,65 @@
 pairscan <-
-function(data.obj, scan.what = c("eigentraits", "raw.traits"), n.perm = NULL, min.per.genotype = NULL, max.pair.cor = NULL, verbose = FALSE, num.pairs.limit = 1e4, num.perm.limit = 1e7) {
+function(data.obj, geno.obj = NULL, covar = NULL, scan.what = c("eigentraits", "raw.traits"), total.perm = NULL, min.per.genotype = NULL, max.pair.cor = NULL, n.top.markers = NULL, use.kinship = FALSE, kin.full.geno = TRUE, sample.kinship = TRUE, num.kin.samples = 100, n.per.sample = 100, verbose = FALSE, num.pairs.limit = 1e6, num.perm.limit = 1e7, overwrite.alert = TRUE, n.cores = NULL) {
 
-	if(is.null(n.perm)){
-		stop("The number of permutations must be specified.")
+	covar.type = NULL #for appeasing R CMD check
+
+
+	if(overwrite.alert){
+		choice <- readline(prompt = "Please make sure you assign the output of this function to a pairscan.obj, and NOT the data.obj. It will overwrite the data.obj.\nDo you want to continue (y/n) ")
+		if(choice == "n"){stop()}
 		}
 
-	#take our various parts of the data object
-	#for clarity of code later on.
-	#taking the scanone.results just tells us which
-	#phenotypes were scanned
-	scanone.result <- data.obj$singlescan.results
+
+	pairscan.obj <- list()
+
+	if(is.null(total.perm)){
+		stop("The number of permutations must be specified.")
+		}
 	
-	#we need to use the covariates determined from the 1D scan
-	#in the 2D scan, so stop if the 1D scan has not been performed
-	if(length(scanone.result) == 0){
-		stop("singlescan() must be run on this object before pairscan()\n")
-		}	
+	pheno <- get.pheno(data.obj, scan.what)	
+	num.pheno <- dim(pheno)[2]
+	pheno.names <- colnames(pheno)
 
+	covar.info <- get.covar(data.obj, covar)
+	for(i in 1:length(covar.info)){
+		assign(names(covar.info)[i], covar.info[[i]])
+		}
+	#find the phenotypic covariates. These will
+	#be tested separately, and not as part of a
+	#chromosome
+	num.covar <- length(covar.type)
+	p.covar.locale <- which(covar.type == "p")
+	num.p.covar <- length(p.covar.locale)
 
-	#If the user does not specify a scan.what, 
-	#default to eigentraits, basically, if eigen,
-	#et, or ET are anywhere in the string, use the
-	#eigentraits, otherwise, use raw phenotypes
-	type.choice <- c(grep("eig", scan.what), grep("ET", scan.what), grep("et", scan.what)) #look for any version of eigen or eigentrait, the user might use.
-	if(length(type.choice) > 0){ #if we find any, use the eigentrait matrix
-		pheno <- data.obj$ET
-		if(is.null(pheno)){stop("There are no eigentraits. Please set scan.what to raw.traits, or run get.eigentraits().")}
-		}else{
-			pheno <- data.obj$pheno #otherwise, use the raw phenotype matrix
-			}
+	if(is.null(covar) && !is.null(covar.names)){
+		choice <- readline(prompt = "There are covariates in the data object, but none are specified. Would you like to continue? (y/n)")
+		if(choice == "n"){stop()}
+		}
+		
+	if(is.null(covar)){
+		covar.names = "none"
+		covar.loc = NULL
+		covar.table = NULL
+		}
 
-	geno <- data.obj$geno.for.pairscan
-	covar.flags <- data.obj$covar.for.pairscan
+	#if we are using covariates, we need to calculate
+	#and extra kinship matrix using the full genome
+	add.full.kin <- as.logical(num.p.covar > 0)
+	
 
-	if(is.null(geno)){
+	if(is.null(data.obj$geno.for.pairscan)){
 		stop("select.markers.for.pairscan() must be run before pairscan()")
 		}
 		
-		
+	
+	#add the covariates (geno and pheno) 
+	#to the genotype matrix so that we 
+	#test all pairs
+	geno <- get.geno.with.covar(data.obj, geno.obj, g.covar = TRUE, p.covar = TRUE, for.pairscan = TRUE)	
 	num.markers <- dim(geno)[2]
 	
 	#fill in a matrix to index the marker pairs
-	marker.matrix <- pair.matrix(colnames(geno))
-	pared.marker.mat <- get.pairs.for.pairscan(geno, min.per.genotype = min.per.genotype, max.pair.cor = max.pair.cor, verbose = verbose)
+	pared.marker.mat <- get.pairs.for.pairscan(geno, min.per.genotype = min.per.genotype, max.pair.cor = max.pair.cor, verbose = verbose, n.cores = n.cores)
 
 	num.pairs <- dim(pared.marker.mat)[1]
 	
@@ -55,52 +72,35 @@ function(data.obj, scan.what = c("eigentraits", "raw.traits"), n.perm = NULL, mi
 		go.on <- readline(prompt = "Do you want to continue (y/n)?\n")
 		if(length(grep("n", go.on))){
 			message("Stopping pairwise scan...\n")
-			return(data.obj)
+			return(pairscan.obj)
 		}else{
 			cat("Continuing pairwise scan...\n")
 		}
 	}
 
-	
-	
-	#make a list to hold the results. 
-	#Tables from each of the phenotypes will be
-	#put into this list
-	results.list <- list()
-	results.perm.list <- list()
-
 
 	#run one.pairscan for each phenotype with results in scanone.result
-	# if n.perm > 1 then call one.pairscan.perm()
-	for(p in 1:length(scanone.result)){ 
-
-		if(verbose){
-			cat("\nScanning phenotype ", colnames(pheno)[p], ":\n", sep = "")
-			}
-				
-		pairscan.results <- one.pairscan(phenotype.vector = pheno[,p], genotype.matrix = geno, covar.vector = covar.flags[,p], pairs.matrix = pared.marker.mat, n.perm = 0, verbose = verbose)
-		results.list[[p]] <- pairscan.results[[1]]
-		# results.perm.list[[p]] <- pairscan.results[[2]]
-		} #end looping over phenotypes
-	 
-	 
-	#generate the null distribution using pairscan.null
-	num.pairs <- choose(dim(data.obj$geno.for.pairscan)[2], 2)
-	total.perm = n.perm*num.pairs
-
+	if(!use.kinship){
+		pairscan.results <- pairscan.noKin(data.obj = data.obj, pheno.mat = pheno, geno.mat = geno, covar.table = covar.table, paired.markers = pared.marker.mat, n.perm = total.perm, verbose = verbose, n.cores = n.cores)
+		}else{
+		pairscan.results <- pairscan.kin(data.obj = data.obj, geno.obj = geno.obj, covar = covar, scan.what = scan.what, marker.pairs = pared.marker.mat, kin.full.geno = kin.full.geno, sample.kinship = sample.kinship, num.kin.samples = num.kin.samples, n.per.sample = n.per.sample, verbose = verbose, n.cores = n.cores)
+		}	
+		
+	pairscan.obj$pairscan.results <- pairscan.results	
+	
 	#calculate the number of top markers to use based
 	#on the thresholding of the singlescan
-	n.top.markers <- dim(data.obj$geno.for.pairscan)[2]
-	
-	data.obj <- pairscan.null(data.obj, scan.what = scan.what, total.perm = total.perm, n.top.markers = n.top.markers, verbose = verbose)
+	if(is.null(n.top.markers)){
+		n.top.markers <- dim(geno)[2]
+		}
 
-	names(results.list) <- names(scanone.result)
-
-
-	data.obj$"pairscan.results" <- results.list	  #add the results to the data object
+	pairscan.perm <- pairscan.null(data.obj, geno.mat = geno, covar = covar, scan.what = scan.what, total.perm = total.perm, n.top.markers = n.top.markers, verbose = verbose, min.per.genotype = min.per.genotype, max.pair.cor = max.pair.cor, n.cores = n.cores)
 
 
+	pairscan.obj$pairscan.perm <- pairscan.perm$pairscan.perm #add the results to the data object
+	pairscan.obj$pairs.tested.perm <- pairscan.perm$pairs.tested.perm #add the results to the data object
 
-	return(data.obj) #and return it
+
+	return(pairscan.obj) #and return it
 	
 }

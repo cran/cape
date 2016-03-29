@@ -1,9 +1,9 @@
 get.linearly.independent <-
-function(data.obj){
+function(geno.matrix){
 
-
-	matrixX <- data.obj$geno.for.pairscan
-
+	# matrixX <- pairscan.obj$geno.for.pairscan
+	matrixX <- geno.matrix
+	
 	if(dim(matrixX)[2] == 1){
 		return(matrixX)
 		}
@@ -19,36 +19,28 @@ function(data.obj){
 
 	all.pairs <- pair.matrix(names(good.markers))
 
-	get.cor <- function(pair){
-		geno1 <- matrixX[,pair[1]]; geno2 <- matrixX[,pair[2]]
-		good.vals <- sort(unique(intersect(which(!is.na(geno1)), which(!is.na(geno2)))))
-		if(length(good.vals) > 3){
-			if(var(matrixX[good.vals,pair[1]]) > 0 && var(matrixX[good.vals,pair[2]]) > 0){
-				pair.cor <- cor(matrixX[,pair[1]], matrixX[,pair[2]], use = "complete.obs")
-				}else{
-					pair.cor <- NA
-					}
-			}else{
-			pair.cor <- NA
-			}
-		return(pair.cor)
+	if(length(which(is.na(matrixX))) > 0){
+		all.cor <- cor(matrixX, use = "pairwise.complete.obs")
+		}else{
+		all.cor <- cor(matrixX)
 		}
-
-	all.cor <- apply(all.pairs, 1, get.cor)
+	diag(all.cor) <- 0
 	
-	perfect.cor <- which(abs(all.cor) == 1)
+	perfect.cor <- which(abs(all.cor) == 1, arr.ind = TRUE)
+	
 	#if there are markers with perfect correlation, 
 	#remove the first one of the pair
 	if(length(perfect.cor) > 0){
-		for(i in perfect.cor){
-			rejected.markers <- c(rejected.markers, all.pairs[i,1])
-			}
+		perfect.cor.names <- perfect.cor
+		perfect.cor.names[,1] <- colnames(matrixX)[perfect.cor[,1]]
+		perfect.cor.names[,2] <- colnames(matrixX)[perfect.cor[,2]]
+		rejected.markers <- c(rejected.markers, perfect.cor.names[,1])
 		}
 
 	
 	rejected.markers <- as.vector(rejected.markers)
 	if(length(rejected.markers) > 0){
-		rej.markers <- match( sort(unique(rejected.markers)), colnames(matrixX))
+		rej.markers <- match(sort(unique(rejected.markers)), colnames(matrixX))
 		final.geno <- matrixX[,-sort(unique(rej.markers))]
 		}else{
 			rej.markers <- NULL

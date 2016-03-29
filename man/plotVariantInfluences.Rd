@@ -8,13 +8,15 @@ Plot variant-to-variant influences
 This function plots the reparameterized influences of variants on each other. The epistatic interactions from the pairwise scan are reparameteriezed to the terms \eqn{m_{12}} and \eqn{m_{21}}, where the subscripts indicate the source and target variants respectively. These terms are interpreted as the effect that the source variant exerts on the target variant when both are present. Negative influences represent suppression while positive influences represent enhancement.
 }
 \usage{
-plotVariantInfluences(data.obj, p.or.q = 0.05, min.std.effect = 0,
-plot.all.vals = FALSE, all.markers = FALSE, standardize = TRUE, 
-not.tested.col = "lightgray", show.marker.labels = FALSE, 
+plotVariantInfluences(data.obj, p.or.q = 0.05, 
+min.std.effect = 0, plot.all.vals = FALSE, 
+standardize = TRUE, pos.col = "brown", 
+neg.col = "blue", not.tested.col = "lightgray", 
+light.dark = "light", show.marker.labels = FALSE, 
 show.chr = TRUE, label.chr = TRUE, 
-scale.effects = c("log10", "sqrt", "none"), pheno.width = 11, 
-covar.width = 11, covar.labels = NULL, 
-phenotype.labels = NULL)
+scale.effects = c("log10", "sqrt", "none"), 
+pheno.width = 11, covar.width = 11, 
+covar.labels = NULL, phenotype.labels = NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -30,14 +32,20 @@ phenotype.labels = NULL)
 	\item{plot.all.vals}{
 		A logical value indicating whether all values should be plotted regardless of significance. If TRUE, the significant values are highlighted in bright colors. If FALSE, non-significant values are not plotted.
 	}
-	\item{all.markers}{
-		A logical value. If TRUE all markers are plotted. If FALSE only markers tested in the pair scan are plotted.
-}
+	\item{neg.col}{
+ 	The color in which to plot the negative values. Colors can be one of the following: "green", "purple", "orange", "blue", "brown", "yellow", or "gray."
+ 	}
+ 	\item{pos.col}{
+ 	The color in which to plot the positive values. Colors can be one of the following: "green", "purple", "orange", "blue", "brown", "yellow", or "gray."
+ 	}
 	\item{standardize}{
 		A logical value. If TRUE the values in each entry of the plotted matrix are the standardized effect sizes \eqn{\beta/\sigma}. If FALSE, the raw \eqn{\beta} values are plotted.
 	}
 	\item{not.tested.col}{
 		A color name used to mark variant pairs that were not tested due to linkage. The color distinguishes these pairs from those that were tested, but do not have significant interactions. The default color is light "gray". This can be changed to "white" or FALSE if no marking is desired.
+	}
+	\item{light.dark}{
+		Either "light" or "dark" to indicate what color scheme should be used for plotting.
 	}
 	\item{show.marker.labels}{
 		A logical value indicating whether the marker labels should be printed along the plot axes.

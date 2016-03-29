@@ -9,7 +9,7 @@ This function is called by \code{\link{pairscan.null}} to generate a permuted li
 }
 \usage{
 one.singlescan(phenotype.vector, genotype.mat, 
-covar.vector = NULL)
+covar.vector = NULL, n.cores = NULL)
 }
 %- maybe also usage for other objects documented here.
 \arguments{
@@ -21,6 +21,9 @@ covar.vector = NULL)
 }
   \item{covar.vector}{
 	A vector of 0's and 1's, indicating which markers are to be used as covariates in the model.
+	}
+	\item{n.cores}{
+		An integer specifying the number of cores to be used in parallel processing. If NULL, the choice is made automatically.
 	}
 }
 \value{

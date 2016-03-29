@@ -1,22 +1,19 @@
 plotSVD <-
-function(data.obj, orientation = c("vertical", "horizontal")){
+function(data.obj, orientation = c("vertical", "horizontal"), neg.col = "blue", pos.col =  "brown", light.dark = "dark"){
+	
 	
 	#test to see if there is a v in the orientation vector
 	orient.test <- grep("v", orientation) 
 
-	
-	# Red and green range from 0 to 1 while Blue ranges from 1 to 0
-	ColorRamp <- rgb( seq(0,1,length=256),  # Red
-	                   seq(0,1,length=256),  # Green
-	                   seq(1,0,length=256))  # Blue
-
+	if(is.null(data.obj$right.singular.vectors)){
+		stop("get.eigentraits() must be run before plotSVD.")
+		}
 
 	#The contribution of each eigentrait to each phenotype
 	#is encoded in the right singular vectors (eigenvectors)	
 	eigen.weights <- t(data.obj$right.singular.vectors)[1:dim(data.obj$ET)[2],]
 	colnames(eigen.weights) <- colnames(data.obj$pheno)
 	rownames(eigen.weights) <- colnames(data.obj$ET)
-	
 	
 	#use the singular values to calculate the variance
 	#captured by each mode
@@ -40,11 +37,19 @@ function(data.obj, orientation = c("vertical", "horizontal")){
 			}
 
 
-
 	min.weight <- min(eigen.weights)
 	max.weight <- max(eigen.weights)
 	
-	ColorLevels <- seq(min.weight, max.weight, length=length(ColorRamp))
+	pos.cols <- get.col(pos.col, light.dark)
+	neg.cols <- get.col(neg.col, light.dark)[3:1]
+
+	mypal.pos <- colorRampPalette(pos.cols)
+	mypal.neg <- colorRampPalette(neg.cols)
+
+
+	ColorLevels <- seq(min.weight, max.weight, length=256)
+	ColorRamp <- c(mypal.neg(length(which(ColorLevels < 0))), mypal.pos(length(which(ColorLevels >= 0))))
+	
 
 	barplot.axis.cex <- 1.7; barplot.labels.cex = 2; barplot.title.cex = 1.7
 
@@ -62,6 +67,7 @@ function(data.obj, orientation = c("vertical", "horizontal")){
 
 		#2) plot the weight matrix
 		par(mar = c(0, 0, 2, 0))
+		# myImagePlot(rotated.eigen)
 		image(x = 1:length(rotated.eigen[,1]), y = 1:length(rotated.eigen[1,]), rotated.eigen, col = ColorRamp, axes = FALSE, xlab = "", ylab = "")
 		
 		#3) fit in the text for the y axis of the weight matrix
@@ -138,6 +144,9 @@ function(data.obj, orientation = c("vertical", "horizontal")){
 		#6) add the color ramp
 		par(mar = c(0,2,0,2))
 		image(1, ColorLevels, matrix(data=ColorLevels, ncol=length(ColorLevels),nrow=1), col=ColorRamp, xlab="",ylab="",xaxt="n", cex.axis = 2)		
+
+		names(var.accounted) <- colnames(data.obj$ET)
+		invisible(var.accounted)
 
 		# dev.off()			
 		

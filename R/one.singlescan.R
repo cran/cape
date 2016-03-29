@@ -1,10 +1,7 @@
 one.singlescan <-
-function(phenotype.vector, genotype.mat, covar.vector = NULL) {
-			
-		
-	n.gene <- dim(genotype.mat)[2]
+function(phenotype.vector, genotype.mat, covar.vector = NULL, n.cores = NULL) {
 
-
+		g = NULL #for appeasing R CMD check
 
 		#This function gets regression statistics with a
 		#covariate table
@@ -36,9 +33,12 @@ function(phenotype.vector, genotype.mat, covar.vector = NULL) {
 		#take out the response variable
 				
 		#apply the modeling function to each marker column
-		covar <- genotype.mat[,which(covar.vector == 1)]
-		results.table <- t(apply(genotype.mat, 2, function(x) get.stats(phenotype = phenotype.vector, genotype = x, covar = covar)))
+		registerDoParallel(cores = n.cores)
+		results.table <- foreach(g = genotype.mat, .combine = "rbind") %dopar% {
+			get.stats(phenotype = phenotype.vector, genotype = g, covar = covar.vector)
+			}
 		colnames(results.table) <- c("slope", "se", "t.stat", "p.val")
+		rownames(results.table) <- colnames(genotype.mat)
 		return(results.table)
 	
 	}

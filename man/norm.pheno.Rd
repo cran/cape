@@ -34,17 +34,6 @@ This function returns data.obj with the normalized phenotypes in place of the or
 \seealso{
 \code{\link{get.eigentraits}}
 }
-\examples{
-library(cape)
-data(obesity.cross)
-hist(obesity.cross$pheno[,"glucose"], main = "Histogram of Glucose", 
-xlab = "Glucose (mg/dL)")
-## be sure to move over any covariates before normalizing the phenotypes
-obesity.cross <- create.covar(obesity.cross, "mom")
-obesity.cross <- norm.pheno(obesity.cross)
-hist(obesity.cross$pheno[,"glucose"], main = "Histogram of Normalized Glucose", 
-xlab = "Normalized Glucose (mg/dL)")
-}
 % Add one or more standard keywords, see file KEYWORDS in the
 % R documentation directory.
 \keyword{arith}

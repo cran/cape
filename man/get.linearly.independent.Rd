@@ -8,12 +8,12 @@
 This function takes in a matrix and tests all columns to verify that they are all linearly independent. If any column is found to be linearly dependent on another, this column is removed from the matrix and its column name is recorded.
 }
 \usage{
-get.linearly.independent(data.obj)
+get.linearly.independent(geno.matrix)
 }
 %- maybe also usage for other objects documented here.
 \arguments{
-  \item{data.obj}{
-	The object in which all results are stored. See \code{\link{read.population}}.
+  \item{geno.matrix}{
+	A matrix contaning genotype information.
 	}
 }
 \details{

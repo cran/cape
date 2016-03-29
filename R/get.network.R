@@ -1,22 +1,25 @@
 get.network <-
-function(data.obj, p.or.q = 0.05, min.std.effect = 0, collapse.linked.markers = TRUE, r.thresh = 0.5, verbose = FALSE, plot.linkage.blocks = FALSE){
+function(data.obj, p.or.q = 0.05, standardized = TRUE, min.std.effect = 0, collapse.linked.markers = TRUE, verbose = FALSE, plot.linkage.blocks = FALSE, threshold.power = 1){
 	
-	# linkage.method = c("genotype", "effects", "prominence")
-	# threshold.power = 2; effect.drop = 1
+	# linkage.method = c("genotype.comm", "genotype.step", "effects", "prominence")
+	# r.thresh = 0.5
+	# effect.drop = 1
+
+	linkage.method = "genotype.comm"
 	
-	data.obj$network.p.or.q <- p.or.q
-	
-	linkage.method = "genotype"
 	
 	#get the linkage blocks based on the significant markers
 	# data.obj <- linkage.blocks(data.obj, collapse.linked.markers = collapse.linked.markers, threshold.power = threshold.power, verbose = verbose, plot.results = plot.linkage.blocks)
-	# method.check <- grep("eff", linkage.method)
-	# if(length(method.check) > 0){linkage.method <- "effects"}
+	# method.check <- grep("comm", linkage.method)
+	# if(length(method.check) > 0){linkage.method <- "genotype.comm"}
 	# if(linkage.method == "effects"){
 		# data.obj <- linkage.blocks.cormat(data.obj, p.or.q = p.or.q, effect.drop = effect.drop, collapse.linked.markers = collapse.linked.markers, threshold.power = threshold.power, verbose = verbose, plot.results = plot.linkage.blocks)
 		# }
-	# if(linkage.method == "genotype"){
-		data.obj <- linkage.blocks.stepwise(data.obj, collapse.linked.markers = collapse.linked.markers, r.thresh = r.thresh, plot.blocks = plot.linkage.blocks)
+	# if(linkage.method == "genotype.step"){
+		# data.obj <- linkage.blocks.stepwise(data.obj, collapse.linked.markers = collapse.linked.markers, r.thresh = r.thresh, plot.blocks = plot.linkage.blocks)
+		# }
+	# if(linkage.method == "genotype.comm"){
+		data.obj <- linkage.blocks.network(data.obj, collapse.linked.markers = collapse.linked.markers, threshold.power = threshold.power, plot.blocks = plot.linkage.blocks)
 		# }
 	# if(linkage.method == "prominence"){
 		# data.obj <- linkage.blocks.prominence(data.obj, p.or.q = p.or.q, collapse.linked.markers = collapse.linked.markers, threshold.power = threshold.power, verbose = verbose, plot.results = plot.linkage.blocks)
@@ -26,11 +29,15 @@ function(data.obj, p.or.q = 0.05, min.std.effect = 0, collapse.linked.markers = 
 	if(collapse.linked.markers){
 		blocks <- data.obj$linkage.blocks.collapsed
 		}else{
-		blocks <- data.obj$linkage.blocks.full	
+		blocks <- data.obj$linkage.blocks.full
 		}
 		
+	#make sure all block entries are numeric
+	blocks <- lapply(blocks, function(x) get.marker.num(data.obj, x))
+	
 	#build a network based on the block structure
 	all.net.data <- data.obj$var.to.var.p.val
+	
 	
 	var.sig.col <- as.vector(na.omit(match(c("qval", "lfdr", "p.adjusted"), colnames(all.net.data))))
 	#filter to just the significant interactions
@@ -40,6 +47,7 @@ function(data.obj, p.or.q = 0.05, min.std.effect = 0, collapse.linked.markers = 
 	pheno.tables <- data.obj$max.var.to.pheno.influence
 	phenotypes <- names(pheno.tables)	
 
+
 	adj.mat <- matrix(0, ncol = length(blocks), nrow = length(blocks))
 	colnames(adj.mat) <- rownames(adj.mat) <- names(blocks)
 	
@@ -47,11 +55,12 @@ function(data.obj, p.or.q = 0.05, min.std.effect = 0, collapse.linked.markers = 
 	for(i in 1:length(blocks)){
 		block.markers <- rbind(block.markers, cbind(rep(names(blocks)[i], length(blocks[[i]])), blocks[[i]]))	
 		}
-
 	
-	#get the block pairs with significant effects
+	#get the block pairs for the interactions with significant effects
 	get.sig.block.pair <- function(marker.pair){
+		#find the block that marker 1 is in
 		block1 <- which(block.markers[,2] == marker.pair[1])
+		#find the block that marker 2 is in
 		block2 <- which(block.markers[,2] == marker.pair[2])
 		if(length(block1) > 0 && length(block2) > 0){
 			return(c(block.markers[block1,1], block.markers[block2,1]))
@@ -79,7 +88,11 @@ function(data.obj, p.or.q = 0.05, min.std.effect = 0, collapse.linked.markers = 
 			block1.to.block2 <- intersect(block1.source.locale, block2.target.locale)
 			
 			if(length(block1.to.block2) > 0){
-				all.effects <- as.numeric(net.data[block1.to.block2,"Effect"])/as.numeric(net.data[block1.to.block2,"SE"])
+				if(standardized){
+					all.effects <- as.numeric(net.data[block1.to.block2,"Effect"])/as.numeric(net.data[block1.to.block2,"SE"])
+					}else{
+					all.effects <- as.numeric(net.data[block1.to.block2,"Effect"])	
+					}
 				adj.mat[block.pair[1], block.pair[2]] <- all.effects[which(abs(all.effects) == max(abs(all.effects)))][1]
 				}
 			
@@ -89,7 +102,11 @@ function(data.obj, p.or.q = 0.05, min.std.effect = 0, collapse.linked.markers = 
 			block2.to.block1 <- intersect(block2.source.locale, block1.target.locale)
 			
 			if(length(block2.to.block1) > 0){
+				if(standardized){
 				all.effects <- as.numeric(net.data[block2.to.block1,"Effect"])/as.numeric(net.data[block2.to.block1,"SE"])
+				}else{
+					all.effects <- as.numeric(net.data[block2.to.block1,"Effect"])
+					}
 				adj.mat[block.pair[2], block.pair[1]] <- all.effects[which(abs(all.effects) == max(abs(all.effects)))][1]
 				}
 				
@@ -113,11 +130,16 @@ function(data.obj, p.or.q = 0.05, min.std.effect = 0, collapse.linked.markers = 
 		all.markers <- blocks[[block]]
 		for(i in 1:length(pheno.tables)){
 			sig.inf <- pheno.tables[[i]][which(pheno.tables[[i]][,pheno.sig.col] <= p.or.q),,drop = FALSE]
+			# sig.inf[,1] <- get.marker.name(data.obj, as.numeric(sig.inf[,1]))
 			if(length(sig.inf) > 0){
 				block.locale <- which(sig.inf[,"marker"] %in% all.markers)
 				# if(length(block.locale) == length(all.markers)){
 				if(length(block.locale) >= 1){
+					if(standardized){
 					all.effects <- as.numeric(sig.inf[block.locale,"coef"])/as.numeric(sig.inf[block.locale,"se"])
+					}else{
+						all.effects <- as.numeric(sig.inf[block.locale,"coef"])
+						}
 					pheno.mat[block,i] <- all.effects[which(abs(all.effects) == max(abs(all.effects)))][1]
 					}
 				}

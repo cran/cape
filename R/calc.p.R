@@ -1,5 +1,7 @@
 calc.p <-
-function(data.obj, pval.correction = c("holm", "fdr", "lfdr", "none")) {
+function(data.obj, pairscan.obj, pval.correction = c("holm", "fdr", "lfdr", "none"), n.cores = NULL) {
+	
+	p = NULL #for appeasing R CMD check
 	
 	choice <- 0
 	if(!is.null(data.obj$var.to.var.p.val)){
@@ -13,7 +15,6 @@ function(data.obj, pval.correction = c("holm", "fdr", "lfdr", "none")) {
 			}
 		}
 	
-	# require("fdrtool")
 	plot.null.transform = TRUE
 	
 	if(length(grep("h", pval.correction) > 0)){
@@ -39,7 +40,7 @@ function(data.obj, pval.correction = c("holm", "fdr", "lfdr", "none")) {
 
 
 	n.gene <- dim(data.obj$geno.for.pairscan)[2] #get the number of genes used in the pair scan
-	n.pairs <- dim(data.obj$pairscan.results[[1]][[1]])[1] #the number of pairs scanned in the pairscan
+	n.pairs <- dim(influences.org)[1] #the number of pairs with successful calculations
     
     	
     marker.mat <- influences.org[,1:2] #a matrix listing the names of all marker combinations
@@ -56,18 +57,6 @@ function(data.obj, pval.correction = c("holm", "fdr", "lfdr", "none")) {
 	mat21 <- as.numeric(influences.org[,5]) / as.numeric(influences.org[,6])
 
 
-	#I'm taking this correction out for now to test whether symmetrized genotypes get rid of the skewed distributions
-	
-	# #The m12/m21 distribution can often be really skewed, so here we implement
-	# #a symmetrizing algorithm so we can calculate empirical p values
-	# mat12.adj <- symmetrize.null(null.dist <- mat12.mat21.perm, emp.dist = mat12, plot.dist = plot.null.transform, plot.title = "Transformation.m12.Null.pdf")
-	# mat21.adj <- symmetrize.null(null.dist <- mat12.mat21.perm, emp.dist = mat21, plot.dist = plot.null.transform, plot.title = "Transformation.m21.Null.pdf")	
-
-	# adj.null <- mat12.adj$normalized.null
-	# adj.m12 <- mat12.adj$normalized.empirical
-	# adj.m21 <- mat21.adj$normalized.empirical
-
-
 	adj.null <- mat12.mat21.perm
 	adj.m12 <- mat12
 	adj.m21 <- mat21
@@ -79,20 +68,28 @@ function(data.obj, pval.correction = c("holm", "fdr", "lfdr", "none")) {
 	get.emp.p <- function(num.pair){
 		emp.vals <- c(adj.m12[num.pair], adj.m21[num.pair])
 		emp.p <- rep(NA, 2)
+
 		for(e in 1:length(emp.vals)){
-			if(emp.vals[e] < median(adj.null)){
-				emp.p[e] <- length(which(adj.null <= emp.vals[e]))/length(which(adj.null <= median(adj.null)))
+			if(!is.na(emp.vals)[e]){
+				if(emp.vals[e] < median(adj.null)){
+					emp.p[e] <- length(which(adj.null <= emp.vals[e]))/length(which(adj.null <= median(adj.null)))
+					}else{
+					emp.p[e] <- length(which(adj.null >= emp.vals[e]))/length(which(adj.null >= median(adj.null)))
+					}
 				}else{
-				emp.p[e] <- length(which(adj.null >= emp.vals[e]))/length(which(adj.null >= median(adj.null)))
+				emp.p[e] <- NA	
 				}
 			}
 		return(emp.p)
 		}
 
 
+	registerDoParallel(cores = n.cores)
+	all.emp.p <- foreach(p = 1:n.pairs, .combine = "rbind") %dopar% {
+		get.emp.p(p)
+		}
 	
 	# all.emp.p <- t(apply(matrix(1:n.pairs, ncol = 1), 1, function(x) get.emp.p(x)))
-	all.emp.p <- t(apply(matrix(1:n.pairs, ncol = 1), 1, function(x) get.emp.p(x)))
 
 	m12 <- matrix(c(marker.mat[,2],marker.mat[,1],as.numeric(as.matrix(influences.org[,3])),as.numeric(as.matrix(influences.org[,4])),(abs(as.numeric(influences.org[,3])) / as.numeric(influences.org[,4])),all.emp.p[,1]), ncol = 6)	
 	colnames(m12) <- c("Source","Target","Effect","SE","|Effect|/SE","P_empirical")	
@@ -120,12 +117,16 @@ function(data.obj, pval.correction = c("holm", "fdr", "lfdr", "none")) {
 		}
 		
 	if(pval.correction == "fdr" || pval.correction == "lfdr"){
-		fdr.out <- fdrtool(as.numeric(final.table[,"P_empirical"]), statistic = "pvalue", plot = FALSE, verbose = FALSE, cutoff.method = "fndr")
+		pvals <- as.numeric(final.table[,"P_empirical"])
+		not.na.locale <- which(!is.na(pvals))
+		fdr.out <- fdrtool(as.numeric(final.table[not.na.locale,"P_empirical"]), statistic = "pvalue", plot = FALSE, verbose = FALSE, cutoff.method = "fndr")
 		if(pval.correction == "lfdr"){
-			lfdr <- fdr.out$lfdr
+			lfdr <- rep(NA, dim(final.table)[1])
+			lfdr[not.na.locale] <- fdr.out$lfdr
 			final.table <- cbind(final.table, lfdr)
 			}else{
-			qval <- fdr.out$qval
+			qval <- rep(NA, dim(final.table)[1])
+			qval[not.na.locale] <- fdr.out$qval
 			final.table <- cbind(final.table, qval)	
 			}
 		}

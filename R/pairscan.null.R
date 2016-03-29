@@ -1,69 +1,102 @@
 pairscan.null <-
-function(data.obj, scan.what = c("eigentraits", "raw.traits"), total.perm = NULL, n.top.markers = 50, verbose = FALSE){
+function(data.obj, geno.mat, covar = NULL, scan.what = c("eigentraits", "raw.traits"), total.perm = NULL, n.top.markers = 50, max.pair.cor, min.per.genotype, verbose = FALSE, n.cores = NULL){
+
+	covar.table = NULL #for appeasing R CMD check
+
+
+	pairscan.obj <- vector(mode = "list", length = 2)
+	names(pairscan.obj) <- c("pairscan.perm", "pairs.tested.perm")
 
 	if(is.null(total.perm)){
 		stop("The total number of permutations must be specified.")
 		}
 
-	scanone.result <- data.obj$singlescan.results
+	pheno <- get.pheno(data.obj, scan.what)
 	
-	#we need to use the covariates determined from the 1D scan
-	#in the 2D scan, so stop if the 1D scan has not been performed
-	if(length(scanone.result) == 0){
-		stop("singlescan() must be run on this object before pairscan()\n")
-		}	
-
-
-	#If the user does not specify a scan.what, 
-	#default to eigentraits, basically, if eigen,
-	#et, or ET are anywhere in the string, use the
-	#eigentraits, otherwise, use raw phenotypes
-	type.choice <- c(grep("eig", scan.what), grep("ET", scan.what), grep("et", scan.what)) #look for any version of eigen or eigentrait, the user might use.
-	if(length(type.choice) > 0){ #if we find any, use the eigentrait matrix
-		pheno <- data.obj$ET
-		}else{
-			pheno <- data.obj$pheno #otherwise, use the raw phenotype matrix
-			}
-
-
-	geno <- data.obj$geno.for.pairscan
-	covar.flags <- data.obj$covar.for.pairscan
-
-	if(is.null(geno)){
-		stop("select.markers.for.pairscan() must be run before pairscan()")
+	pheno.names <- colnames(pheno)
+	num.pheno <- dim(pheno)[2]
+	#use the full genotype matrix to select 
+	#markers for generating the null in the 
+	#pairscan
+	
+	
+	covar.info <- get.covar(data.obj, covar)
+	for(i in 1:length(covar.info)){
+		assign(names(covar.info)[i], covar.info[[i]])
 		}
-		
 
 	#make a list to hold the results. 
 	#Tables from each of the phenotypes will be
 	#put into this list
-	results.perm.list <- vector(mode = "list", length = dim(pheno)[2])
+	results.perm.list <- vector(mode = "list", length = num.pheno)
+ 	names(results.perm.list) <- colnames(pheno)
+ 	
+	#generate the null distribution for the pairscan 
+	#do a singlescan on each permuted trait.
+	#find the top n markers
+	#combine these into a unique list
+	#do the pairscan on these markers for all traits
 
-	 	 
-	#generate the null distribution for the pairscan using the 
-	#total number of permutations and the permuted results from
-	#singlescan.
+	if(verbose){
+		cat("\nGenerating null distribution...\n")
+		}
+
+	all.pairs.tested <- NULL
 	
-		for(p in 1:length(scanone.result)){ 
+	null.markers <- matrix(NA, ncol = 1, nrow = n.top.markers*num.pheno)
+	final.perm <- 1
+	while(final.perm < total.perm){
+		start.marker = 1
+		perm.order <- sample(1:dim(pheno)[1])
+		for(p in 1:num.pheno){ 
+			if(n.top.markers < dim(geno.mat)[2]){
+				if(verbose){cat("\tSingle-marker scan of permuted", colnames(pheno)[p], "...\n")}
+				single.scan.result <- one.singlescan(phenotype.vector = pheno[perm.order,p], genotype.mat = geno.mat, covar.vector = covar.table, n.cores = n.cores)
+			
+				#find the loci with the largest effect				
+				geno.order <- order(single.scan.result[,"t.stat"], decreasing = TRUE)
+				#record the loci found for each phenotype
+				null.markers[start.marker:(start.marker+n.top.markers-1),1] <- rownames(single.scan.result)[geno.order[1:n.top.markers]]
 
-			if(verbose){
-				cat("\nGenerating null distribution for ", colnames(pheno)[p], ":\n", sep = "")
+				}else{
+				null.markers[start.marker:(start.marker+n.top.markers-1),1] <- colnames(geno.mat)
 				}
 			
-			final.perm <- 1
-			j <- 1
-			while(final.perm < total.perm){
-				if(verbose){cat(round((final.perm/total.perm)*100), "%...", sep = "")} 
-				# if(verbose){report.progress(current = final.perm, total = total.perm)}
-				perm.pheno <- pheno[sample(1:dim(pheno)[1], dim(pheno)[1], replace = FALSE),p]
-				single.scan.result <- one.singlescan(phenotype.vector = perm.pheno, genotype.mat = geno, covar.vector = covar.flags[,p])
+					
+
+			start.marker = start.marker + n.top.markers
+			}
+
+				#find the unique top markers
+				u_markers <- unique(null.markers[(which(!is.na(null.markers)))])
+			
 				
-				geno.order <- order(single.scan.result[,"t.stat"], decreasing = TRUE)
-				top.geno.mat <- geno[,geno.order[1:n.top.markers]]
-				top.geno.covar.flags <- covar.flags[geno.order[1:n.top.markers],p]
-				top.marker.pairs <- pair.matrix(colnames(top.geno.mat))
+				#make a matrix with the genotype of each max locus in the top n loci
+				#this will be a 2D matrix with a row for each individual, and a column 
+				#for each max locus
+				top.geno.mat <- matrix(unlist(lapply(1:length(u_markers), function(x) geno.mat[,u_markers[x]])), ncol = length(u_markers), byrow = FALSE)				
+				colnames(top.geno.mat) <- u_markers
+				rownames(top.geno.mat) <- rownames(geno.mat)
+		
+				if(verbose){cat("\tGetting markers for permuted pairscan...\n")}
+				top.marker.pairs <- get.pairs.for.pairscan(geno = top.geno.mat, min.per.genotype = min.per.genotype, max.pair.cor = max.pair.cor, verbose = verbose, n.cores = n.cores)
+
+				#we don't need to do a million extra permutations
+				#so trim the final pair matrix down to get only
+				#the specified number of permutations
+				if(final.perm+dim(top.marker.pairs)[1] > total.perm){
+					num.needed <- total.perm - final.perm
+					top.marker.pairs <- top.marker.pairs[sample(1:dim(top.marker.pairs)[1], num.needed),,drop=FALSE]
+					}
+
+				if(verbose){cat("\tTesting", dim(top.marker.pairs)[1], "pairs...\n")}
+				all.pairs.tested <- rbind(all.pairs.tested, top.marker.pairs)
 				
-				pairscan.results <- one.pairscan(phenotype.vector = perm.pheno, genotype.matrix = top.geno.mat, covar.vector = top.geno.covar.flags, pairs.matrix = top.marker.pairs, n.perm = 0, verbose = FALSE)
+			#run the pairscan for each permuted phenotype and the pairs we just found
+			for(p in 1:num.pheno){
+				if(verbose){cat("\tMarker-pair scan of permuted", colnames(pheno)[p], "...\n")}
+				#run a pairscan on these markers and each permuted phenotype
+				pairscan.results <- one.pairscan.parallel(data.obj, phenotype.vector = pheno[perm.order,p], genotype.matrix = top.geno.mat, paired.markers = top.marker.pairs, n.perm = 0, verbose = FALSE, covar.vector = NULL, n.cores = n.cores)
 				
 				#integrate the results into the permutation object
 				one.perm <- pairscan.results[[1]]
@@ -74,24 +107,15 @@ function(data.obj, scan.what = c("eigentraits", "raw.traits"), total.perm = NULL
 						results.perm.list[[p]][[i]] <- rbind(results.perm.list[[p]][[i]], one.perm[[i]])
 						}
 					}
-				final.perm <- dim(results.perm.list[[p]][[1]])[1]
-				j = j + 1
+				}
+				final.perm <- dim(results.perm.list[[1]][[1]])[1] #end looping through phenotypes
+				if(verbose){cat("\t", final.perm, " permutations: ", round((final.perm/total.perm)*100), "%\n", sep = "")} 
 				} #end when we have enough permutations
-			} #end looping over phenotypes
-
-
-	# #plot the null distributions
-	# layout.mat <- get.layout.mat(length(scanone.result), "landscape")
-	# pdf(paste("Pair.Null.Dist.Top.", n.top.markers, ".Markers.", total.perm, ".Permutations.pdf", sep = ""), width = dim(layout.mat)[2]*4, height = dim(layout.mat)[1]*4)
-	# layout(layout.mat)
-	# for(i in 1:length(scanone.result)){
-		# plot(density(results.perm.list[[i]][[1]][,"marker1:marker2"]/results.perm.list[[i]][[2]][,"marker1:marker2"]), main = paste("Null Dist. of Std Effects", names(scanone.result)[i], sep = "\n"), xlim = c(-5, 5))
-		# }
-	# dev.off()
-
-	names(results.perm.list) <- names(scanone.result)
-	data.obj$pairscan.perm <- results.perm.list
-			
-	return(data.obj) #and return it
+		
+		
+	names(results.perm.list) <- pheno.names
+	pairscan.obj$pairscan.perm <- results.perm.list
+	pairscan.obj$pairs.tested.perm <- all.pairs.tested
+	return(pairscan.obj) #and return it
 	
 }

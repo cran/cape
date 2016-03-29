@@ -21,9 +21,6 @@ function(data.obj, p.or.q = 0.05, filename = "Variant.Influences.csv", delim = "
 			}
 	num.pheno <- length(pheno.names)
 	
-	
-
-
 	var.sig.col <- as.vector(na.omit(match(c("qval", "lfdr", "p.adjusted"), colnames(var.influences))))
 
 	sig.var <- which(as.numeric(var.influences[, var.sig.col]) <= p.or.q)
@@ -35,8 +32,6 @@ function(data.obj, p.or.q = 0.05, filename = "Variant.Influences.csv", delim = "
 			var.table <- NULL
 			}
 
-
-	
 	pheno.table <- NULL
 	pheno.sig.col <- as.vector(na.omit(match(c("qval", "lfdr", "p.adjusted"), colnames(pheno.results[[1]]))))
 	for(ph in pheno.names){
@@ -60,13 +55,12 @@ function(data.obj, p.or.q = 0.05, filename = "Variant.Influences.csv", delim = "
 		colnames(pheno.table) <- c("Source", "Target", "Effect", "SE", "|Effect|/SE", "P_empirical", colnames(pheno.results[[1]])[pheno.sig.col])
 		}
 		
+
 	for(j in 1:2){
-		marker.locale <- match(var.table[,j], colnames(data.obj$geno))
-		var.table[,j] <- data.obj$marker.names[marker.locale]
+		var.table[,j] <- get.marker.name(data.obj, as.numeric(var.table[,j]))
 		}
 
-	marker.locale <- match(pheno.table[,1], colnames(data.obj$geno))
-	pheno.table[,1] <- data.obj$marker.names[marker.locale]
+	pheno.table[,1] <- get.marker.name(data.obj, as.numeric(pheno.table[,1]))
 
 	final.table <- rbind(var.table, pheno.table)
 	
@@ -76,16 +70,21 @@ function(data.obj, p.or.q = 0.05, filename = "Variant.Influences.csv", delim = "
 			final.table <- final.table[order(final.table[,"|Effect|/SE"], decreasing = TRUE),]
 			}
 			
-	#replace 0 adjusted p values with a < string
+	#replace 0 adjusted p values with a < min(P) string
 	adj.p.col <- as.vector(na.omit(match(c("qval", "lfdr", "p.adjusted"), colnames(final.table))))
-	smallest.adj.p <- min(as.numeric(final.table[which(as.numeric(final.table[,adj.p.col]) > 0),adj.p.col]))
-	zero.locale <- which(final.table[,adj.p.col] == 0)
+	all.p <- as.numeric(final.table[,adj.p.col])
+	non.zero.p <- all.p[which(all.p > 0)]
+	if(length(non.zero.p) > 0){
+		smallest.adj.p <- min(non.zero.p)
+		}else{
+		num.perms <- dim(data.obj$var.to.var.influences.perm)[1]
+		smallest.adj.p <- 1/num.perms
+		}
+	zero.locale <- which(all.p == 0)
 	final.table[zero.locale,adj.p.col] <- paste("<", signif(smallest.adj.p, 3))
 
 	if(mark.covar){
-		covar.flags <- data.obj$covar.for.pairscan
-		is.covar <- rownames(covar.flags)[unique(as.vector(unlist(apply(covar.flags, 2, function(x) which(x == 1)))))]
-		covar.names <- data.obj$marker.names[match(is.covar, colnames(data.obj$geno))]
+		covar.names <- data.obj$pairscan.covar
 		covar.source.locale <- which(final.table[,1] %in% covar.names)
 		covar.target.locale <- which(final.table[,2] %in% covar.names)
 		if(length(covar.source.locale) > 0){

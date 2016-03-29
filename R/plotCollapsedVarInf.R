@@ -1,5 +1,5 @@
 plotCollapsedVarInf <-
-function(data.obj, expand.labels = FALSE, all.markers = FALSE, scale.effects = c("log10", "sqrt", "none")){
+function(data.obj, expand.labels = FALSE, all.markers = FALSE, scale.effects = c("none", "log10", "sqrt")){
 	
 	adj.mat <- data.obj$collapsed.net
 	if(is.null(adj.mat)){

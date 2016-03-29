@@ -1,5 +1,8 @@
 plotNetwork <-
-function(data.obj, collapsed.net = TRUE, trait = NULL, phenotype.labels = NULL, main.lwd = 4, inter.lwd = 3, label.cex = 1.5, percent.bend = 15, chr.gap = 1, label.gap = 5, positive.col = "#af8dc3", negative.col = "#7fbf7b"){
+function(data.obj, collapsed.net = TRUE, trait = NULL, phenotype.labels = NULL, main.lwd = 4, inter.lwd = 3, label.cex = 1.5, percent.bend = 15, chr.gap = 1, label.gap = 5, positive.col = "brown", negative.col = "blue"){
+
+	positive.col <- get.col(positive.col)[2]
+	negative.col <- get.col(negative.col)[2]
 
 	# require(shape)
 	circle.dens = 0.0005
@@ -8,20 +11,37 @@ function(data.obj, collapsed.net = TRUE, trait = NULL, phenotype.labels = NULL, 
 	# chr.rel.length <- c(98.5, 103.9, 82.7, 88.6, 90.2, 79, 89.1, 76.2, 75.1, 77.9, 88, 63.9, 67.3, 66.4, 59, 57.8, 61.3, 59.4, 56.9)
 	chr.rel.length <- c(1)
 	
-	all.chr <- data.obj$chromosome
-	all.pos <- data.obj$marker.location
-	chr <- sort(unique(as.numeric(all.chr)))
-	covar.exists <- which(chr == 0)
 	
-	if(length(covar.exists) > 0){
-		num.true.chr = length(chr) - length(covar.exists)
-		covar.names = data.obj$marker.names[which(data.obj$chromosome == 0)]
-		chr.names <- chr[which(chr != 0)]
-		chr.names <- c(covar.names, chr.names)
-		chr <- chr[which(chr != 0)]
-		names(chr) <- rep("chr", length(chr))
+	used.markers <- sort(unique(as.numeric(c(data.obj$var.to.var.influences[,1], data.obj$var.to.var.influences[,2]))))
+	used.marker.names <- get.marker.name(data.obj, used.markers)
+	used.marker.chr <- get.marker.chr(data.obj, used.markers)
+	u_chr <- unique(used.marker.chr)
+	all.pos <- as.numeric(get.marker.location(data.obj, used.markers))
+	
+	#for each chromosome distribute the marker locations 
+	#between 1 and the max for easier plotting
+	for(ch in 1:length(u_chr)){
+		marker.chr.locale <- which(used.marker.chr == u_chr[ch])
+		marker.pos <- as.numeric(all.pos[marker.chr.locale])
+		rec.marker.pos <- marker.pos - (min(marker.pos)-1)
+		norm.marker.pos <- rec.marker.pos/max(rec.marker.pos)
+		all.pos[marker.chr.locale]  <- norm.marker.pos
+		}
+	
+	
+	all.pos[which(all.pos == 0)] <- 1
+	chr <- sort(unique(as.numeric(used.marker.chr)))
+	just.chr <- chr[which(chr != 0)]
+	covar.info <- get.covar(data.obj)
+	pheno.covar <- which(covar.info$covar.type == "p")
+	
+	if(length(pheno.covar) > 0){
+		covar.names <- covar.info$covar.names[pheno.covar]
+		num.true.chr = length(just.chr)
+		names(just.chr) <- rep("chr", length(just.chr))
+		chr.names <- c(covar.names, just.chr)
 		names(covar.names) <- rep("covar", length(covar.names))
-		chr <- c(covar.names, chr)
+		chr <- c(covar.names, just.chr)
 		}else{
 		num.true.chr = length(chr)
 		chr.names <- chr
@@ -36,7 +56,7 @@ function(data.obj, collapsed.net = TRUE, trait = NULL, phenotype.labels = NULL, 
 		rel.length <- chr.rel.length/max(chr.rel.length)
 		}
 
-	if(length(covar.exists) > 0){
+	if(length(pheno.covar) > 0){
 		rel.length <- c(rep(0.2, length(covar.names)), rel.length)
 		}
 	
@@ -56,30 +76,63 @@ function(data.obj, collapsed.net = TRUE, trait = NULL, phenotype.labels = NULL, 
 	get.block.coord <- function(radius.coord, start, pts.per.chr, block.rel.locale){
 		coord.x <- radius.coord$x[start:(start+pts.per.chr[i]-1)] #get the relative x and y coordinates for the block
 		coord.y <- radius.coord$y[start:(start+pts.per.chr[i]-1)]
-		x.coord <- coord.x[round(length(coord.x)*as.numeric(block.rel.locale[2])):round(length(coord.x)*as.numeric(block.rel.locale[3]))]
-		y.coord <- coord.y[round(length(coord.x)*as.numeric(block.rel.locale[2])):round(length(coord.y)*as.numeric(block.rel.locale[3]))]
+		x.start <- round(length(coord.x)*as.numeric(block.rel.locale[2]))
+		if(x.start == 0){x.start = 1}
+		x.end <- round(length(coord.x)*as.numeric(block.rel.locale[3]))
+		if(x.end > length(coord.x)){x.end = length(coord.x)}
+		if(x.start == x.end){
+			if(x.start == 1 && x.end < length(coord.x)){
+				x.end = x.end + 1
+				}
+			if(x.end >= length(coord.x) && x.start > 1){
+				x.start <- x.start - 1
+				}
+			}	
+		x.coord <- coord.x[x.start:x.end]
+		y.start <- round(length(coord.x)*as.numeric(block.rel.locale[2]))
+		if(y.start == 0){y.start = 1}
+		y.end <- round(length(coord.y)*as.numeric(block.rel.locale[3]))
+		if(y.end == 0){y.end = 1}
+		if(y.end > length(coord.y)){y.end = length(coord.y)}
+		if(y.start == y.end){
+			if(y.start == 1 && y.end < length(coord.y)){
+				x.end = x.end + 1
+				}
+			if(y.end >= length(coord.y) && y.start > 1){
+				y.start <- y.start - 1
+				}
+			}	
+		y.coord <- coord.y[y.start:y.end]
 		return(cbind(rep(names(chr.blocks.locale)[ch], length(x.coord)), x.coord, y.coord))
 		}
 
 	#assign a chromosome and relative position to each block
 	get.chr.pos <- function(block){
-		marker.locale <- which(colnames(data.obj$geno) %in% block)
-		chr <- unique(all.chr[marker.locale])
+		marker.locale <- which(used.markers %in% get.marker.num(data.obj, block))
+		chr <- unique(used.marker.chr[marker.locale])
 		if(length(chr) > 1){
 			chr.char <- paste(chr, collapse = ", ")
 			stop(paste("There is linkage between markers on chromosomes ", chr.char,". Please try a high r2.thresh.", sep = ""))
 			}
 		min.pos <- min(all.pos[marker.locale])
 		max.pos <- max(all.pos[marker.locale])
-		total.length <- max(all.pos[all.chr == chr])
+		if(min.pos == max.pos){
+			max.pos <- max.pos + 1
+			}
+		total.length <- max(all.pos[used.marker.chr == chr])
+		if(chr == 0){chr <- block}
 		return(c(chr, min.pos/total.length, max.pos/total.length))
 		}
 	
 	get.block.effect <- function(block){
 		effects <- rep(NA, length(var.to.pheno)); names(effects) <- names(var.to.pheno)
+		block.char <- as.logical(is.na(suppressWarnings(as.numeric(block[1]))))
+		if(block.char && !var.char){
+			block <- get.marker.num(data.obj, block)
+			}
 		marker.locale <- lapply(var.to.pheno, function(x) match(block, x[,1]))
 		for(i in 1:length(marker.locale)){
-			effects[i] <- mean(var.to.pheno[[i]][marker.locale[[i]], "|t.stat|"])
+			effects[i] <- mean(as.numeric(var.to.pheno[[i]][marker.locale[[i]], "|t.stat|"]), na.rm = TRUE)
 			}
 		return(effects)	
 		}
@@ -112,6 +165,9 @@ function(data.obj, collapsed.net = TRUE, trait = NULL, phenotype.labels = NULL, 
 	full.chr <- rel.length*(1/sum(rel.length))
 	pts.per.chr <- floor(full.length*full.chr)
 	
+	#A block with one marker needs to be able to get at least one point
+	#on the map
+	min.block.val <- 1/pts.per.chr
 	
 	if(collapsed.net){
 		adj.mat <- data.obj$collapsed.net
@@ -134,20 +190,17 @@ function(data.obj, collapsed.net = TRUE, trait = NULL, phenotype.labels = NULL, 
 
 		chr.pos <- t(sapply(blocks, get.chr.pos))
 		colnames(chr.pos) <- c("chromosome", "min.position", "max.position")
-		#center the mark positions and replace the 0 chromosomes with real names
+		#center the mark positions
 		chr.pos[which(chr.pos[,1] == 0),2:3] <- 0.5
-
-		if(length(covar.exists) > 0){
-			chr.pos[which(chr.pos[,1] == 0),1] <- covar.names
-			}
 		
 		
 		#get the average effect size for the var to 
 		#pheno effects for each block
 		var.to.pheno <- data.obj$max.var.to.pheno.influence
-
+		var.char <- as.logical(is.na(suppressWarnings(as.numeric(var.to.pheno[[1]][1,1]))))
+	
 		block.effects <- t(sapply(blocks, get.block.effect))
-		rel.block.effects <- block.effects/max(block.effects)
+		rel.block.effects <- block.effects/max(block.effects, na.rm = TRUE)
 		
 		#and each phenotype
 		if(is.null(trait)){
@@ -203,11 +256,17 @@ function(data.obj, collapsed.net = TRUE, trait = NULL, phenotype.labels = NULL, 
 	par(mar = c(2,2,2,0))
 	plot.dim <- par("usr")
 	
+	#add a legend
+	x.range <- plot.dim[2] - plot.dim[1]
+	y.range <- plot.dim[4] - plot.dim[3]
+	legend.x.coord <- plot.dim[2] - (x.range*0.25)
+	legend.y.coord <- plot.dim[3] + (y.range*0.1)
+	legend(x = legend.x.coord, y = legend.y.coord, legend = c("Enhancing", "Suppressing"), col = c(positive.col, negative.col), lty = 1, lwd = 3)
+	
 	#segment the y coordinates of the gap region
 	#in the outermost circle to evenly space the
 	#label sticks and gaps
 	pheno.label.starts <- round(segment.region(1, label.gap, num.points = length(pheno), alignment = "center"))
-	# pheno.label.y <- segment.region(trait.circ[[length(trait.circ)]]$y[1], trait.circ[[length(trait.circ)]]$y[label.gap], num.points = length(pheno), alignment = "center")
 
 	#put the labels between the outermost trait circle and the edge of the plot
 	label.x <- max(trait.circ[[length(trait.circ)]]$x) + (plot.dim[2] - max(trait.circ[[length(trait.circ)]]$x))*0.25
@@ -260,7 +319,7 @@ function(data.obj, collapsed.net = TRUE, trait = NULL, phenotype.labels = NULL, 
 						block.coord <- get.block.coord(radius.coord = trait.circ[[ph]], start, pts.per.chr, block.rel.locale)
 	
 						if(!collapsed.net || names(chr)[i] == "covar" || dim(block.coord)[1] == 1){
-							pt.locale <- which(trait.circ[[ph]]$x == block.coord[,2])
+							pt.locale <- which(trait.circ[[ph]]$x == block.coord[1,2])
 							pt.x1 <- trait.circ[[ph]]$x[pt.locale-1]; pt.x2 <- trait.circ[[ph]]$x[pt.locale]
 							pt.y1 <- trait.circ[[ph]]$y[pt.locale-1]; pt.y2 <- trait.circ[[ph]]$y[pt.locale]
 							points(c(pt.x1, pt.x2), c(pt.y1, pt.y2), type = "l", lwd = main.lwd, col = trait.col)
@@ -271,8 +330,8 @@ function(data.obj, collapsed.net = TRUE, trait = NULL, phenotype.labels = NULL, 
 						}
 					
 					#collect positions of the blocks for polygons and inner target bars on slightly smaller circles
-					block.coord.table <- rbind(block.coord.table, get.block.coord(inter.radius, start, pts.per.chr, block.rel.locale))
-					inner.bar.coord.table <- rbind(inner.bar.coord.table, get.block.coord(inner.bar.radius, start, pts.per.chr, block.rel.locale))				
+					block.coord.table <- rbind(block.coord.table, get.block.coord(radius.coord = inter.radius, start, pts.per.chr, block.rel.locale))
+					inner.bar.coord.table <- rbind(inner.bar.coord.table, get.block.coord(radius.coord = inner.bar.radius, start, pts.per.chr, block.rel.locale))				
 	
 					} #end looping through phenotypes
 				} #end looping through blocks
@@ -351,6 +410,6 @@ function(data.obj, collapsed.net = TRUE, trait = NULL, phenotype.labels = NULL, 
 										
 				}
 			} #end case for when there are significicant interactions in this row
-		}
+		}#end looping through markers
 		
 }

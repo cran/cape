@@ -8,7 +8,8 @@
 This function plots the results of the singular value decomposition (SVD) of the phenotype matrix. This plot is useful for selecting eigentraits for further analysis.
 }
 \usage{
-plotSVD(data.obj, orientation = c("vertical", "horizontal"))
+plotSVD(data.obj, orientation = c("vertical", "horizontal"), 
+neg.col = "blue", pos.col =  "brown", light.dark = "dark")
 }
 %- maybe also usage for other objects documented here.
 \arguments{
@@ -18,9 +19,18 @@ plotSVD(data.obj, orientation = c("vertical", "horizontal"))
   \item{orientation}{
 	A character string ("vertical", or "horizontal") indicating whether the plot should be vertically or horizontally oriented.
 }
+	 \item{neg.col}{
+	 	The color in which to plot the negative values. Colors can be one of the following: "green", "purple", "orange", "blue", "brown", "yellow", or "gray."
+	 }
+	 \item{pos.col}{
+	 	The color in which to plot the positive values. Colors can be one of the following: "green", "purple", "orange", "blue", "brown", "yellow", or "gray."
+	 }
+	 \item{light.dark}{
+	 	Either "light" or "dark" depending on the desired range of colors used.
+	 }
 }
 \value{
-No values are returned
+Invisibly returns the fraction of variance accounted for by each ET.
 }
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 \seealso{

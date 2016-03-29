@@ -1,5 +1,9 @@
 plotVariantInfluences <-
-function(data.obj, p.or.q = 0.05, min.std.effect = 0, plot.all.vals = FALSE, all.markers = FALSE, standardize = TRUE, not.tested.col = "lightgray", show.marker.labels = FALSE, show.chr = TRUE, label.chr = TRUE, scale.effects = c("log10", "sqrt", "none"), pheno.width = 11, covar.width = 11, covar.labels = NULL, phenotype.labels = NULL){
+function(data.obj, p.or.q = 0.05, min.std.effect = 0, plot.all.vals = FALSE, standardize = TRUE, pos.col = "brown", neg.col = "blue", not.tested.col = "lightgray", light.dark = "light", show.marker.labels = FALSE, show.chr = TRUE, label.chr = TRUE, scale.effects = c("log10", "sqrt", "none"), pheno.width = 11, covar.width = 11, covar.labels = NULL, phenotype.labels = NULL){
+	
+	if(plot.all.vals){
+		light.dark = "light"
+		}
 	
 	if(length(grep("n", scale.effects)) > 0){
 		scale.effects <- "none"
@@ -101,52 +105,37 @@ function(data.obj, p.or.q = 0.05, min.std.effect = 0, plot.all.vals = FALSE, all
 			}
 	}
 	
-	if(all.markers){
-		unique.markers <- colnames(data.obj$geno)
+	unique.markers <- sort(as.numeric(unique(c(as.vector(var.influences[,"Source"]), as.vector(var.influences[,"Target"]), pheno.inf[[1]][,"marker"]))))
+		
+		
+	marker.chr <- get.marker.chr(data.obj, unique.markers)
+	covar.locale <- which(marker.chr == 0)
+	num.covar <- length(covar.locale)
+	if(num.covar > 0){
+		expanded.chr <- c(marker.chr[-covar.locale], rep(0, (num.covar*covar.width)-num.covar))
+		expanded.covar <- unlist(lapply(unique.markers[covar.locale], function(x) rep(x, covar.width)))
+		expanded.markers <- c(unique.markers[-covar.locale], expanded.covar)
 		}else{
-		unique.markers <- unique(c(as.vector(var.influences[,"Source"]), as.vector(var.influences[,"Target"]), pheno.inf[[1]][,"marker"]))
-		}
-			
-	marker.locale <- match(unique.markers, colnames(data.obj$geno))
-	unique.marker.locale <- which(colnames(data.obj$geno) %in% unique.markers)
-	sorted.markers <- unique.markers[order(marker.locale)]
-	#update the markers based on the covariate width
-	orig.chromosomes <- data.obj$chromosome[sort(unique.marker.locale)]
-	covar.locale <- which(orig.chromosomes == 0)
-	if(length(covar.locale) > 0){
-		covar.markers <- sorted.markers[covar.locale]
-		new.covar.markers <- sort(rep(covar.markers, covar.width))
-		just.markers <- sorted.markers[-covar.locale]
-		expanded.markers <- c(just.markers, new.covar.markers)
-		}else{
-		expanded.markers <- sorted.markers	
+		expanded.chr <- marker.chr
+		expanded.markers <- unique.markers
 		}
 
-
+	covar.info <- get.covar(data.obj)
+	covar.names <- covar.info$covar.names[which(covar.info$covar.type == "p")]
 	
 	#get coordinates of the chromosome boundaries
 	if(show.chr){
-		covar.locale <- which(data.obj$chromosome == 0)
-		num.covar <- length(covar.locale)
-		chromosomes <- orig.chromosomes[which(orig.chromosomes != 0)]
+		just.marker.chr <- marker.chr[which(marker.chr != 0)]
 		if(num.covar > 0){
-			covar.names <- data.obj$marker.names[covar.locale]
 			for(i in 1:length(covar.names)){
-				chromosomes <- c(chromosomes, rep(covar.names[i], covar.width))
+				just.marker.chr <- c(just.marker.chr, rep(covar.names[i], covar.width))
 				}
 			}
-		u_chr <- unique(chromosomes[which(!is.na(chromosomes))])
-		chr.boundaries <- apply(matrix(u_chr, ncol = 1), 1, function(x) max(which(chromosomes == x))) + 0.5
+		u_chr <- unique(just.marker.chr[which(!is.na(just.marker.chr))])
+		chr.boundaries <- apply(matrix(u_chr, ncol = 1), 1, function(x) max(which(just.marker.chr == x))) + 0.5
 		chr.boundaries <- c(0, chr.boundaries)
 		if(label.chr){
-			#use only the first two characters of each chromosome
-			chr.names <- unique(chromosomes)
-			if(!is.null(covar.labels)){
-				chr.names[(length(chr.names)-num.covar+1):length(chr.names)] <- covar.labels
-				}
-
-			# chr.names <- unlist(lapply(strsplit(unique(chromosomes), ""), function(x) paste(x[1:2], collapse = "")))
-			# chr.names <- unlist(strsplit(chr.names, "NA"))
+			chr.names <- unique(just.marker.chr)
 			}else{
 			chr.names <- NULL
 			}
@@ -158,12 +147,12 @@ function(data.obj, p.or.q = 0.05, min.std.effect = 0, plot.all.vals = FALSE, all
 			
 	var.influence.mat <- matrix(NA, nrow = length(unique.markers), ncol = length(unique.markers))
 	var.pval.mat <- matrix(NA, nrow = length(unique.markers), ncol = length(unique.markers))
-	colnames(var.influence.mat) <- rownames(var.influence.mat) <- colnames(var.pval.mat) <- rownames(var.pval.mat) <- sorted.markers
+	colnames(var.influence.mat) <- rownames(var.influence.mat) <- colnames(var.pval.mat) <- rownames(var.pval.mat) <- unique.markers
 
 	pheno.influence.mat <- matrix(NA, nrow = length(unique.markers), ncol = num.pheno)
 	pheno.pval.mat <- matrix(NA, nrow = length(unique.markers), ncol = num.pheno)
 	colnames(pheno.influence.mat) <- colnames(pheno.pval.mat) <- pheno.names
-	rownames(pheno.influence.mat) <- rownames(pheno.pval.mat) <- sorted.markers
+	rownames(pheno.influence.mat) <- rownames(pheno.pval.mat) <- unique.markers
 	
 	
 	#fill the variant-to-variant matrix with test statistics with sources in rows and targets in columns
@@ -176,10 +165,11 @@ function(data.obj, p.or.q = 0.05, min.std.effect = 0, plot.all.vals = FALSE, all
 				}
 		var.pval.mat[as.character(var.influences[i,"Source"]), as.character(var.influences[i,"Target"])] <- as.numeric(as.vector(var.influences[i,var.sig.col]))
 		}
+	var.pval.mat[which(!is.finite(var.pval.mat))] <- 1
 	
 	#expand the covariate rows and columns to the specified width
-	if(length(chromosomes) > ncol(var.influence.mat)){
-		covar.locale <- which(orig.chromosomes == 0)
+	if(length(expanded.chr) > ncol(var.influence.mat)){
+		covar.locale <- which(marker.chr == 0)
 		
 		new.var.inf <- expand.matrix(var.influence.mat, covar.locale, "row", covar.width)
 		new.var.inf <- expand.matrix(new.var.inf, covar.locale, "col", covar.width)
@@ -209,7 +199,7 @@ function(data.obj, p.or.q = 0.05, min.std.effect = 0, plot.all.vals = FALSE, all
 				pheno.pval.mat[as.character(unique.markers[i]), pheno.names[j]] <- pheno.inf[[j]][marker.locale, pheno.sig.col]
 				}else{
 					pheno.influence.mat[as.character(unique.markers[i]), pheno.names[j]] <- NA
-					pheno.pval.mat[unique.markers[i], pheno.names[j]] <- NA
+					pheno.pval.mat[as.character(unique.markers[i]), pheno.names[j]] <- NA
 					}
 			}
 		}
@@ -239,11 +229,11 @@ function(data.obj, p.or.q = 0.05, min.std.effect = 0, plot.all.vals = FALSE, all
 	full.inf.mat <- apply(full.inf.mat, 2, as.numeric)
 	full.pval.mat <- apply(full.pval.mat, 2, as.numeric)
 	
-	marker.locale <- match(expanded.markers, colnames(data.obj$geno))
-	rownames(full.inf.mat) <- data.obj$marker.names[marker.locale]
-	colnames(full.inf.mat) <- c(data.obj$marker.names[marker.locale], expanded.pheno.names)
+	marker.names  <- get.marker.name(data.obj, expanded.markers)
+	rownames(full.inf.mat) <- marker.names
+	colnames(full.inf.mat) <- c(marker.names, expanded.pheno.names)
 	
-	if(length(covar.locale) > 0){
+	if(num.covar > 0){
 		for(i in 1:length(covar.names)){
 			covar.locale <- which(rownames(full.inf.mat) == covar.names[i])
 			new.covar.names <- rep("", length(covar.locale))
@@ -282,60 +272,18 @@ function(data.obj, p.or.q = 0.05, min.std.effect = 0, plot.all.vals = FALSE, all
 		sig.neg <- intersect(neg.effect, which(full.pval.mat < p.or.q))
 		sig.pos <- intersect(pos.effect, which(full.pval.mat < p.or.q))
 
-		#spectral
-		# extra.col.mat[sig.neg] <- "slateblue2"
-		# extra.col.mat[sig.pos] <- "firebrick3"
-
-		#purple orange
-		# extra.col.mat[sig.neg] <- "#998ec3"
-		# extra.col.mat[sig.pos] <- "#f1a340"
-	
-		#purple-green
-		extra.col.mat[sig.neg] <- "#7fbf7b"
-		extra.col.mat[sig.pos] <- "#af8dc3"
+		extra.col.mat[sig.neg] <- get.col(neg.col, "dark")[3]
+		extra.col.mat[sig.pos] <- get.col(pos.col, "dark")[3]
 		
-		#pink-green
-		# extra.col.mat[sig.neg] <- "#a1d76a"
-		# extra.col.mat[sig.pos] <- "#e9a3c9"
-		# extra.col.mat[sig.neg] <- "#4dac26"
-		# extra.col.mat[sig.pos] <- "#d01c8b"
-
-
-		#bright ends
-		# extra.col.mat[sig.neg] <- "yellow"
-		# extra.col.mat[sig.pos] <- "springgreen"
-		# extra.col.mat[sig.neg] <- "royalblue"
-		# extra.col.mat[sig.pos] <- "red"
-
-		#blue-brown
-		# extra.col.mat[sig.neg] <- "#df8640"
-		# extra.col.mat[sig.pos] <- "#3794bf"
-		# extra.col.mat[sig.neg] <- "#018571"
-		# extra.col.mat[sig.pos] <- "#a6611a"
-
-
-		#jet colors
-		# extra.col.mat[sig.neg] <- "blue"
-		# extra.col.mat[sig.pos] <- "red"
-	
-		#orange-blue
-		# extra.col.mat[sig.neg] <- "#fc8d59"
-		# extra.col.mat[sig.pos] <- "#91bfdb"
-
-		#red-blue
-		# extra.col.mat[sig.neg] <- "#67a9cf"
-		# extra.col.mat[sig.pos] <- "#ef8a62"
-		
-
-		# #take out significant values so they don't overwhelm the other values
-		# full.inf.mat[which(full.pval.mat <= p.or.q)] <- NA
 		}
 	main <- "Variant Influences"
 	
 	if(scale.effects == "log10"){
 		neg.locale <- which(full.inf.mat < 0)
+		pos.locale <- which(full.inf.mat > 0)
 		scaled.effects <- log10(abs(full.inf.mat))
 		scaled.effects[neg.locale] <- scaled.effects[neg.locale]*-1	
+		scaled.effects[pos.locale] <- abs(scaled.effects[pos.locale])
 		full.inf.mat <- scaled.effects
 		main <- "log10 Variant Influences"
 		}
@@ -353,10 +301,7 @@ function(data.obj, p.or.q = 0.05, min.std.effect = 0, plot.all.vals = FALSE, all
 			plot.window(xlim = c(0,1), ylim = c(0,1))
 			text(0.5, 0.5, "No Significant Interactions")
 		}else{
-		# data.obj$full.adjacency <- full.inf.mat
-		# myImagePlot(x = full.inf.mat, min.x = (max(abs(full.inf.mat), na.rm = TRUE)*-1), max.x = max(abs(full.inf.mat), na.rm = TRUE), main = main, xlab = "Target", ylab = "Source", mark.coords = not.tested.locale, mark.col = not.tested.col, show.labels = show.marker.labels, chromosome.coordinates = chr.boundaries, chr.names = chr.names, show.pheno.labels = TRUE, extra.col.mat = extra.col.mat)
-		#testing out asymmetric color bar
-		myImagePlot(x = full.inf.mat, min.x = min(full.inf.mat, na.rm = TRUE), max.x = max(full.inf.mat, na.rm = TRUE), main = main, xlab = "Target", ylab = "Source", mark.coords = not.tested.locale, mark.col = not.tested.col, show.labels = show.marker.labels, chromosome.coordinates = chr.boundaries, chr.names = chr.names, show.pheno.labels = TRUE, extra.col.mat = extra.col.mat)
+		myImagePlot(x = full.inf.mat, min.x = min(full.inf.mat, na.rm = TRUE), max.x = max(full.inf.mat, na.rm = TRUE), main = main, xlab = "Target", ylab = "Source", mark.coords = not.tested.locale, mark.col = not.tested.col, show.labels = show.marker.labels, chromosome.coordinates = chr.boundaries, chr.names = chr.names, show.pheno.labels = TRUE, extra.col.mat = extra.col.mat, pos.col = pos.col, neg.col = neg.col, col.pal = light.dark)
 
 
 		#add phenotype names

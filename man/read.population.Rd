@@ -9,13 +9,13 @@ This function reads in data for \code{cape} analysis and formats it into an obje
 }
 \usage{
 read.population(filename = NULL, pheno.col = NULL, 
-geno.col = NULL, delim = ",", na.strings = "-",
+geno.col = NULL, delim = ",", na.strings = "-", 
 check.chr.order = TRUE)
 }
 %- maybe also usage for other objects documented here.
 \arguments{
-  \item{filename}{
-An optional character string with path name specifying the file to be read in. Omission of this argument will prompt a dialog box for selecting a file.
+ \item{filename}{
+	An optional character string with path name specifying the file to be read in. Omission of this argument will prompt a dialog box for selecting a file.
 }
   \item{pheno.col}{
 	An optional numeric vector specifying which columns the phenotypes of interest are in. If omitted, all phenotypes are read in.
@@ -27,7 +27,7 @@ An optional character string with path name specifying the file to be read in. O
 		A character string indicating the delimeter in the data file. The default indicates a comma-separated file (",").
 	}
 	\item{na.strings}{
-	The symbol used to denote missing data in the file. 	
+	The symbol used to denote missing data in the file. 	Misspecifying this character can lead to errors in processing the file in which cape misstakenly thinks some phenotypes have character values in them.
 	}
 	\item{check.chr.order}{
 	A logical value indicating whether the order of the chromosomes should be checked. In general, chromosomes should be entered in increasing numerical value. CAPE does not sort chromosomes, and they will be plotted in the order in which they are entered. If the chromosomes have non-numeric and non-X or Y names, and cannot be checked appropriately, or an alternate order is desired, set check.chr.order to FALSE.

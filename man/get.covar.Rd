@@ -2,33 +2,31 @@
 \alias{get.covar}
 %- Also NEED an \alias for EACH other topic documented here.
 \title{
-Use a threshold to automatically select covariates for the pairscan
+Get information about covariates
 }
 \description{
-This function uses a covariate threshold to calculate which markers will be used as covariates in the pair scan.
+This function returns information about all covariates that originated from either genotype or phenotype.
 }
 \usage{
-get.covar(data.obj, covar.thresh = NULL)
+get.covar(data.obj, covar = NULL)
 }
 %- maybe also usage for other objects documented here.
 \arguments{
   \item{data.obj}{
 	The object in which all results are stored. See \code{\link{read.population}}.
 	}
-	\item{covar.thresh}{
-		A numerical value indicating the standardized effect size (\eqn{\beta/\sigma}) above which a marker is considered to have a strong enough effect to be used as a covariate.
+	\item{covar}{
+		A character string indicating which covariates to return information about.
 	}
 }
 \value{
-This function operates on the element in data.obj called \code{covar.flags}. This element is a table with one row for each marker and one column for each trait being analyzed. The entry for each marker contains a 1 if it is to be used as a covariate and a 0 otherwise.
+This function returns a list with the following elements:
+\itemize{
+\item{covar.names: A vector of covariate names}
+\item{covar.type: A vector containing "p" and "g" values to indicate whether each covariate originate as a genetic marker or a phenotype.}
+\item{covar.loc: A numeric vector indicating the chromosomal coordinate of each covariate. Phenotypic covariates are given dummy coordinates of 1:n.}
+\item{covar.table: A matrix giving the values of each covariate for each individual.}
 }
-\references{
-Carter, G. W., Hays, M., Sherman, A., & Galitski, T. (2012). Use of pleiotropy to model genetic interactions in a population. PLoS genetics, 8(10), e1003010. doi:10.1371/journal.pgen.1003010
-}
-\seealso{
-\code{\link{set.covar}}, \code{\link{singlescan}}, \code{\link{select.markers.for.pairscan}}, \code{\link{pairscan}}
 }
 % Add one or more standard keywords, see file KEYWORDS in the
 % R documentation directory.
-\keyword{arith}
-

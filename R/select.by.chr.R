@@ -1,10 +1,6 @@
 select.by.chr <-
-function(data.obj, chr, include.covariates = TRUE){
+function(data.obj, chr){
 	
-	if(include.covariates){
-		chr <- c(chr, 0)
-		}
-
 	geno <- data.obj$geno
 	
 	chr.list <- data.obj$chromosome

@@ -8,11 +8,11 @@ Plot the final epistatic network
 This function plots the final results with a using a different layout than \code{\link{plotVariantInfluences}}. Instead of the adjacency matrix, this function plots interactions between markers with arrows indicating the direction of influence. The function \code{\link{get.network}} must be run before plotting the network.
 }
 \usage{
-plotNetwork(data.obj, collapsed.net = TRUE, trait = NULL, 
-phenotype.labels = NULL, main.lwd = 4, inter.lwd = 3, 
-label.cex = 1.5, percent.bend = 15, chr.gap = 1, 
-label.gap = 5, positive.col = "#af8dc3", 
-negative.col = "#7fbf7b")
+plotNetwork(data.obj, collapsed.net = TRUE, 
+trait = NULL, phenotype.labels = NULL, 
+main.lwd = 4, inter.lwd = 3, label.cex = 1.5, 
+percent.bend = 15, chr.gap = 1, label.gap = 5, 
+positive.col = "brown", negative.col = "blue")
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -47,10 +47,11 @@ negative.col = "#7fbf7b")
 	A numeric value between 0 and 100 indicating what percentage of the circle should be devoted to the phenotype labels.
 	}
 \item{positive.col}{
-	A color value (either rgb or R color name) to represent positive interactions and main effects. The default value is purple.
+	 The color in which to plot the postive values. Colors can be one of the following: "green", "purple", "orange", "blue", "brown", "yellow", or "gray."
+
 	}
 \item{negative.col}{
-	A color value (either rgb or R color name) to represent negative interactions and main effects. The default value is green.
+	 The color in which to plot the negative values. Colors can be one of the following: "green", "purple", "orange", "blue", "brown", "yellow", or "gray."
 	}
 
 

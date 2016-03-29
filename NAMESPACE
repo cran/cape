@@ -1,3 +1,5 @@
+importFrom("grDevices", "colorRampPalette", "dev.off", "pdf", "rgb")
+import("graphics")importFrom("stats", "coef", "coefficients", "cor", "dist", "lm", "median", "na.omit", "p.adjust", "qnorm", "runif", "sd", "var", "vcov", "cov", "qqplot")importFrom("utils", "read.table", "write.table", "tail")
 importFrom("corpcor", pseudoinverse)
 importFrom("evd", qgev, fgev)
 importFrom("qpcR", propagate)
@@ -5,7 +7,12 @@ importFrom("Matrix", rankMatrix)
 import("igraph")
 importFrom("fdrtool", fdrtool)
 importFrom("shape", Arrowhead)
+importFrom("HardyWeinberg", HWExact)
+importFrom("RColorBrewer", brewer.pal)
+import("doParallel")
+import("foreach")
+import("regress")
 
-export(calc.delta.errors, calc.p, consec.pairs, create.covar, delete.pheno, direct.influence, error.prop, genome.wide.threshold.1D, get.col.num, get.covar, get.eigentraits, get.layout.mat, get.linearly.independent, get.network, get.pairs.for.pairscan, linkage.blocks.stepwise, myImagePlot, norm.pheno, one.pairscan, one.singlescan, pair.matrix, pairscan.null, pairscan, plotCollapsedVarInf, plotNetwork, plotPairscan, plotSinglescan.heat, plotSinglescan, plotSVD, plotVariantInfluences, read.population, remove.ind.with.missing.pheno, report.progress, rotate.mat, rz.transform, segment.region, select.by.chr, select.by.ind, select.eigentraits, select.markers.for.pairscan, select.pheno, set.covar, set.pairscan.thresh, singlescan, writePopulation, writeVariantInfluences)
+export(bin.vector, calc.delta.errors, calc.p, consec.pairs, delete.pheno, direct.influence, error.prop, filter.hwe, filter.maf, genome.wide.threshold.1D.parallel, genome.wide.threshold.1D, get.chr.markers, get.col.num, get.col, get.covar, get.eigentraits, get.geno, get.geno.with.covar, get.layout.mat, get.linearly.independent, get.marker.chr, get.marker.idx, get.marker.location, get.marker.name, get.marker.num, get.marker.val, get.network, get.pairs.for.pairscan, get.pheno, histPheno, impute.missing.geno, kinship.on.the.fly, kinship, linkage.blocks.network, make.data.obj, marker2covar, myImagePlot, norm.pheno, one.pairscan.parallel, one.singlescan, pair.matrix, pairscan.kin, pairscan.noKin, pairscan.null, pairscan, pheno2covar, plotCollapsedVarInf, plotNetwork, plotPairscan, plotPheno, plotPhenoCor, plotSinglescan.heat, plotSinglescan, plotSVD, plotVariantInfluences, qqPheno, read.geno, read.pheno, read.population, remove.ind, remove.markers, report.progress, rotate.mat, rz.transform, segment.region, select.by.chr, select.by.ind, select.eigentraits, select.markers.for.pairscan, select.pheno, singlescan, sortByThenBy, sortCross, writePopulation, writeVariantInfluences)
 
 

@@ -31,6 +31,20 @@ function(x,...){
 	additional.arguments$mark.coords <- NULL
 	additional.arguments$mark.col <- NULL
 
+	pos.col <- additional.arguments$pos.col
+	if(is.null(pos.col)){pos.col = "brown"}
+	additional.arguments$pos.col <- NULL
+	neg.col <- additional.arguments$neg.col
+	if(is.null(neg.col)){neg.col = "blue"}
+	additional.arguments$neg.col <- NULL
+	col.pal <- additional.arguments$col.pal
+	if(is.null(col.pal)){col.pal = "light"}
+	additional.arguments$col.pal <- NULL
+
+	col.split.point <- additional.arguments$col.split.point
+	if(is.null(col.split.point)){col.split.point <- 0}
+	additional.arguments$col.split.point <- NULL
+
 	extra.col.mat <- additional.arguments$extra.col.mat
 	additional.arguments$extra.col.mat <- NULL
 
@@ -58,81 +72,22 @@ function(x,...){
 	yLabels <- rownames(x)
 	xLabels <- colnames(x)
 
+	if(is.null(xLabels)){xLabels <- 1:dim(x)[2]}
+	if(is.null(yLabels)){yLabels <- 1:dim(x)[1]}
+	
 	layout.mat <- matrix(c(1:3, 4, 4, 4), nrow=2, ncol=3, byrow = TRUE)
 	layout(layout.mat, widths=c(0.75,4,0.75), heights = c(1,0.1))
 	# layout.show(4);return()
 	
-	# Red and green range from 0 to 1 while Blue ranges from 1 to 0
-	# ColorRamp <- rgb(seq(0,1,length=256),  # Red
-	                   # seq(0,1,length=256),  # Green
-	                   # seq(1,0,length=256))  # Blue
-	
-	# ColorLevels <- seq(min.x, max.x, length=length(ColorRamp))
 	ColorLevels <- seq(min.x, max.x, length=256)
-
-	#center the palette on 0
-	# mypal.neg <- colorRampPalette(c("dodgerblue3", "aliceblue"))
-	# mypal.pos <- colorRampPalette(c("lavenderblush", "red"))
-
-	#spectral colors
-	# mypal.pos <- colorRampPalette(rev(c("#9E0142", "#D53E4F", "#F46D43", "#FDAE61", "#FEE08B", "#FFFFBF")))
-	# mypal.neg <- colorRampPalette(rev(c("#FFFFBF", "#E6F598", "#ABDDA4", "#66C2A5", "#3288BD", "#5E4FA2")))
 	
-	#purple-green
-	# mypal.pos <- colorRampPalette(rev(c("#40004B", "#762A83", "#9970AB", "#C2A5CF", "#E7D4E8", "#F7F7F7")))
-	# mypal.neg <- colorRampPalette(rev(c("#F7F7F7", "#D9F0D3", "#A6DBA0", "#5AAE61", "#1B7837", "#00441B")))
+	pos.cols <- get.col(pos.col, col.pal)
+	neg.cols <- get.col(neg.col, col.pal)[3:1]
 
-	#purple-green2
-	mypal.pos <- colorRampPalette(c("#f7f7f7", "#af8dc3"))
-	mypal.neg <- colorRampPalette(c("#7fbf7b", "#f7f7f7"))
-
-
-	#pink-green
-	# mypal.pos <- colorRampPalette(rev(c("#8E0152", "#C51B7D", "#DE77AE", "#F1B6DA", "#FDE0EF", "#F7F7F7")))
-	# mypal.neg <- colorRampPalette(rev(c("#F7F7F7", "#E6F5D0", "#B8E186", "#7FBC41", "#4D9221", "#276419")))
-	# mypal.pos <- colorRampPalette(c("#f7f7f7","#e9a3c9"))
-	# mypal.neg <- colorRampPalette(c("#a1d76a","#f7f7f7"))
-
+	mypal.pos <- colorRampPalette(pos.cols)
+	mypal.neg <- colorRampPalette(neg.cols)
 	
-	#purple-orange
-	# mypal.pos <- colorRampPalette(rev(c("#7F3B08", "#B35806", "#E08214", "#FDB863", "#FEE0B6", "#F7F7F7")))
-	# mypal.neg <- colorRampPalette(rev(c("#F7F7F7", "#D8DAEB", "#B2ABD2", "#8073AC", "#542788", "#2D004B")))  
-
-	#purple-orange2
-	# mypal.pos <- colorRampPalette(c("#f7f7f7", "#f1a340"))
-	# mypal.neg <- colorRampPalette(c("#998ec3", "#f7f7f7"))  
-
-	#red-blue
- 	# mypal.pos <- colorRampPalette(c("#f7f7f7", "#ef8a62"))
- 	# mypal.neg <- colorRampPalette(c("#67a9cf" ,"#f7f7f7"))  
-
-	#red-yellow-blue
- 	# mypal.pos <- colorRampPalette(rev(c("#A50026", "#D73027", "#F46D43", "#FDAE61", "#FEE090", "#FFFFBF")))
- 	# mypal.neg <- colorRampPalette(rev(c("#FFFFBF", "#E0F3F8", "#ABD9E9", "#74ADD1", "#4575B4", "#313695")))  
-	
-	#green-gray-yellow
-	# mypal.pos <- colorRampPalette(c("midnightblue", "springgreen"))
-	# mypal.neg <- colorRampPalette(c("yellow", "midnightblue"))
-
-	# mypal.pos <- colorRampPalette(c("gray", "red"))
-	# mypal.neg <- colorRampPalette(c("blue", "gray"))
-
-	#blue brown
-	# mypal.pos <- colorRampPalette(c("#FFFFFF", "#3794bf"))
-	# mypal.neg <- colorRampPalette(c("#df8640", "#FFFFFF"))
-	# mypal.pos <- colorRampPalette(rev(c("#a6611a", "#dfc27d", "#f5f5f5")))
-	# mypal.neg <- colorRampPalette(rev(c("#f5f5f5", "#80cdc1", "#018571")))
-	
-
-	#jet colors
-	# mypal.neg <- colorRampPalette(c("blue", "#007FFF", "cyan","#7FFF7F"))
-	# mypal.pos <- colorRampPalette(c("#7FFF7F", "yellow", "#FF7F00", "red"))
-
-	# mypal.pos <- colorRampPalette(c("white", "#fc8d59"))
-	# mypal.neg <- colorRampPalette(c("#91bfdb", "white"))
-
-	
-	ColorRamp <- c(mypal.neg(length(which(ColorLevels < 0))), mypal.pos(length(which(ColorLevels >= 0))))
+	ColorRamp <- c(mypal.neg(length(which(ColorLevels < col.split.point))), mypal.pos(length(which(ColorLevels >= col.split.point))))
 	
 	#=====================================
 	#plot the y axis label

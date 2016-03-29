@@ -7,16 +7,21 @@
 This function plots the results from the pairwise regressions. The matrices are plotted with results coded on a yellow to blue scale. Results from all phenotypes are plotted on the same scale.
 }
 \usage{
-plotPairscan(data.obj, phenotype = NULL, standardized = TRUE, 
+plotPairscan(data.obj, pairscan.obj, 
+phenotype = NULL, standardized = TRUE, 
 show.marker.labels = FALSE, show.chr = TRUE, 
 label.chr = TRUE, pdf.label = "Pairscan.Regression.pdf", 
-verbose = FALSE)
+neg.col = "blue", pos.col = "brown", 
+col.pal = "dark", verbose = FALSE)
 }
 %- maybe also usage for other objects documented here.
 \arguments{
   \item{data.obj}{
 	The object in which all results are stored. See \code{\link{read.population}}.
 }
+	\item{pairscan.obj}{
+		The object in which the results from \code{\link{pairscan}} are stored.
+	}
 	\item{phenotype}{
 		A character vector indicating which phenotypes should be plotted. All phenotypes are plotted if phenotype is set to NULL.
 	}
@@ -34,6 +39,15 @@ verbose = FALSE)
 	 	}
 	 \item{pdf.label}{
 	 	A character string indicating the name of the file that the plots should be printed to. When multiple phenotypes are plotted, all penotypes are plotted on the same scale and each is plotted in a different page of the pdf.
+	 }
+	 \item{neg.col}{
+	 	The color in which to plot the negative values. Colors can be one of the following: "green", "purple", "orange", "blue", "brown", "yellow", or "gray."
+	 }
+	 \item{pos.col}{
+	 	The color in which to plot the positive values. Colors can be one of the following: "green", "purple", "orange", "blue", "brown", "yellow", or "gray."
+	 }
+	 \item{col.pal}{
+	 	Either "light" or "dark" depending on the desired range of colors used.
 	 }
 	 \item{verbose}{
 	 	A logical value indicating whether the progress of the plotting function should be reported. Large data sets can take a long time to process and plot.

@@ -1,5 +1,5 @@
 direct.influence <-
-function(data.obj, transform.to.phenospace = TRUE, pval.correction = c("holm", "fdr", "lfdr"), verbose = FALSE, save.permutations = FALSE) {
+function(data.obj, pairscan.obj, transform.to.phenospace = TRUE, pval.correction = c("holm", "fdr", "lfdr"), verbose = FALSE, save.permutations = FALSE) {
 
 
 	#This object keeps large intermediate data
@@ -27,12 +27,11 @@ function(data.obj, transform.to.phenospace = TRUE, pval.correction = c("holm", "
 		geno <- data.obj$geno.for.pairscan 
 		n.gene <- dim(geno)[2]
 		if(perm){
-			scan.two.results <- data.obj$pairscan.perm		
+			scan.two.results <- pairscan.obj$pairscan.perm		
 			intermediate.data$pairscan.results <- scan.two.results
-			data.obj$pairscan.perm <- NULL
-			gc()
+			pairscan.obj$pairscan.perm <- NULL
 			}else{
-			scan.two.results <- data.obj$pairscan.results
+			scan.two.results <- pairscan.obj$pairscan.results
 			}
 			
 		n.pairs <- length(scan.two.results[[1]][[1]][,1]) 
@@ -46,7 +45,7 @@ function(data.obj, transform.to.phenospace = TRUE, pval.correction = c("holm", "
 		#phenotypes or eigentraits
 	
 		if(!transform.to.phenospace){
-			pheno.names <- names(data.obj$pairscan.results)	
+			pheno.names <- names(pairscan.obj$pairscan.results)	
 			pheno.check <- match(pheno.names, colnames(data.obj$pheno))
 			if(length(which(!is.na(pheno.check))) == 0){ #if we scanned eigentraits
 				ET <- data.obj$ET					
@@ -92,7 +91,8 @@ function(data.obj, transform.to.phenospace = TRUE, pval.correction = c("holm", "
 			#marker model (except for the interaction coefficient)
 			#we use all markers in each row and set the non-covariate entries to 0
 			num.pheno <- length(scan.two.results)
-			beta.mat <- matrix(NA, nrow = (dim(scan.two.results[[1]][[1]])[2]-3), ncol = num.pheno)
+			# beta.mat <- matrix(NA, nrow = (dim(scan.two.results[[1]][[1]])[2]-3), ncol = num.pheno)
+			beta.mat <- matrix(NA, nrow = 2, ncol = num.pheno)
 			for(ph in 1:num.pheno){
 				beta.mat[,ph] <- as.numeric(scan.two.results[[ph]][[1]][marker.pair.number,3:(dim(scan.two.results[[ph]][[1]])[2]-1)])
 				}				
@@ -212,8 +212,7 @@ function(data.obj, transform.to.phenospace = TRUE, pval.correction = c("holm", "
 		#influence coefficient, influence se, t stat
 		#and |t stat|
 
-
-		markers <- colnames(data.obj$geno.for.pairscan)
+		markers <- sort(unique(as.numeric(c(pair.stats[[1]][,1], pair.stats[[1]][,2]))))
 		pheno.names <- names(pair.stats)
 		
 		
@@ -282,7 +281,7 @@ function(data.obj, transform.to.phenospace = TRUE, pval.correction = c("holm", "
 		# tabulate influences of individual markers		
 		#================================================================
 		if(verbose){cat("calculating individual marker influences...\n")}
-		exp.stats.per.marker <- direct.influence.stat(exp.stats, perm = FALSE)
+		exp.stats.per.marker <- direct.influence.stat(pair.stats = exp.stats, perm = FALSE)
 		if(verbose){cat("calculating individual marker influences in permutations...\n")}
 		perm.stats.per.marker <- direct.influence.stat(perm.stats, perm = TRUE)
 		
@@ -320,64 +319,6 @@ function(data.obj, transform.to.phenospace = TRUE, pval.correction = c("holm", "
 		#================================================================
 		#================================================================
 		
-		
-	# #using a ks test means that too many markers are significant
-	# #calculating an empirical p value and correcting it is too stringent
-	# direct.influence.max <- function(emp.p.table){
-		
-		# stat <- emp.p.table
-
-		# markers <- unique(stat[[1]][,1])
-		# max.stat.list <- vector(length(stat), mode = "list")
-		# names(max.stat.list) <- names(stat)
-		
-		# #go through each of the phenotypes and find the maximum 
-		# #influence of each marker
-		# for(ph in 1:length(stat)){
-			# max.stat.table <- NULL
-			# for(m in markers){
-				# marker.locale <- which(stat[[ph]][,1] == m)
-				# temp.table <- matrix(stat[[ph]][marker.locale,], nrow = length(marker.locale))
-				# colnames(temp.table) <- colnames(stat[[ph]])
-				# max.stat.locale <- which(as.numeric(temp.table[,"|t.stat|"]) == max(as.numeric(temp.table[,"|t.stat|"])))
-				
-				# # ninetyfifth <- get.percentile(stat[[ph]][,"|t.stat|"], percentile = 95)
-				# # pval <- length(which(temp.table[,"|t.stat|"] <= ninetyfifth))/length(temp.table[,"|t.stat|"])
-				# emp <- temp.table[,"|t.stat|"]; null  <- stat[[ph]][,"|t.stat|"]
-				# # pval <- suppressWarnings(ks.test(emp, sample(null, length(null)/2)))$p.value
-				# sample.seq <- seq(1, length(null), 1)
-				# pval <- suppressWarnings(ks.test(emp, null[sample.seq]))$p.value
-				# max.stats <- matrix(c(temp.table[max.stat.locale,], rep(pval, length(max.stat.locale))), nrow = length(max.stat.locale))
-				# max.stat.table <- rbind(max.stat.table, max.stats[1,]) #if there is more than one max, just take one
-				# }	
-
-			# ordered.table <- max.stat.table[order(max.stat.table[,5], decreasing = TRUE),]
-
-			# if(pval.correction == "holm"){
-				# adj.p <- p.adjust(max.stat.table[,7], method = "holm")
-				# adj.p.name <- "p.adjusted"
-				# }
-			# if(pval.correction == "fdr"){
-				# fdr.out <- suppressWarnings(fdrtool(max.stat.table[,7], statistic = "pvalue", plot = FALSE, verbose = FALSE, cutoff.method = "pct0"))
-				# adj.p <- fdr.out$qval
-				# adj.p.name <- "qval"
-				# }
-			# if(pval.correction == "lfdr"){
-				# fdr.out <- suppressWarnings(fdrtool(max.stat.table[,7], statistic = "pvalue", plot = FALSE, verbose = FALSE, cutoff.method = "pct0"))
-				# adj.p <- fdr.out$lfdr
-				# adj.p.name <- "lfdr"
-				# }
-			# if(pval.correction == "none"){
-				# adj.p <- max.stat.table[,7]
-				# adj.p.name <- "p.adjusted"
-				# }
-			# max.stat.table[,7] <- adj.p
-			# max.stat.list[[ph]] <- max.stat.table
-			# dimnames(max.stat.list[[ph]])[[2]] <- c(colnames(stat[[1]]), adj.p.name)
-			# }
-	
-		# return(max.stat.list)
-		# }
 
 	direct.influence.max <- function(emp.p.table){
 		
@@ -395,7 +336,7 @@ function(data.obj, transform.to.phenospace = TRUE, pval.correction = c("holm", "
 				marker.locale <- which(stat[[ph]][,1] == m)
 				temp.table <- matrix(stat[[ph]][marker.locale,], nrow = length(marker.locale))
 				colnames(temp.table) <- colnames(stat[[ph]])
-				max.stat.locale <- which(as.numeric(temp.table[,"|t.stat|"]) == max(as.numeric(temp.table[,"|t.stat|"])))
+				max.stat.locale <- which(as.numeric(temp.table[,"|t.stat|"]) == max(as.numeric(temp.table[,"|t.stat|"]), na.rm = TRUE))
 				if(pval.correction == "holm"){
 					adj.p <- p.adjust(temp.table[,6], method = "holm")
 					adj.p.name <- "p.adjusted"

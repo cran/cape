@@ -8,18 +8,24 @@
 This function uses error propagation formulas for quantities computed from regression coefficients to estimate the error for all regression coefficients.
 }
 \usage{
-error.prop(data.obj, perm = FALSE, verbose = FALSE)
+error.prop(data.obj, pairscan.obj, perm = FALSE, verbose = FALSE, n.cores = NULL)
 }
 %- maybe also usage for other objects documented here.
 \arguments{
   \item{data.obj}{
 	The object in which all results are stored. See \code{\link{read.population}}.
 	}
+	\item{pairscan.obj}{
+	The object in which the results from the pairscan are stored. See \code{\link{pairscan}}.
+	}
   \item{perm}{
 A logical value to indicate whether error propagation should be performed on the test statistics (FALSE) or the permuted test statistics (TRUE).
 }
   \item{verbose}{
 	A logical value to indicate whether the progress of the function should be printed to the screen.
+	}
+	\item{n.cores}{
+		An integer specifying the number of cores to be used in parallel processing. If NULL, the choice is made automatically.
 	}
 }
 \value{

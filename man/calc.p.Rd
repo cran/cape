@@ -8,15 +8,22 @@
 This function uses the perumtation results to calculate empirical p values for the variant-to-variant influences calculated by \code{\link{error.prop}}. It can also optionally adjust these p values using Holm's step-down procedure, false discovery rate (fdr), or local false discovery rate (lfdr).
 }
 \usage{
-calc.p(data.obj, pval.correction = c("holm", "fdr", "lfdr", "none"))
+calc.p(data.obj, pairscan.obj, 
+pval.correction = c("holm", "fdr", "lfdr", "none"), n.cores = NULL)
 }
 
 \arguments{
   \item{data.obj}{
 	The object in which all results are stored. See \code{\link{read.population}}.
 	}
+	\item{pairscan.obj}{
+	The object in which the results from the pairscan are stored. See \code{\link{pairscan}}.
+	}
 	\item{pval.correction}{
 		One of "holm", "fdr", "lfdr" or "none", indicating whether the p value correction method used should be the Holm step-down procedure, false discovery rate, local false discovery, or no correction rate respectively.
+	}
+	\item{n.cores}{
+		An integer specifying the number of cores to be used in parallel processing. If NULL, the choice is made automatically.
 	}
 }
 \value{

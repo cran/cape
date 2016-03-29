@@ -8,7 +8,7 @@ Calculate a genome-wide significance threshold for the single-variant scan
 This function uses permtuation testing to calculate a genome-wide significance threshold for the single-variant scan. Significant standardized effect sizes are calculated based on user-defined alpha values. In each permutation, the phenotype or eigentrait is shuffled and all markers are retested with the permuted phenotype. The regression coefficients are collected from each permutation and the extreme value distribution is used to determine thresholds for the user-defined alpha values.
 }
 \usage{
-genome.wide.threshold.1D(data.obj, n.perm = 1000, 
+genome.wide.threshold.1D(data.obj, geno.mat, n.perm = 1000, 
 alpha = c(0.01, 0.05), scan.what = c("eigentraits", "raw.traits"), 
 verbose = FALSE)
 }
@@ -17,12 +17,15 @@ verbose = FALSE)
   \item{data.obj}{
 	The object in which all results are stored. See \code{\link{read.population}}.
 	}
+\item{geno.mat}{
+	The genotype matrix to be used in testing. 
+	}
   \item{n.perm}{
 	The number of permutations to perform. The default is 1000.
 }
   \item{alpha}{
-	A vector of alpha values for which significant standardized effect sizes should be calculated.
-}
+	A vector of alpha values for which significant standardized effect sizes should be calculated. Default values are 0.05 and 0.01.
+	}
   \item{scan.what}{
 	A character value that uniquely specifies whether the eigentraits or phenotypes should be scanned.
 }
@@ -37,6 +40,7 @@ Carter, G. W., Hays, M., Sherman, A., & Galitski, T. (2012). Use of pleiotropy t
 \seealso{
 \code{\link{singlescan}}
 \code{\link{pairscan}}
+\code{\link{genome.wide.threshold.1D.parallel}}
 }
 % Add one or more standard keywords, see file KEYWORDS in the
 % R documentation directory.

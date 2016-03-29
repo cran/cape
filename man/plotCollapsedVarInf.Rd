@@ -9,7 +9,7 @@ This function plots the final network as does \code{\link{plotVariantInfluences}
 }
 \usage{
 plotCollapsedVarInf(data.obj, expand.labels = FALSE, 
-all.markers = FALSE, scale.effects = c("log10", "sqrt", "none"))
+all.markers = FALSE, scale.effects = c("none", "log10", "sqrt"))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

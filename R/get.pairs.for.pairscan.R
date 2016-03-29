@@ -1,6 +1,8 @@
 get.pairs.for.pairscan <-
-function(geno, min.per.genotype = NULL, max.pair.cor = NULL, verbose = FALSE){
-	
+function(geno, min.per.genotype = NULL, max.pair.cor = NULL, verbose = FALSE, n.cores = NULL){
+
+	p = NULL #for appeasing R CMD check
+
 	if(is.null(min.per.genotype) && is.null(max.pair.cor)){
 		stop("Either min.per.genotype or max.pair.cor should be set. Type ?get.pairs.for.pairscan for help.")
 		}
@@ -49,11 +51,20 @@ function(geno, min.per.genotype = NULL, max.pair.cor = NULL, verbose = FALSE){
 		return(pass.checks)
 		}
 	
-	good.pairs <- apply(all.pairs, 1, check.one.pair)
-	
+	registerDoParallel(cores = n.cores)
+	good.pairs <- foreach(p = t(all.pairs), .combine = "c") %dopar% {
+		check.one.pair(p)
+		}
+
+
+		
 	pairs.mat <- all.pair.names[which(good.pairs),,drop = FALSE]
 	colnames(pairs.mat) <- c("marker1", "marker2")
 	rownames(pairs.mat) <- NULL
+	
+	if(verbose){
+		cat(dim(pairs.mat)[1], "pairs will be tested.\n")
+		}
 	
 	return(pairs.mat)
 	

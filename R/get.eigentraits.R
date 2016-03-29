@@ -4,7 +4,30 @@ function(data.obj, scale.pheno = TRUE, normalize.pheno = TRUE){
 	#first make sure there are no individuals
 	#with missing phenotypes. This also makes 
 	#sure the phenotypes are numeric
-	data.obj <- remove.ind.with.missing.pheno(data.obj)
+	
+	pheno <- data.obj$pheno
+	ind.names <- rownames(pheno)
+	
+	#make sure all the phenotypes are numeric
+	pheno <- apply(pheno, 2, as.numeric)
+	rownames(pheno) <- ind.names
+	
+	#see if there are any individuals with missing 
+	#phenotypes data. Remove individuals with 
+	#missing data from the pheno matrix.
+
+	na.rows <- which(is.na(pheno), arr.ind = TRUE)
+	rows.to.remove <- sort(unique(na.rows[,1]))
+
+	#stop and warn if all individuals are about to be removed
+	if(length(rows.to.remove) == dim(pheno)[1]){
+		stop("All individuals have missing phenotype data. Try narrowing your phenotype selection with select.pheno()")
+		}
+	
+	if(length(rows.to.remove) > 0){	
+		message("Removing ", length(rows.to.remove), " individuals due to missing phenotypes.\n")
+		data.obj <- remove.ind(data.obj, ind.which = rows.to.remove)
+		}
 
 	pheno <- data.obj$pheno
 
@@ -38,10 +61,12 @@ function(data.obj, scale.pheno = TRUE, normalize.pheno = TRUE){
 	
 
 	#add the eigentraits and singular values to the data object
-	data.obj$ET <- svd.pheno$u
+	ET <- svd.pheno$u
+	rownames(ET) <- rownames(pheno); colnames(ET) <- paste("ET", 1:dim(ET)[2], sep = "")
+	data.obj$ET <- ET
 	data.obj$singular.values <- svd.pheno$d
 	data.obj$right.singular.vectors <- svd.pheno$v
-	colnames(data.obj$ET) <- paste("ET", 1:length(data.obj$pheno[1,]), sep = "")
+	
 
 	
 	return(data.obj)

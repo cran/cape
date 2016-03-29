@@ -8,7 +8,7 @@ Calculate the significance of direct influences of variant pairs on phenotypes
 This function recasts the variant-to-eigentrait effects in terms of variant-to-phenotype effects. It multiplies the \eqn{\beta}-coefficient matrices of each variant (i) and each phenotype (j) (\eqn{\beta_{i}^{j}}) by the singular value matrices (\eqn{V \cdot W^{T}}) obtained from the singular value decomposition performed in \code{\link{get.eigentraits}}. \eqn{\beta_{i}^{j} = V \cdot W^{T}}. It also uses the permutation data from the pairwise scan (\code{\link{pairscan}}) to calculate an empirical p value for the influence of each marker pair on each phenotype. The empirical p values are then adjusted for multiple testing using Holm's step-down procedure.
 }
 \usage{
-direct.influence(data.obj, transform.to.phenospace = TRUE, 
+direct.influence(data.obj, pairscan.obj, transform.to.phenospace = TRUE, 
 pval.correction = c("holm", "fdr", "lfdr"), verbose = FALSE, 
 save.permutations = FALSE)
 }
@@ -16,6 +16,9 @@ save.permutations = FALSE)
 \arguments{
   \item{data.obj}{
 	The object in which all results are stored. See \code{\link{read.population}}.
+	}
+	\item{pairscan.obj}{
+	The object in which the results from the pairscan are stored. See \code{\link{pairscan}}.
 	}
 	\item{transform.to.phenospace}{
 		A logical value. If TRUE, the influence of each marker on each eigentrait is transformed to the influence of each marker on each of the original phenotypes. If FALSE, no
