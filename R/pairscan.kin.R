@@ -1,5 +1,5 @@
 pairscan.kin <-
-function(data.obj, geno.obj = NULL, covar, scan.what, marker.pairs, kin.full.geno, sample.kinship, num.kin.samples, n.per.sample, verbose = TRUE, n.cores = NULL){
+function(data.obj, geno.obj = NULL, covar, scan.what, marker.pairs, kin.full.geno, sample.kinship, num.kin.samples, n.per.sample, verbose = TRUE, n.cores = 2){
 
 	m = NULL #for appeasing R CMD check
 	
@@ -133,11 +133,12 @@ function(data.obj, geno.obj = NULL, covar, scan.what, marker.pairs, kin.full.gen
 				new.covar <- kin.dat$corrected.covar
 				err.cov <- kin.dat$err.cov
 			
-				registerDoParallel(cores = n.cores)
+				cl <- makeCluster(n.cores)
+				registerDoParallel(cl)
 				pairscan.results <- foreach(m = t(chr.markers)) %dopar% {
 					get.marker.pair.stats(m, new.geno, new.pheno, new.covar, err.cov)
 					}
-
+				stopCluster(cl)
 				effects.mat[start.ind:(start.ind+num.chr.pairs-1),] <- matrix(unlist(lapply(pairscan.results, function(x) x$effects)), nrow = num.chr.pairs, byrow = TRUE)
 				se.mat[start.ind:(start.ind+num.chr.pairs-1),] <- matrix(unlist(lapply(pairscan.results, function(x) x$se)), nrow = num.chr.pairs, byrow = TRUE)
 				cov.mat[start.ind:(start.ind+num.chr.pairs-1),] <- matrix(unlist(lapply(pairscan.results, function(x) x$cov)), nrow = num.chr.pairs, byrow = TRUE)
@@ -166,10 +167,13 @@ function(data.obj, geno.obj = NULL, covar, scan.what, marker.pairs, kin.full.gen
 						}
 					err.cov <- kin.dat$err.cov
 				
-					registerDoParallel(cores = n.cores)
+					cl <- makeCluster(n.cores)
+					registerDoParallel(cl)
 					pairscan.results <- foreach(m = t(cv.markers)) %dopar% {
 						get.covar.stats(m, new.geno, new.pheno, new.covar, err.cov)
 						}
+					stopCluster(cl)
+					
 					effects.mat[start.ind:(start.ind+num.cv.pairs-1),] <- matrix(unlist(lapply(pairscan.results, function(x) x$effects)), nrow = num.cv.pairs, byrow = TRUE)
 					se.mat[start.ind:(start.ind+num.cv.pairs-1),] <- matrix(unlist(lapply(pairscan.results, function(x) x$se)), nrow = num.cv.pairs, byrow = TRUE)
 					cov.mat[start.ind:(start.ind+num.cv.pairs-1),] <- matrix(unlist(lapply(pairscan.results, function(x) x$cov)), nrow = num.cv.pairs, byrow = TRUE)

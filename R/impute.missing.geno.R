@@ -1,5 +1,5 @@
 impute.missing.geno <-
-function(data.obj, geno.obj = NULL, impute.full.genome = FALSE, k = 10, ind.missing.thresh = 0, marker.missing.thresh = 0, prioritize = c("ind", "marker", "fewer"), max.region.size = NULL, min.region.size = NULL, run.parallel = TRUE, verbose = FALSE, n.cores = NULL){
+function(data.obj, geno.obj = NULL, impute.full.genome = FALSE, k = 10, ind.missing.thresh = 0, marker.missing.thresh = 0, prioritize = c("ind", "marker", "fewer"), max.region.size = NULL, min.region.size = NULL, run.parallel = TRUE, verbose = FALSE, n.cores = 2){
 	
 		
 	p.choice <- grep("f", prioritize)
@@ -110,10 +110,12 @@ function(data.obj, geno.obj = NULL, impute.full.genome = FALSE, k = 10, ind.miss
 				
 		if(run.parallel){		
 			if(verbose){cat("Imputing missing genotypes...\n")}
-			registerDoParallel(cores = n.cores)
+			cl <- makeCluster(n.cores)
+			registerDoParallel(cl)
 			imputed.geno <- foreach(m = geno.chunks) %dopar% {
 				impute.section(m)
 				}
+				stopCluster(cl)
 			}else{
 			# if(verbose){cat("Imputing missing genotypes...\n")
 				# imputed.geno <- lapply_pb(geno.chunks, impute.section)

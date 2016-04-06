@@ -10,7 +10,7 @@ This function uses permtuation testing to calculate a genome-wide significance t
 \usage{
 genome.wide.threshold.1D.parallel(data.obj, geno.mat, n.perm = 1000, 
 alpha = c(0.01, 0.05), scan.what = c("eigentraits", "raw.traits"), 
-verbose = FALSE, n.cores = NULL)
+verbose = FALSE, n.cores = 2)
 }
 %- maybe also usage for other objects documented here.
 \arguments{
@@ -33,8 +33,7 @@ verbose = FALSE, n.cores = NULL)
 	A logical value specifying whether the progress of the scan should be printed to the screen. A value of TRUE causes the progress to be printed to the screen.
 }
 	\item{n.cores}{
-		An integer specifying the number of cores to be used in parallel processing. If NULL, the choice is made automatically.
-	}
+		An integer specifying the number of cores to be used in parallel processing.	}
 }
 \references{
 Carter, G. W., Hays, M., Sherman, A., & Galitski, T. (2012). Use of pleiotropy to model genetic interactions in a population. PLoS genetics, 8(10), e1003010. doi:10.1371/journal.pgen.1003010

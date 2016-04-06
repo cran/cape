@@ -1,7 +1,7 @@
 Package: cape
 Type: Package
 Title: Combined Analysis of Pleiotropy and Epistasis
-Version: 2.0
+Version: 2.0.1
 Date: 2016-03-09
 Author: Anna L. Tyler, Wei Lu, Justin J. Hendrick, Vivek M. Philip, and Greg W.
     Carter
@@ -11,10 +11,10 @@ Description: Combines complementary information across multiple related
     This analysis can be applied to a variety of engineered and natural populations.
 Depends: R (>= 3.2.2)
 Imports: grDevices, graphics, stats, utils, corpcor, evd, qpcR, Matrix,
-        igraph, fdrtool, shape, doParallel, RColorBrewer, foreach,
-        HardyWeinberg, regress
+        igraph, fdrtool, shape, parallel, doParallel, RColorBrewer,
+        foreach, HardyWeinberg, regress
 License: GPL-3
 NeedsCompilation: no
-Packaged: 2016-03-29 15:12:35 UTC; atyler
+Packaged: 2016-04-06 14:57:49 UTC; atyler
 Repository: CRAN
-Date/Publication: 2016-03-29 18:59:35
+Date/Publication: 2016-04-06 18:11:50

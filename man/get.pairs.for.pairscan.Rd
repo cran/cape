@@ -9,7 +9,7 @@ This function selects which marker pairs can be tested in the pair scan. Even if
 }
 \usage{
 get.pairs.for.pairscan(geno, min.per.genotype = NULL,
-max.pair.cor = NULL, verbose = FALSE, n.cores = NULL)
+max.pair.cor = NULL, verbose = FALSE, n.cores = 2)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -26,8 +26,7 @@ max.pair.cor = NULL, verbose = FALSE, n.cores = NULL)
 	A logical value. If TRUE, the script prints a message to the screen to indicate that it is running. If FALSE, no message is printed.
 	}
 	\item{n.cores}{
-		An integer specifying the number of cores to be used in parallel processing. If NULL, the choice is made automatically.
-	}
+		An integer specifying the number of cores to be used in parallel processing.	}
 }
 \value{
 This function returns a two-column matrix of marker pairs. This matrix is then used to specify which marker pairs should be tested. 

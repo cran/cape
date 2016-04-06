@@ -1,5 +1,5 @@
 kinship <-
-function(geno, all.chr, chr.which = NULL, chr.pairs = FALSE, sample.kinship = FALSE, num.samples = 100, n.per.sample = 10, run.parallel = TRUE, add.full.kin = FALSE, verbose = FALSE, n.cores = NULL){
+function(geno, all.chr, chr.which = NULL, chr.pairs = FALSE, sample.kinship = FALSE, num.samples = 100, n.per.sample = 10, run.parallel = TRUE, add.full.kin = FALSE, verbose = FALSE, n.cores = 2){
 		
 	
 	sample.geno <- function(data.step, other.geno){
@@ -23,10 +23,12 @@ function(geno, all.chr, chr.which = NULL, chr.pairs = FALSE, sample.kinship = FA
 
 	combine.samples <- function(sample.list){
 		if(run.parallel){
-			registerDoParallel(cores = n.cores)
+			cl <- makeCluster(n.cores)
+			registerDoParallel(cl)
 			total.K <- foreach(n = sample.list, .combine = "+") %dopar% {
 				sample.K(n)
 				}
+			stopCluster(cl)
 			}else{
 			total.K <- matrix(0, nrow = nrow(geno), ncol = nrow(geno))
 			for(n in 1:num.samples){

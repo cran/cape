@@ -1,5 +1,5 @@
 one.pairscan.parallel <-
-function(data.obj, phenotype.vector, genotype.matrix, int = NULL, covar.vector = NULL, paired.markers, n.perm = 0, run.parallel = TRUE, verbose = FALSE, n.cores = NULL){
+function(data.obj, phenotype.vector, genotype.matrix, int = NULL, covar.vector = NULL, paired.markers, n.perm = 0, run.parallel = TRUE, verbose = FALSE, n.cores = 2){
 		
 		m = p = NULL #for appeasing R CMD check
 
@@ -170,10 +170,12 @@ function(data.obj, phenotype.vector, genotype.matrix, int = NULL, covar.vector =
 
 		# if(verbose){cat("\tCalculating pair statistics...\n")}
 		if(run.parallel){
-			registerDoParallel(cores = n.cores)
-			pair.results <- foreach(m = t(paired.markers)) %dopar% {
+			cl <- makeCluster(n.cores)
+			registerDoParallel(cl)
+			pair.results <- foreach(m = t(paired.markers), .export = "phenotype.vector") %dopar% {
 				get.pair.results(m)
 				}
+			stopCluster(cl)
 			}else{
 			pair.results <- lapply(1:dim(paired.markers)[1], function(x) get.pair.results(paired.markers[x,]))
 			}
@@ -213,10 +215,12 @@ function(data.obj, phenotype.vector, genotype.matrix, int = NULL, covar.vector =
 			if(verbose){cat("\tCalculating permutations...\n")}
 
 			if(run.parallel){
-				registerDoParallel(cores = n.cores)
-				perm.results <- foreach(p = 1:n.perm) %dopar% {
+				cl <- makeCluster(n.cores)
+				registerDoParallel(cl)
+				perm.results <- foreach(p = 1:n.perm, .export = "phenotype.vector") %dopar% {
 					one.perm(p)
 					}
+				stopCluster(cl)
 				}else{
 				perm.results <- lapply(1:n.perm, function(p) one.perm(p))	
 					

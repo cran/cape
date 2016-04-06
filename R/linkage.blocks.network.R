@@ -4,14 +4,14 @@ function(data.obj, geno.obj = NULL, collapse.linked.markers = TRUE, threshold.po
 	net.data <- data.obj$var.to.var.p.val
 	pheno.net.data <- data.obj$max.var.to.pheno.influence
 	
-	full.geno <- get.geno.with.covar(data.obj, geno.obj)
-	
-	is.char <- as.logical(is.na(suppressWarnings(as.numeric(colnames(full.geno)[1]))))
-	
 	if(length(net.data) == 0){
 		stop("calc.p() must be run to calculate variant-to-variant influences.")
 		}
-		
+	
+	full.geno <- get.geno.with.covar(data.obj, geno.obj)
+	
+	is.char <- as.logical(is.na(suppressWarnings(as.numeric(colnames(full.geno)[1]))))
+			
 	
 	#find all the chromosomes that were used in the pairwise scan and sort them
 	all.marker.chr <- get.marker.chr(data.obj, sort(unique(as.numeric(c(net.data[,1], net.data[,2])))))

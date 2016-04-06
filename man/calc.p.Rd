@@ -9,7 +9,7 @@ This function uses the perumtation results to calculate empirical p values for t
 }
 \usage{
 calc.p(data.obj, pairscan.obj, 
-pval.correction = c("holm", "fdr", "lfdr", "none"), n.cores = NULL)
+pval.correction = c("holm", "fdr", "lfdr", "none"), n.cores = 2)
 }
 
 \arguments{
@@ -23,8 +23,7 @@ pval.correction = c("holm", "fdr", "lfdr", "none"), n.cores = NULL)
 		One of "holm", "fdr", "lfdr" or "none", indicating whether the p value correction method used should be the Holm step-down procedure, false discovery rate, local false discovery, or no correction rate respectively.
 	}
 	\item{n.cores}{
-		An integer specifying the number of cores to be used in parallel processing. If NULL, the choice is made automatically.
-	}
+		An integer specifying the number of cores to be used in parallel processing.	}
 }
 \value{
 The data object is returned with a new list with two elements. The elements correspond to the two directions of influence: marker1 to marker2 and marker2 to marker1. Each element contains a table with the source and target variants, the empirical p values, and the adjusted p values, along with the effect size, standard error and t statistic for each interaction.

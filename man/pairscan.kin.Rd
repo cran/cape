@@ -11,7 +11,7 @@ This function performs the pairwise regression on all selected marker pairs. The
 pairscan.kin(data.obj, geno.obj = NULL, covar, 
 scan.what, marker.pairs, kin.full.geno, 
 sample.kinship, num.kin.samples, n.per.sample, 
-verbose = TRUE, n.cores = NULL)
+verbose = TRUE, n.cores = 2)
 }
 %- maybe also usage for other objects documented here.
 \arguments{
@@ -46,8 +46,7 @@ verbose = TRUE, n.cores = NULL)
 	A logical value indicating whether the progress of the scan should be printed to the screen.
 	}
 	\item{n.cores}{
-		An integer specifying the number of cores to be used in parallel processing. If NULL, the choice is made automatically.
-	}
+		An integer specifying the number of cores to be used in parallel processing.	}
 }
 \value{
 This function adds an element to the pairscan object reporting the results of the pair-wise scan:

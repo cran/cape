@@ -1,5 +1,5 @@
 error.prop <-
-function (data.obj, pairscan.obj, perm = FALSE, verbose = FALSE, n.cores = NULL) {
+function (data.obj, pairscan.obj, perm = FALSE, verbose = FALSE, n.cores = 2) {
 
 	p = NULL #for appeasing R CMD check
 
@@ -107,12 +107,13 @@ function (data.obj, pairscan.obj, perm = FALSE, verbose = FALSE, n.cores = NULL)
     colnames(marker.mat) <- c("marker1", "marker2")
 	n.pairs <- length(marker.mat[,1]) #number of pairs of genes
 
-
-	registerDoParallel(cores = n.cores)
+	cl <- makeCluster(n.cores)
+	registerDoParallel(cl)
 	influence.coeffs <- foreach(p = 1:n.pairs, .combine = "rbind") %dopar% {
 		get.pair.coeffs(p)
 		}				
-		
+	stopCluster(cl)
+	
 	colnames(influence.coeffs) <- c("marker1","marker2","m12","m12.std.dev","m21","m21.std.dev")
 
 	if(perm){

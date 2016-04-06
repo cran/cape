@@ -8,7 +8,7 @@
 This function uses error propagation formulas for quantities computed from regression coefficients to estimate the error for all regression coefficients.
 }
 \usage{
-error.prop(data.obj, pairscan.obj, perm = FALSE, verbose = FALSE, n.cores = NULL)
+error.prop(data.obj, pairscan.obj, perm = FALSE, verbose = FALSE, n.cores = 2)
 }
 %- maybe also usage for other objects documented here.
 \arguments{
@@ -25,8 +25,7 @@ A logical value to indicate whether error propagation should be performed on the
 	A logical value to indicate whether the progress of the function should be printed to the screen.
 	}
 	\item{n.cores}{
-		An integer specifying the number of cores to be used in parallel processing. If NULL, the choice is made automatically.
-	}
+		An integer specifying the number of cores to be used in parallel processing.	}
 }
 \value{
 This function returns the data object with a new list element: var.to.var.influences if perm is set to FALSE and var.to.var.influences.perm if perm is set to TRUE. These tables include the errors calculated for the marker1 to marker2 influences as well as the marker2 to marker1 influences. These results are used by \code{\link{calc.p}} to calculate empirical p values.

@@ -14,7 +14,7 @@ scan.what = c("eigentraits", "raw.traits"),
 use.kinship = FALSE, kin.full.geno = FALSE, 
 run.parallel = TRUE, sample.kinship = FALSE, 
 num.kin.samples = 1000, n.per.sample = 10, 
-verbose = FALSE, overwrite.alert = TRUE, n.cores = NULL)
+verbose = FALSE, overwrite.alert = TRUE, n.cores = 2)
 }
 %- maybe also usage for other objects documented here.
 \arguments{
@@ -61,8 +61,7 @@ verbose = FALSE, overwrite.alert = TRUE, n.cores = NULL)
 	If TRUE, this triggers an alert warning the user that the output of this function should be saved separately from the data.obj.
 	}
 	\item{n.cores}{
-		An integer specifying the number of cores to be used in parallel processing. If NULL, the choice is made automatically.
-	}
+		An integer specifying the number of cores to be used in parallel processing.	}
 }
 \value{
 IMPORTANT NOTE: Prior versions of this function modified the data.obj. The new version creates a separate singlescan.obj, and the output of this function should NOT be assigned to the data.obj.

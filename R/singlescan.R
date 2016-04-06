@@ -1,5 +1,5 @@
 singlescan <-
-function(data.obj, geno.obj = NULL, n.perm = NULL, covar = NULL, alpha = c(0.01, 0.05), scan.what = c("eigentraits", "raw.traits"), use.kinship = FALSE, kin.full.geno = FALSE, run.parallel = TRUE, sample.kinship = FALSE, num.kin.samples = 1000, n.per.sample = 10, verbose = FALSE, overwrite.alert = TRUE, n.cores = NULL) {
+function(data.obj, geno.obj = NULL, n.perm = NULL, covar = NULL, alpha = c(0.01, 0.05), scan.what = c("eigentraits", "raw.traits"), use.kinship = FALSE, kin.full.geno = FALSE, run.parallel = TRUE, sample.kinship = FALSE, num.kin.samples = 1000, n.per.sample = 10, verbose = FALSE, overwrite.alert = TRUE, n.cores = 2) {
 
 	if(overwrite.alert){
 		choice <- readline(prompt = "Please make sure you assign the output of this function to a singlescan.obj, and NOT the data.obj. It will overwrite the data.obj.\nDo you want to continue (y/n) ")
@@ -94,11 +94,6 @@ function(data.obj, geno.obj = NULL, n.perm = NULL, covar = NULL, alpha = c(0.01,
 	#==================================================================
 	
 
-	use.svm = FALSE
-	# if(use.svm){
-		# svm.covar <- data.obj$svm.covar
-		# if(is.null(svm.covar)){stop("svm.correction() must be run to use svm-based correction")}
-		# }
 		#===========================================================================
 		#internal functions
 		#===========================================================================		
@@ -138,7 +133,6 @@ function(data.obj, geno.obj = NULL, n.perm = NULL, covar = NULL, alpha = c(0.01,
 			
 			table.row <- c(slope, se, t.stat, p.val)
 			rm("model.coef", "slope", "se", "t.stat", "p.val", "model")
-			gc()
 			return(table.row)
 			}		
 		
@@ -159,10 +153,12 @@ function(data.obj, geno.obj = NULL, n.perm = NULL, covar = NULL, alpha = c(0.01,
 				#calculate the singlescan for the chr markers using the kinship object
 				if(run.parallel){
 					just.markers <- cor.geno[,marker.locale,drop=FALSE]
-					registerDoParallel(cores = n.cores)
-					marker.stats <- foreach(m = just.markers, .combine = "cbind") %dopar% {
+					cl <- makeCluster(n.cores)
+					registerDoParallel(cl)
+					marker.stats <- foreach(m = just.markers, .combine = "cbind", .export = c("get.stats")) %dopar% {
 						get.stats(phenoV = cor.pheno, markerV = m, covarV = cor.covar)
 						}
+					stopCluster(cl)
 					}else{
 	
 				marker.stats <- matrix(NA, ncol = length(marker.locale), nrow = 4)

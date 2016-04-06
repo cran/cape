@@ -8,7 +8,7 @@
 This function tests markers for Hardy-Weinberg equilibrium (HWE) and removes markers that are significantly out of HWE.
 }
 \usage{
-filter.hwe(data.obj, geno.obj, p.thresh = 1e-6, run.parallel = TRUE, n.cores = NULL)
+filter.hwe(data.obj, geno.obj, p.thresh = 1e-6, run.parallel = TRUE, n.cores = 2)
 }
 %- maybe also usage for other objects documented here.
 \arguments{
@@ -25,8 +25,7 @@ filter.hwe(data.obj, geno.obj, p.thresh = 1e-6, run.parallel = TRUE, n.cores = N
 	A logical value to indicate whether to run the process in parallel.
 	}
 	\item{n.cores}{
-		An integer specifying the number of cores to be used in parallel processing. If NULL, the choice is made automatically.
-	}
+		An integer specifying the number of cores to be used in parallel processing.	}
 }
 \value{
 This function returns the data object with the marker information pared down to only those markers in HWE.

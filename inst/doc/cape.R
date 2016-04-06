@@ -95,7 +95,7 @@ obesity.cross <- select.eigentraits(obesity.cross, traits.which = c(1,2))
 obesity.singlescan <- singlescan(obesity.cross, n.perm = 100, 
 covar = "mom", scan.what = "eigentraits", alpha = c(0.01, 0.05), 
 verbose = FALSE, use.kinship = FALSE, overwrite.alert = FALSE,
-n.cores = 2)
+run.parallel = FALSE, n.cores = 2)
 
 
 ###################################################

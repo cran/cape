@@ -1,5 +1,5 @@
 get.pairs.for.pairscan <-
-function(geno, min.per.genotype = NULL, max.pair.cor = NULL, verbose = FALSE, n.cores = NULL){
+function(geno, min.per.genotype = NULL, max.pair.cor = NULL, verbose = FALSE, n.cores = 2){
 
 	p = NULL #for appeasing R CMD check
 
@@ -51,11 +51,12 @@ function(geno, min.per.genotype = NULL, max.pair.cor = NULL, verbose = FALSE, n.
 		return(pass.checks)
 		}
 	
-	registerDoParallel(cores = n.cores)
+	cl <- makeCluster(n.cores)
+	registerDoParallel(cl)
 	good.pairs <- foreach(p = t(all.pairs), .combine = "c") %dopar% {
 		check.one.pair(p)
 		}
-
+	stopCluster(cl)
 
 		
 	pairs.mat <- all.pair.names[which(good.pairs),,drop = FALSE]

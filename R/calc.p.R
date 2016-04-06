@@ -1,5 +1,5 @@
 calc.p <-
-function(data.obj, pairscan.obj, pval.correction = c("holm", "fdr", "lfdr", "none"), n.cores = NULL) {
+function(data.obj, pairscan.obj, pval.correction = c("holm", "fdr", "lfdr", "none"), n.cores = 2) {
 	
 	p = NULL #for appeasing R CMD check
 	
@@ -83,11 +83,12 @@ function(data.obj, pairscan.obj, pval.correction = c("holm", "fdr", "lfdr", "non
 		return(emp.p)
 		}
 
-
-	registerDoParallel(cores = n.cores)
+	cl <- makeCluster(n.cores)
+	registerDoParallel(cl)
 	all.emp.p <- foreach(p = 1:n.pairs, .combine = "rbind") %dopar% {
 		get.emp.p(p)
 		}
+	stopCluster(cl)
 	
 	# all.emp.p <- t(apply(matrix(1:n.pairs, ncol = 1), 1, function(x) get.emp.p(x)))
 

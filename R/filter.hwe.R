@@ -1,5 +1,5 @@
 filter.hwe <-
-function(data.obj, geno.obj, p.thresh = 1e-6, run.parallel = TRUE, n.cores = NULL){
+function(data.obj, geno.obj, p.thresh = 1e-6, run.parallel = TRUE, n.cores = 2){
 	# library(HardyWeinberg)
 	
 	m = NULL #for appeasing R CMD check
@@ -21,10 +21,13 @@ function(data.obj, geno.obj, p.thresh = 1e-6, run.parallel = TRUE, n.cores = NUL
 	
 	if(run.parallel){
 		# par.start <- proc.time()
-		registerDoParallel(cores = n.cores)
+		cl <- makeCluster(n.cores)
+		registerDoParallel(cl)
 		all.hwe <- foreach(m = geno.mat, .combine = "c") %dopar% {
 			get.hwe(m)
 			}
+		stopCluster(cl)
+		
 		# par.end <- proc.time()	
 		}else{
 		# ser.start <- proc.time()

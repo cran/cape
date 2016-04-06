@@ -12,7 +12,7 @@ kinship(geno, all.chr, chr.which = NULL,
 chr.pairs = FALSE, sample.kinship = FALSE, 
 num.samples = 100, n.per.sample = 10, 
 run.parallel = TRUE, add.full.kin = FALSE, 
-verbose = FALSE, n.cores = NULL)
+verbose = FALSE, n.cores = 2)
 }
 
 \arguments{
@@ -47,8 +47,7 @@ verbose = FALSE, n.cores = NULL)
 	A logical value. If TRUE, the progress of the process is printed to the screen.
 	}
 	\item{n.cores}{
-		An integer specifying the number of cores to be used in parallel processing. If NULL, the choice is made automatically.
-	}
+		An integer specifying the number of cores to be used in parallel processing.	}
 }
 \value{
 Returns a list of kinship matrices, one for each chromosome or each pair of chromosomes depending on whether chr.pairs is TRUE or FALSE.

@@ -1,5 +1,5 @@
 one.singlescan <-
-function(phenotype.vector, genotype.mat, covar.vector = NULL, n.cores = NULL) {
+function(phenotype.vector, genotype.mat, covar.vector = NULL, n.cores = 2) {
 
 		g = NULL #for appeasing R CMD check
 
@@ -33,10 +33,13 @@ function(phenotype.vector, genotype.mat, covar.vector = NULL, n.cores = NULL) {
 		#take out the response variable
 				
 		#apply the modeling function to each marker column
-		registerDoParallel(cores = n.cores)
+		cl <- makeCluster(n.cores)
+		registerDoParallel(cl)
 		results.table <- foreach(g = genotype.mat, .combine = "rbind") %dopar% {
 			get.stats(phenotype = phenotype.vector, genotype = g, covar = covar.vector)
 			}
+		stopCluster(cl)
+		
 		colnames(results.table) <- c("slope", "se", "t.stat", "p.val")
 		rownames(results.table) <- colnames(genotype.mat)
 		return(results.table)

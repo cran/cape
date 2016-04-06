@@ -10,7 +10,7 @@
 \usage{
 one.pairscan.parallel(data.obj, phenotype.vector, genotype.matrix, 
 int = NULL, covar.vector = NULL, paired.markers, 
-n.perm = 0, run.parallel = TRUE, verbose = FALSE, n.cores = NULL)
+n.perm = 0, run.parallel = TRUE, verbose = FALSE, n.cores = 2)
 }
 %- maybe also usage for other objects documented here.
 \arguments{
@@ -42,8 +42,7 @@ n.perm = 0, run.parallel = TRUE, verbose = FALSE, n.cores = NULL)
 	A logical value indicating whether the progress of the scan should be printed to the screen.
 }
 	\item{n.cores}{
-		An integer specifying the number of cores to be used in parallel processing. If NULL, the choice is made automatically.
-	}
+		An integer specifying the number of cores to be used in parallel processing.	}
 }
 \value{
 This function returns a list with two elements:
