@@ -51,7 +51,7 @@ function(data.obj, geno.mat, covar = NULL, scan.what = c("eigentraits", "raw.tra
 		for(p in 1:num.pheno){ 
 			if(n.top.markers < dim(geno.mat)[2]){
 				if(verbose){cat("\tSingle-marker scan of permuted", colnames(pheno)[p], "...\n")}
-				single.scan.result <- one.singlescan(phenotype.vector = pheno[perm.order,p], genotype.mat = geno.mat, covar.vector = covar.table, n.cores = n.cores)
+				single.scan.result <- one.singlescan(phenotype.vector = pheno[,p], genotype.mat = geno.mat[perm.order,], covar.vector = covar.table, n.cores = n.cores)
 			
 				#find the loci with the largest effect				
 				geno.order <- order(single.scan.result[,"t.stat"], decreasing = TRUE)
@@ -96,7 +96,7 @@ function(data.obj, geno.mat, covar = NULL, scan.what = c("eigentraits", "raw.tra
 			for(p in 1:num.pheno){
 				if(verbose){cat("\tMarker-pair scan of permuted", colnames(pheno)[p], "...\n")}
 				#run a pairscan on these markers and each permuted phenotype
-				pairscan.results <- one.pairscan.parallel(data.obj, phenotype.vector = pheno[perm.order,p], genotype.matrix = top.geno.mat, paired.markers = top.marker.pairs, n.perm = 0, verbose = FALSE, covar.vector = NULL, n.cores = n.cores)
+				pairscan.results <- one.pairscan.parallel(data.obj, phenotype.vector = pheno[perm.order,p], genotype.matrix = top.geno.mat, paired.markers = top.marker.pairs, n.perm = 0, verbose = FALSE, covar.vector = covar.table, n.cores = n.cores)
 				
 				#integrate the results into the permutation object
 				one.perm <- pairscan.results[[1]]

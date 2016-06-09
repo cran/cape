@@ -1,4 +1,4 @@
-1efcd93ff779db37350e79d4fbca22f9 *DESCRIPTION
+f1a4d5071213938da1e1877e5b368a2a *DESCRIPTION
 862296a0797a011771fe93ad3f51c8e4 *NAMESPACE
 96ea7598d61f70199fd3c47adb6d1d4f *R/bin.vector.R
 c98413993a5f975d09247d1fdf5d18ea *R/calc.delta.errors.R
@@ -44,7 +44,7 @@ bfd44b1ba6bc47a1ad93c5d19780da80 *R/pair.matrix.R
 ebc8fb3e1b305b4d799b251025b205a1 *R/pairscan.R
 4fdcb74e57385e80fac88604366ab2b0 *R/pairscan.kin.R
 3a404bbce01b8124f3a5cf88828c4391 *R/pairscan.noKin.R
-cb82b75fe430ba9303f19303b7f9febb *R/pairscan.null.R
+53211a68ae7235445b171d5dbc866898 *R/pairscan.null.R
 69b5cdf466ba622e6ece3e627adf288b *R/pheno2covar.R
 2eb734968d2f933f1c4fe3646b49a31c *R/plotCollapsedVarInf.R
 db11278ddfe3d1f24dfbed5765102dc4 *R/plotNetwork.R
@@ -52,7 +52,7 @@ db11278ddfe3d1f24dfbed5765102dc4 *R/plotNetwork.R
 aff40d6e292a34e0ec5343d006eed3b3 *R/plotPheno.R
 0e053403dcd5c9a9e317d8e8d245869e *R/plotPhenoCor.R
 a241ffdd722d9548aaa2d75f7054a849 *R/plotSVD.R
-53ef47af77b613d5fb9f8f50e36facf7 *R/plotSinglescan.R
+52ac9f33b1ad8d92a015e294d53260ee *R/plotSinglescan.R
 850cadfe26b9391f0bfb099c59eddfcb *R/plotSinglescan.heat.R
 a39d58357e15e18b13293fee04c2c24f *R/plotVariantInfluences.R
 0690b9d23eac122acc0166a8129252c9 *R/qqPheno.R
@@ -79,7 +79,7 @@ b0d7b600960ae07daa0bd53d814c645d *R/writeVariantInfluences.R
 446c411bd2fa09bbb6f5629392921d8d *data/obesity.cross.rda
 20238f7259b16c746deaf00dc2b09786 *inst/doc/cape.R
 8f0b1f3f133c707ae6075b773ee3034f *inst/doc/cape.Rnw
-877f9c982fdbc6175475128b40449587 *inst/doc/cape.pdf
+00b0fd8b9ef1e2b9382be555e6772914 *inst/doc/cape.pdf
 2b7f3683b90237fd190222e1013aca21 *man/bin.vector.Rd
 99cf307724b5154827f4c550df695499 *man/calc.delta.errors.Rd
 7f5854a48ea1dcb75318bd9bab69f692 *man/calc.p.Rd

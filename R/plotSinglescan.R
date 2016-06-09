@@ -48,9 +48,15 @@ function(data.obj, singlescan.obj, chr = NULL, traits = NULL, show.alpha.values 
 	# str(covar.info)
 	
 	covar.names <- covar.info$covar.names
-	covar.chr <- get.marker.chr(data.obj, covar.names)
-	covar.loc <- get.marker.location(data.obj, covar.names)
 	covar.table <- covar.info$covar.table	
+	if(!is.null(covar.names)){
+		covar.chr <- get.marker.chr(data.obj, covar.names)
+		covar.loc <- get.marker.location(data.obj, covar.names)
+		}else{
+		covar.chr <- NULL
+		covar.loc <- NULL	
+		}
+	
 	
 	#integrate the covariate names with the marker names
 	marker.chr <- get.marker.chr(data.obj, marker.names)
