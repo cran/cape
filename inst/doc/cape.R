@@ -1,205 +1,105 @@
-### R code from vignette source 'cape.Rnw'
+## ---- install_cape, eval = FALSE----------------------------------------------
+#  install.packages("cape")
 
-###################################################
-### code chunk number 1: cape.Rnw:98-100
-###################################################
+## ----load_cape, echo = FALSE, warning = FALSE, error = FALSE, message = FALSE----
+set.seed(1234)
 library(cape)
-data(obesity.cross)
 
+## ----read_csv_format----------------------------------------------------------
+results_path <- here::here("demo", "demo_qtl")
+data_path <- here::here("tests", "testthat", "testdata", "demo_qtl_data")
+data_file <- file.path(data_path, "NON_NZO_Reifsnyder_pgm_CAPE_num.csv")
+param_file <- file.path(results_path, "NON_NZO.parameters.yml")
 
-###################################################
-### code chunk number 2: cape.Rnw:135-136
-###################################################
-str(obesity.cross)
+cross <- read_population(data_file)
+cross_obj <- cape2mpp(cross)
+obesity_cross <- cross_obj$data_obj
+obesity_geno <- cross_obj$geno_obj$geno
 
+## ----read_qtl2, eval = FALSE--------------------------------------------------
+#  iron_qtl2 <- read_cross2("https://kbroman.org/qtl2/assets/sampledata/iron/iron.yaml")
+#  
+#  iron_cape <- qtl2_to_cape(cross = iron_qtl2)
+#  data_obj <- iron_cape$data_obj
+#  geno_obj <- iron_cape$geno_obj
 
-###################################################
-### code chunk number 3: cape.Rnw:197-199
-###################################################
-obesity.cross <- select.pheno(obesity.cross, 
-phenotypes = c("body_weight", "glucose", "insulin", "mom"))
+## ----read_plink, eval = FALSE-------------------------------------------------
+#  data_path <- here::here("tests", "testthat", "testdata")
+#  ped <- file.path(data_path, "test.ped")
+#  map <- file.path(data_path, "test.map")
+#  pheno <- file.path(data_path, "test.pheno")
+#  out <- file.path(data_path, "test.csv")
+#  param_file <- file.path(results_path, "plink.parameters.yml")
+#  
+#  cross_obj <- plink2cape(ped, map, pheno, out = "out.csv")
+#  
+#  data_obj <- cross_obj$data_obj
+#  geno_obj <- cross_obj$geno_obj$geno
 
+## ----pheno_hist, fig.width = 7, fig.height = 3--------------------------------
+hist_pheno(obesity_cross, pheno_which = c("BW_24", "INS_24", "log_GLU_24"))
 
-###################################################
-### code chunk number 4: cape.Rnw:207-208
-###################################################
-obesity.cross <- pheno2covar(obesity.cross, "mom")
+## ----qnorm_pheno, fig.width = 7, fig.height = 3-------------------------------
+qnorm_pheno(obesity_cross, pheno_which = c("BW_24", "INS_24", "log_GLU_24"))
 
+## ----norm_pheno---------------------------------------------------------------
+obesity_cross <- norm_pheno(obesity_cross, mean_center = TRUE)
 
-###################################################
-### code chunk number 5: cape.Rnw:236-237
-###################################################
-histPheno(obesity.cross)
+## ----norm_qq, fig.width = 7, fig.height = 3-----------------------------------
+qnorm_pheno(obesity_cross, pheno_which = c("BW_24", "INS_24", "log_GLU_24"))
 
+## ----pheno_cor, fig.width = 5, fig.height = 5---------------------------------
+plot_pheno_cor(obesity_cross, pheno_which = c("BW_24", "INS_24", "log_GLU_24"),
+color_by = "pgm", group_labels = c("Non-obese", "Obese"))
 
-###################################################
-### code chunk number 6: cape.Rnw:250-251
-###################################################
-qqPheno(obesity.cross)
+## ----run_cape-----------------------------------------------------------------
+final_cross <- run_cape(obesity_cross, obesity_geno, results_file = "NON_NZO.RData", 
+p_or_q = 0.05, verbose = FALSE, param_file = param_file, results_path = results_path)
 
+## ----eigentraits, fig.width = 4, fig.height = 4-------------------------------
+plot_svd(final_cross)
 
-###################################################
-### code chunk number 7: cape.Rnw:257-258
-###################################################
-plotPheno(obesity.cross, color.by = "mom", group.labels = c("non-obese", "obese"))
+## ----single_plot, eval = FALSE------------------------------------------------
+#  singlescan_obj <- readRDS(here::here("demo", "demo_qtl", "NON_NZO_singlescan.RData"))
+#  plot_singlescan(final_cross, singlescan_obj, line_type = "h", lwd = 2,
+#  covar_label_size = 1)
 
+## ----single_plot_fig1, results = "asis", echo = FALSE-------------------------
+et1_fig <- here::here("vignettes", "Singlescan_ET1_Standardized.jpg")
+cat(paste0("![](", et1_fig, "){width=70%}\n"))
 
-###################################################
-### code chunk number 8: cape.Rnw:271-272
-###################################################
-obesity.cross <- norm.pheno(obesity.cross, mean.center = TRUE)
+## ----single_plot_fig2, results = "asis", echo = FALSE-------------------------
+et2_fig <- here::here("vignettes", "Singlescan_ET2_Standardized.jpg")
+cat(paste0("![](", et2_fig, "){width=70%}\n"))
 
+## ----reparam_fig, results = "asis", echo = FALSE------------------------------
+reparam_file <- here::here("vignettes", "reparam.png")
+cat(paste0("![](", reparam_file, "){width=50%}\n"))
 
-###################################################
-### code chunk number 9: cape.Rnw:279-280
-###################################################
-histPheno(obesity.cross)
+## ----var_inf, fig.height = 6, fig.width = 7-----------------------------------
+plot_variant_influences(final_cross, show_alleles = FALSE)
 
+## ----circ_net, fig.height = 6, fig.width = 6----------------------------------
+plot_network(final_cross)
 
-###################################################
-### code chunk number 10: cape.Rnw:290-291
-###################################################
-qqPheno(obesity.cross)
+## ----net_vis, echo = FALSE, fig.width = 6, fig.height = 6---------------------
+plot_full_network(final_cross, zoom = 1.2, node_radius = 0.3, 
+    label_nodes = TRUE, label_offset = 0.4, label_cex = 0.5, bg_col = "lightgray", 
+    arrow_length = 0.1, layout_matrix = "layout_with_kk", legend_position = "topright", 
+    edge_lwd = 1, legend_radius = 2, legend_cex = 0.7, xshift = -1)
 
+## ----plot_effects_line, fig.width = 7, fig.height = 3-------------------------
+plot_effects(data_obj = final_cross, geno_obj = obesity_geno, 
+marker1 = "D15Mit72_B", marker1_label = "Chr15", plot_type = "l", 
+error_bars = "se")
 
-###################################################
-### code chunk number 11: cape.Rnw:324-325
-###################################################
-plotPhenoCor(obesity.cross, color.by = "mom", group.labels = c("non-obese", "obese"))
+## ----plot_int, fig.width = 7, fig.height = 3----------------------------------
+plot_effects(data_obj = final_cross, geno_obj = obesity_geno, 
+marker1 = "D2Mit120_B", marker2 = "D15Mit72_B", marker1_label = "Chr2",
+marker2_label = "Chr15", plot_type = "l", error_bars = "se")
 
-
-###################################################
-### code chunk number 12: cape.Rnw:360-362
-###################################################
-obesity.cross <- get.eigentraits(obesity.cross, scale.pheno = FALSE,
-normalize.pheno = FALSE)
-
-
-###################################################
-### code chunk number 13: cape.Rnw:374-377
-###################################################
-pdf("svd.pdf")
-plotSVD(obesity.cross, orientation = "vertical")
-dev.off()
-
-
-###################################################
-### code chunk number 14: cape.Rnw:417-418
-###################################################
-obesity.cross <- select.eigentraits(obesity.cross, traits.which = c(1,2))
-
-
-###################################################
-### code chunk number 15: cape.Rnw:476-480
-###################################################
-obesity.singlescan <- singlescan(obesity.cross, n.perm = 100, 
-covar = "mom", scan.what = "eigentraits", alpha = c(0.01, 0.05), 
-verbose = FALSE, use.kinship = FALSE, overwrite.alert = FALSE,
-run.parallel = FALSE, n.cores = 2)
-
-
-###################################################
-### code chunk number 16: cape.Rnw:499-501
-###################################################
-plotSinglescan(data.obj = obesity.cross, singlescan.obj = obesity.singlescan, 
-mark.chr = TRUE, mark.covar = FALSE)
-
-
-###################################################
-### code chunk number 17: cape.Rnw:552-554
-###################################################
-obesity.cross <- select.markers.for.pairscan(data.obj = obesity.cross, 
-singlescan.obj = obesity.singlescan)
-
-
-###################################################
-### code chunk number 18: cape.Rnw:608-610
-###################################################
-plotSinglescan(data.obj = obesity.cross, singlescan.obj = obesity.singlescan, 
-mark.chr = TRUE, show.rejected.markers = TRUE, standardized = TRUE)
-
-
-###################################################
-### code chunk number 19: cape.Rnw:618-621
-###################################################
-obesity.pairscan <- pairscan(data.obj = obesity.cross, covar = "mom", 
-scan.what = "eigentraits", total.perm = 1000, min.per.genotype = 6, 
-verbose = FALSE, overwrite.alert = FALSE, n.cores = 2)
-
-
-###################################################
-### code chunk number 20: cape.Rnw:687-689
-###################################################
-plotPairscan(data.obj = obesity.cross, pairscan.obj = obesity.pairscan, 
-phenotype = "ET1", pdf.label = "Pairscan_Regression.pdf")
-
-
-###################################################
-### code chunk number 21: cape.Rnw:826-829
-###################################################
-obesity.cross <- error.prop(data.obj = obesity.cross, 
-pairscan.obj = obesity.pairscan, 
-perm = FALSE, verbose = FALSE, n.cores = 2)
-
-
-###################################################
-### code chunk number 22: cape.Rnw:840-843
-###################################################
-obesity.cross <- error.prop(data.obj = obesity.cross, 
-pairscan.obj = obesity.pairscan, 
-perm = TRUE, verbose = FALSE, n.cores = 2)
-
-
-###################################################
-### code chunk number 23: cape.Rnw:855-858
-###################################################
-obesity.cross <- calc.p(data.obj = obesity.cross, 
-pairscan.obj = obesity.pairscan, pval.correction = "fdr",
-n.cores = 2)
-
-
-###################################################
-### code chunk number 24: cape.Rnw:901-903
-###################################################
-obesity.cross <- direct.influence(data.obj = obesity.cross, 
-pairscan.obj = obesity.pairscan, pval.correction = "fdr")
-
-
-###################################################
-### code chunk number 25: cape.Rnw:937-942
-###################################################
-pdf("variant_influences.pdf")
-plotVariantInfluences(obesity.cross, p.or.q = 0.05, 
-standardize = TRUE, not.tested.col = "lightgray", 
-pheno.width = 8)
-dev.off()
-
-
-###################################################
-### code chunk number 26: cape.Rnw:1027-1032
-###################################################
-pdf("Network_Collapsed.pdf")
-obesity.cross <- get.network(obesity.cross, p.or.q = 0.05, 
-collapse.linked.markers = TRUE, standardize = FALSE)
-plotNetwork(obesity.cross, collapsed.net = TRUE)
-dev.off()
-
-
-###################################################
-### code chunk number 27: cape.Rnw:1065-1070
-###################################################
-pdf("Network_Full.pdf")
-obesity.cross <- get.network(obesity.cross, p.or.q = 0.05, 
-collapse.linked.markers = FALSE, standardize = TRUE)
-plotNetwork(obesity.cross, collapsed.net = FALSE)
-dev.off()
-
-
-###################################################
-### code chunk number 28: cape.Rnw:1084-1087
-###################################################
-saveRDS(obesity.cross, "cross.RData")
-saveRDS(obesity.singlescan, "crossSinglescan.RData")
-saveRDS(obesity.pairscan, "crossPairscan.RData")
-
+## ----int_bar, fig.width = 7, fig.height = 3-----------------------------------
+plot_effects(data_obj = final_cross, geno_obj = obesity_geno, 
+marker1 = "D2Mit120_B", marker2 = "D15Mit72_B", marker1_label = "Chr2",
+marker2_label = "Chr15", plot_type = "b", error_bars = "se")
 
