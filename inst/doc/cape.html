@@ -12,7 +12,7 @@
 
 <meta name="author" content="Anna L. Tyler, Jake Emerson, Baha El Kassaby, Ann Wells, Georgi Kolishovski, Vivek M. Philip,and Gregory W. Carter" />
 
-<meta name="date" content="2021-02-08" />
+<meta name="date" content="2022-05-18" />
 
 <title>cape: A package for the combined analysis of pleiotropy and epistasis</title>
 
@@ -29,45 +29,6 @@ document.addEventListener('DOMContentLoaded', function(e) {
   }
 });
 </script>
-<style type="text/css">
-a.anchor-section {margin-left: 10px; visibility: hidden; color: inherit;}
-a.anchor-section::before {content: '#';}
-.hasAnchor:hover a.anchor-section {visibility: visible;}
-</style>
-<script>// Anchor sections v1.0 written by Atsushi Yasumoto on Oct 3rd, 2020.
-document.addEventListener('DOMContentLoaded', function() {
-  // Do nothing if AnchorJS is used
-  if (typeof window.anchors === 'object' && anchors.hasOwnProperty('hasAnchorJSLink')) {
-    return;
-  }
-
-  const h = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
-
-  // Do nothing if sections are already anchored
-  if (Array.from(h).some(x => x.classList.contains('hasAnchor'))) {
-    return null;
-  }
-
-  // Use section id when pandoc runs with --section-divs
-  const section_id = function(x) {
-    return ((x.classList.contains('section') || (x.tagName === 'SECTION'))
-            ? x.id : '');
-  };
-
-  // Add anchors
-  h.forEach(function(x) {
-    const id = x.id || section_id(x.parentElement);
-    if (id === '') {
-      return null;
-    }
-    let anchor = document.createElement('a');
-    anchor.href = '#' + id;
-    anchor.classList = ['anchor-section'];
-    x.classList.add('hasAnchor');
-    x.appendChild(anchor);
-  });
-});
-</script>
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -79,7 +40,14 @@ document.addEventListener('DOMContentLoaded', function() {
     </style>
 
 
-<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
 pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
@@ -166,6 +134,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   }
 })();
 </script>
+
 
 
 
@@ -363,7 +332,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">cape: A package for the combined analysis of pleiotropy and epistasis</h1>
 <h4 class="author">Anna L. Tyler<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>, Jake Emerson<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>, Baha El Kassaby<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a>, Ann Wells<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a>, Georgi Kolishovski<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a>, Vivek M. Philip<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a>,and Gregory W. Carter<a href="#fn7" class="footnote-ref" id="fnref7"><sup>7</sup></a></h4>
-<h4 class="date">February 08, 2021</h4>
+<h4 class="date">May 18, 2022</h4>
 
 
 <div id="TOC">
@@ -456,7 +425,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>Completely new to this version of cape is the ability to load files formatted for PLINK (<span class="citation">Purcell et al. (2007)</span>). This enables broader use of cape by researchers who are interested in studying genetic interactions in human cohorts.</p>
 <p>We have provided example data with the cape demo_plink. Please see the <a href="https://zzz.bwh.harvard.edu/plink/index.shtml">PLINK website</a> for more information about PLINK and formatting data for PLINK.</p>
 <p>For cape, we require a ped file, a map file, and a phenotype file. PLINK standard format includes only one trait, and cape requires at least two traits. We therefore need the phenotype file in the pheno.txt format as described <a href="https://zzz.bwh.harvard.edu/plink/data.shtml#pheno">here</a>.</p>
-<p>To generate the data for the demo included in cape, we downloaded example PLINK <a href="http://zzz.bwh.harvard.edu/plink/hapmap1.zip">hapmap data</a>.</p>
+<p>To generate the data for the demo included in cape, we downloaded example PLINK <a href="https://zzz.bwh.harvard.edu/plink/res.shtml#hapmap">hapmap data</a>.</p>
 <p>To reduce the size of the data set for demonstration purposes, we sampled 1000 the SNPs in the data set using PLINK:</p>
 <p>./plink –file hapmap1 –make-bed –thin-count 1000 –recode –out test</p>
 <p>We generated two random, normally distributed phenotypes for the phenotype file. These are not particularly interesting, but they do demonstrate what the files should look like.</p>

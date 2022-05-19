@@ -486,6 +486,7 @@ Cape <- R6Class(
     #' @param use_kinship Whether to use a kinship correction in the analysis.
     #' @param kinship_type Which type of kinship matrix to use. Either "overall" or "ltco."
     #' @param transform_to_phenospace whether to transform to phenospace or not.
+    #' @param plot_pdf logical. If TRUE, results are generated as pdf
     initialize = function(
       parameter_file = NULL,
       yaml_parameters = NULL,
@@ -528,7 +529,8 @@ Cape <- R6Class(
       full_net = NULL,
       use_kinship = NULL,
       kinship_type = NULL,
-      transform_to_phenospace = NULL
+      transform_to_phenospace = NULL,
+      plot_pdf = NULL
     ) {
       self$parameter_file <- parameter_file
       self$yaml_parameters <- yaml_parameters
@@ -590,6 +592,7 @@ Cape <- R6Class(
       self$use_kinship <- use_kinship
       self$kinship_type <- kinship_type
       self$transform_to_phenospace <- transform_to_phenospace
+      self$plot_pdf <- plot_pdf
       # assign parameters from the parameter_file
       self$assign_parameters()
       self$check_inputs()
@@ -815,9 +818,9 @@ Cape <- R6Class(
     #' @description
     #' Save to RDS file
     #' @param object data to be saved.
-    #' @param filename filename of result RData file.
+    #' @param filename filename of result RDS file.
     save_rds = function(object, filename) {
-      # only save the results RData file if save_results is TRUE
+      # only save the results RDS file if save_results is TRUE
       if (self$save_results) {
         full_path <- file.path(self$results_path, filename)
         saveRDS(object, full_path)
@@ -825,10 +828,10 @@ Cape <- R6Class(
     },
     #' @description
     #' Read RDS file
-    #' @param filename RData filename to be read.
+    #' @param filename RDS filename to be read.
     read_rds = function(filename) {
       full_path <- file.path(self$results_path, filename)
-      # only return the results RData file if use_saved_results is TRUE
+      # only return the results RDS file if use_saved_results is TRUE
       if ((self$use_saved_results) & (file.exists(full_path))) {
         return(readRDS(full_path))
       } else {

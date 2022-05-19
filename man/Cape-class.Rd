@@ -457,7 +457,8 @@ Initialization method.
   full_net = NULL,
   use_kinship = NULL,
   kinship_type = NULL,
-  transform_to_phenospace = NULL
+  transform_to_phenospace = NULL,
+  plot_pdf = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -623,6 +624,8 @@ individual markers. See \code{\link{plot_network}} and \code{\link{get_network}}
 \item{\code{kinship_type}}{Which type of kinship matrix to use. Either "overall" or "ltco."}
 
 \item{\code{transform_to_phenospace}}{whether to transform to phenospace or not.}
+
+\item{\code{plot_pdf}}{logical. If TRUE, results are generated as pdf}
 }
 \if{html}{\out{</div>}}
 }
@@ -973,7 +976,7 @@ Save to RDS file
 \describe{
 \item{\code{object}}{data to be saved.}
 
-\item{\code{filename}}{filename of result RData file.}
+\item{\code{filename}}{filename of result RDS file.}
 }
 \if{html}{\out{</div>}}
 }
@@ -990,7 +993,7 @@ Read RDS file
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{filename}}{RData filename to be read.}
+\item{\code{filename}}{RDS filename to be read.}
 }
 \if{html}{\out{</div>}}
 }

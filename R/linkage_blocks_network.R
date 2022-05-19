@@ -55,17 +55,7 @@ linkage_blocks_network <- function(data_obj, geno_obj, collapse_linked_markers =
       return(element[2])
     }
   }
-  
-  get_chr <- function(marker_name){
-    just_marker <- strsplit(marker_name, "_")[[1]][1]
-    marker_locale <- which(geno_names[[3]] == just_marker)
-    if(length(marker_locale) > 0){
-      marker_chr <- data_obj$chromosome[marker_locale]
-    }else{
-      return(0)
-    }  
-  }
-  
+    
   get_marker_name <- function(element){
     return(element[1])
   }
@@ -77,7 +67,7 @@ linkage_blocks_network <- function(data_obj, geno_obj, collapse_linked_markers =
   #with the refactoring geno_for_pairscan is no longer a reliable indicator 
   #of which markers were used in the pairscan.
   used_markers <- unique(as.vector(data_obj$var_to_var_p_val[,1:2]))
-  all_marker_chr <- sapply(used_markers, get_chr)
+  all_marker_chr <- sapply(used_markers, function(x) get_marker_chr(data_obj, x))
   u_chr <- sort(as.numeric(unique(all_marker_chr)))
 
   if(u_chr[1] == 0){
@@ -132,8 +122,11 @@ linkage_blocks_network <- function(data_obj, geno_obj, collapse_linked_markers =
   #========================================================================================
   
   
-  if(plot_blocks){pdf(paste("Recomb.Images.Genotype.Net.Thresh.", threshold_power, ".pdf", 
-  sep = ""), width = 10, height = 5)}
+  if(plot_blocks){
+    cat("Plotting linkage_blocks_network")
+    if (data_obj$plot_pdf) { pdf(paste("Recomb.Images.Genotype.Net.Thresh.", threshold_power, ".pdf", sep = ""), width = 10, height = 5) }
+    jpeg(paste("Recomb.Images.Genotype.Net.Thresh.", threshold_power, ".jpg", sep = ""), res = 400, width = 10, height = 5, units = "in")
+  }
   #go through each chromosome separately and find the linkage blocks on each chromosome
   link_blocks <- vector(mode = "list", length = 1)
   num_blocks <- 1
