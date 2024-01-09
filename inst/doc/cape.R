@@ -1,15 +1,20 @@
-## ---- install_cape, eval = FALSE----------------------------------------------
+## ----install_cape, eval = FALSE-----------------------------------------------
 #  install.packages("cape")
 
 ## ----load_cape, echo = FALSE, warning = FALSE, error = FALSE, message = FALSE----
 set.seed(1234)
 library(cape)
 
+## ----here, eval = FALSE-------------------------------------------------------
+#  install.packages("here")
+#  library("here")
+
+## ----load_here, echo = FALSE, message = FALSE, error = FALSE, warning = FALSE----
+library("here")
+
 ## ----read_csv_format----------------------------------------------------------
-results_path <- here::here("demo", "demo_qtl")
-data_path <- here::here("tests", "testthat", "testdata", "demo_qtl_data")
-data_file <- file.path(data_path, "NON_NZO_Reifsnyder_pgm_CAPE_num.csv")
-param_file <- file.path(results_path, "NON_NZO.parameters.yml")
+data_file <- here("demo", "demo_qtl", "data", "NON_NZO_Reifsnyder_pgm_CAPE_num.csv")
+param_file <- here("demo", "demo_qtl", "0_NON_NZO.parameters_0.yml")
 
 cross <- read_population(data_file)
 cross_obj <- cape2mpp(cross)
@@ -24,12 +29,12 @@ obesity_geno <- cross_obj$geno_obj$geno
 #  geno_obj <- iron_cape$geno_obj
 
 ## ----read_plink, eval = FALSE-------------------------------------------------
-#  data_path <- here::here("tests", "testthat", "testdata")
+#  data_path <- here("demo", "demo_PLINK", "data")
 #  ped <- file.path(data_path, "test.ped")
 #  map <- file.path(data_path, "test.map")
 #  pheno <- file.path(data_path, "test.pheno")
 #  out <- file.path(data_path, "test.csv")
-#  param_file <- file.path(results_path, "plink.parameters.yml")
+#  param_file <- here("demo", "demo_PLINK", "0_plink.parameters_0.yml")
 #  
 #  cross_obj <- plink2cape(ped, map, pheno, out = "out.csv")
 #  
@@ -53,14 +58,17 @@ plot_pheno_cor(obesity_cross, pheno_which = c("BW_24", "INS_24", "log_GLU_24"),
 color_by = "pgm", group_labels = c("Non-obese", "Obese"))
 
 ## ----run_cape-----------------------------------------------------------------
-final_cross <- run_cape(obesity_cross, obesity_geno, results_file = "NON_NZO.RData", 
+param_file <- here("demo", "demo_qtl", "0_NON_NZO.parameters_0.yml")
+results_path <- here("demo", "demo_qtl")
+
+final_cross <- run_cape(obesity_cross, obesity_geno, results_file = "NON_NZO", 
 p_or_q = 0.05, verbose = FALSE, param_file = param_file, results_path = results_path)
 
 ## ----eigentraits, fig.width = 4, fig.height = 4-------------------------------
 plot_svd(final_cross)
 
 ## ----single_plot, eval = FALSE------------------------------------------------
-#  singlescan_obj <- readRDS(here::here("demo", "demo_qtl", "NON_NZO_singlescan.RData"))
+#  singlescan_obj <- readRDS(here("demo", "demo_qtl", "results", "NON_NZO_singlescan.RDS"))
 #  plot_singlescan(final_cross, singlescan_obj, line_type = "h", lwd = 2,
 #  covar_label_size = 1)
 
